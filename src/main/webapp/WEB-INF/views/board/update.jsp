@@ -10,7 +10,7 @@
     </div>
 
     <div class="form-card-box">
-        <form action="${pageContext.request.contextPath}/boardUpdateAction.do" method="post" class="board-write-form">
+        <form action="${pageContext.request.contextPath}/boardUpdateAction.do" method="post" enctype="multipart/form-data" class="board-write-form">
             <input type="hidden" name="postId" value="${post.postId}">
             
             <div class="form-group">
@@ -21,6 +21,20 @@
             <div class="form-group">
                 <label for="content">본문 내용</label>
                 <textarea id="content" name="content" rows="12" required>${post.content}</textarea>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="attachedFile">파일 첨부 변경</label>
+                <c:if test="${not empty post.filename}">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px; background: #222; padding: 8px 12px; border-radius: 6px; border: 1px solid #333;">
+                        <span style="color: #60a5fa; font-size: 0.9rem;">📎 현재 첨부파일: <strong>${post.filename}</strong></span>
+                        <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #ef4444; cursor: pointer; margin-left: auto;">
+                            <input type="checkbox" name="deleteExistingFile" value="true"> 기존 파일 삭제
+                        </label>
+                    </div>
+                </c:if>
+                <input type="file" id="attachedFile" name="attachedFile" style="background: #222; color: #ccc; border: 1px solid #444; padding: 10px; border-radius: 6px; width: 100%;">
+                <p style="font-size: 0.8rem; color: #888; margin-top: 6px;">📄 새로운 파일을 첨부하면 기존 파일은 자동으로 교체 및 삭제됩니다.</p>
             </div>
 
             <div class="form-actions-row" style="text-align: right; margin-top: 30px;">

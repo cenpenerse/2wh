@@ -22,6 +22,31 @@
         <!-- 본문 내용 -->
         <div class="post-content-body" style="white-space: pre-wrap; min-height: 250px; line-height: 1.8; font-size: 1.05rem;">${post.content}</div>
         
+        <!-- 첨부 파일 영역 -->
+        <c:if test="${not empty post.filename}">
+            <div class="post-attachment-box" style="margin-top: 30px; padding: 20px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                <h4 style="font-size: 0.95rem; color: #aaa; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px;">
+                    📎 첨부파일
+                </h4>
+                
+                <c:set var="fileNameLower" value="${post.filename.toLowerCase()}" />
+                <c:set var="isImage" value="${false}" />
+                <c:if test="${fileNameLower.endsWith('.jpg') || fileNameLower.endsWith('.jpeg') || fileNameLower.endsWith('.png') || fileNameLower.endsWith('.gif') || fileNameLower.endsWith('.webp')}">
+                    <c:set var="isImage" value="${true}" />
+                </c:if>
+                
+                <c:if test="${isImage}">
+                    <div style="margin-bottom: 15px; border-radius: 6px; overflow: hidden; border: 1px solid #333; max-width: 600px; background: #121212;">
+                        <img src="${pageContext.request.contextPath}/resources/upload/${post.filename}" style="width: 100%; height: auto; display: block;" alt="첨부 이미지">
+                    </div>
+                </c:if>
+                
+                <a href="${pageContext.request.contextPath}/resources/upload/${post.filename}" download="${post.filename}" style="display: inline-flex; align-items: center; gap: 8px; color: #60a5fa; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='#93c5fd'" onmouseout="this.style.color='#60a5fa'">
+                    💾 ${post.filename} (다운로드)
+                </a>
+            </div>
+        </c:if>
+        
         <!-- 제어 버튼 (수정, 삭제, 목록) -->
         <div class="post-actions-row">
             <div class="left-actions">

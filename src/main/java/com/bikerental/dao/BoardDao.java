@@ -21,8 +21,8 @@ public class BoardDao {
     public int insertPost(BoardDto dto) {
         Connection conn = null;
         PreparedStatement pstmt = null;
-        String sql = "INSERT INTO boards (board_id, user_id, category, title, content, view_count, like_count, created_at) "
-                   + "VALUES (seq_boards.NEXTVAL, ?, ?, ?, ?, 0, 0, SYSDATE)";
+        String sql = "INSERT INTO boards (board_id, user_id, category, title, content, view_count, like_count, filename, created_at) "
+                   + "VALUES (seq_boards.NEXTVAL, ?, ?, ?, ?, 0, 0, ?, SYSDATE)";
         int result = -1;
         try {
             conn = DBConnection.getConnection();
@@ -31,6 +31,7 @@ public class BoardDao {
             pstmt.setString(2, dto.getBoardType()); // boardType -> category 매핑
             pstmt.setString(3, dto.getTitle());
             pstmt.setString(4, dto.getContent());
+            pstmt.setString(5, dto.getFilename());
             result = pstmt.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -63,6 +64,7 @@ public class BoardDao {
                 dto.setContent(rs.getString("content"));
                 dto.setViewCount(rs.getInt("view_count"));
                 dto.setBoardType(rs.getString("category"));
+                dto.setFilename(rs.getString("filename"));
                 dto.setCreatedAt(rs.getTimestamp("created_at"));
                 dto.setMemberNickname(rs.getString("user_nickname"));
             }
@@ -108,6 +110,7 @@ public class BoardDao {
                 dto.setContent(rs.getString("content"));
                 dto.setViewCount(rs.getInt("view_count"));
                 dto.setBoardType(rs.getString("category"));
+                dto.setFilename(rs.getString("filename"));
                 dto.setCreatedAt(rs.getTimestamp("created_at"));
                 dto.setMemberNickname(rs.getString("user_nickname"));
                 list.add(dto);
@@ -164,14 +167,15 @@ public class BoardDao {
     public int updatePost(BoardDto dto) {
         Connection conn = null;
         PreparedStatement pstmt = null;
-        String sql = "UPDATE boards SET title = ?, content = ? WHERE board_id = ?";
+        String sql = "UPDATE boards SET title = ?, content = ?, filename = ? WHERE board_id = ?";
         int result = -1;
         try {
             conn = DBConnection.getConnection();
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, dto.getTitle());
             pstmt.setString(2, dto.getContent());
-            pstmt.setInt(3, dto.getPostId());
+            pstmt.setString(3, dto.getFilename());
+            pstmt.setInt(4, dto.getPostId());
             result = pstmt.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();

@@ -67,6 +67,8 @@ public class BikeDao {
             if (rs.next()) {
                 dto = new BikeDto();
                 dto.setBikeId(rs.getInt("bike_id"));
+                dto.setBrandId(rs.getInt("brand_id"));
+                dto.setShopId(rs.getInt("shop_id"));
                 dto.setBikeName(rs.getString("model_name"));
                 dto.setCc(rs.getInt("cc"));
                 dto.setYear(rs.getInt("year"));
@@ -113,6 +115,8 @@ public class BikeDao {
             while (rs.next()) {
                 BikeDto dto = new BikeDto();
                 dto.setBikeId(rs.getInt("bike_id"));
+                dto.setBrandId(rs.getInt("brand_id"));
+                dto.setShopId(rs.getInt("shop_id"));
                 dto.setBikeName(rs.getString("model_name"));
                 dto.setCc(rs.getInt("cc"));
                 dto.setYear(rs.getInt("year"));
@@ -183,6 +187,8 @@ public class BikeDao {
             while (rs.next()) {
                 BikeDto dto = new BikeDto();
                 dto.setBikeId(rs.getInt("bike_id"));
+                dto.setBrandId(rs.getInt("brand_id"));
+                dto.setShopId(rs.getInt("shop_id"));
                 dto.setBikeName(rs.getString("model_name"));
                 dto.setCc(rs.getInt("cc"));
                 dto.setYear(rs.getInt("year"));
@@ -264,7 +270,7 @@ public class BikeDao {
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        String sql = "SELECT shop_id, shop_name, manager_name, tel, address, open_time, close_time FROM rental_shops ORDER BY shop_id ASC";
+        String sql = "SELECT shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename FROM rental_shops ORDER BY shop_id ASC";
         List<Map<String, Object>> list = new ArrayList<>();
         try {
             conn = DBConnection.getConnection();
@@ -279,6 +285,7 @@ public class BikeDao {
                 map.put("address", rs.getString("address"));
                 map.put("openTime", rs.getString("open_time"));
                 map.put("closeTime", rs.getString("close_time"));
+                map.put("imageFilename", rs.getString("image_filename"));
                 list.add(map);
             }
         } catch (Exception e) {
@@ -349,10 +356,10 @@ public class BikeDao {
     }
 
     // 지점 추가 (관리자용)
-    public int insertShop(String shopName, String managerName, String tel, String address, String openTime, String closeTime) {
+    public int insertShop(String shopName, String managerName, String tel, String address, String openTime, String closeTime, String imageFilename) {
         Connection conn = null;
         PreparedStatement pstmt = null;
-        String sql = "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time) VALUES (seq_rental_shops.NEXTVAL, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename) VALUES (seq_rental_shops.NEXTVAL, ?, ?, ?, ?, ?, ?, ?)";
         int result = -1;
         try {
             conn = DBConnection.getConnection();
@@ -363,6 +370,26 @@ public class BikeDao {
             pstmt.setString(4, address);
             pstmt.setString(5, openTime);
             pstmt.setString(6, closeTime);
+            pstmt.setString(7, imageFilename);
+            result = pstmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.close(conn, pstmt, null);
+        }
+        return result;
+    }
+
+    public int updateShopImage(int shopId, String imageFilename) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        String sql = "UPDATE rental_shops SET image_filename = ? WHERE shop_id = ?";
+        int result = -1;
+        try {
+            conn = DBConnection.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, imageFilename);
+            pstmt.setInt(2, shopId);
             result = pstmt.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();

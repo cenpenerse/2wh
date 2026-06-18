@@ -27,27 +27,27 @@
                     <c:choose>
                         <c:when test="${fn:contains(opt.optionName, '헬멧')}">
                             <c:set var="cardId" value="helmet" />
-                            <c:set var="imageUrl" value="https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?auto=format&fit=crop&w=800&q=80" />
+                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_helmet.png" />
                             <c:set var="gearSpec" value="안전 규격 인증 완료 | 김서림 방지 실드 제공 | 위생 세척 및 소독 완료" />
                         </c:when>
                         <c:when test="${fn:contains(opt.optionName, '인터콤')}">
                             <c:set var="cardId" value="intercom" />
-                            <c:set var="imageUrl" value="https://images.unsplash.com/photo-1608248597481-496100c80836?auto=format&fit=crop&w=800&q=80" />
+                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_intercom.png" />
                             <c:set var="gearSpec" value="블루투스 5.0 탑재 | 최대 1.2km 무선 통신 | 노이즈 캔슬링 마이크 | 하만카돈 스피커" />
                         </c:when>
                         <c:when test="${fn:contains(opt.optionName, '탑박스')}">
                             <c:set var="cardId" value="topbox" />
-                            <c:set var="imageUrl" value="https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=800&q=80" />
+                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_topbox.png" />
                             <c:set var="gearSpec" value="용량 45L / 65L 선택 가능 | 완전 방수 설계 | 알루미늄 하드쉘 보호 구조" />
                         </c:when>
                         <c:when test="${fn:contains(opt.optionName, '거치대')}">
                             <c:set var="cardId" value="holder" />
-                            <c:set var="imageUrl" value="https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=800&q=80" />
+                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_holder.png" />
                             <c:set var="gearSpec" value="초강력 네오디뮴 자석 장착 | 고속 무선 충전 케이블 내장 | 이중 안전 잠금 고리" />
                         </c:when>
                         <c:when test="${fn:contains(opt.optionName, '보호대')}">
                             <c:set var="cardId" value="protector" />
-                            <c:set var="imageUrl" value="https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&w=800&q=80" />
+                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_protector.png" />
                             <c:set var="gearSpec" value="CE 레벨 2 안전 패드 내장 | 통풍 메시 재질 | 벨크로 밴딩 조절 방식" />
                         </c:when>
                     </c:choose>

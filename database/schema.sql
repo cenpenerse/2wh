@@ -16,6 +16,10 @@ DROP TABLE bike_images CASCADE CONSTRAINTS;
 DROP TABLE motorcycles CASCADE CONSTRAINTS;
 DROP TABLE rental_shops CASCADE CONSTRAINTS;
 DROP TABLE brands CASCADE CONSTRAINTS;
+DROP TABLE license_audit CASCADE CONSTRAINTS;
+DROP TABLE bike_maintenance CASCADE CONSTRAINTS;
+DROP TABLE fuel_log CASCADE CONSTRAINTS;
+
 
 DROP SEQUENCE seq_comments;
 DROP SEQUENCE seq_boards;
@@ -32,6 +36,10 @@ DROP SEQUENCE seq_bike_images;
 DROP SEQUENCE seq_motorcycles;
 DROP SEQUENCE seq_rental_shops;
 DROP SEQUENCE seq_brands;
+DROP SEQUENCE seq_license_audit;
+DROP SEQUENCE seq_bike_maintenance;
+DROP SEQUENCE seq_fuel_log;
+
 
 -- =====================================================
 -- 2. 시퀀스 생성 (자동 증가 기본키용)
@@ -51,6 +59,10 @@ CREATE SEQUENCE seq_reviews START WITH 1 INCREMENT BY 1 NOCACHE;
 CREATE SEQUENCE seq_inquiries START WITH 1 INCREMENT BY 1 NOCACHE;
 CREATE SEQUENCE seq_boards START WITH 1 INCREMENT BY 1 NOCACHE;
 CREATE SEQUENCE seq_comments START WITH 1 INCREMENT BY 1 NOCACHE;
+CREATE SEQUENCE seq_license_audit START WITH 1 INCREMENT BY 1 NOCACHE;
+CREATE SEQUENCE seq_bike_maintenance START WITH 1 INCREMENT BY 1 NOCACHE;
+CREATE SEQUENCE seq_fuel_log START WITH 1 INCREMENT BY 1 NOCACHE;
+
 
 -- =====================================================
 -- 3. 테이블 생성
@@ -72,7 +84,8 @@ CREATE TABLE rental_shops (
     tel           VARCHAR2(30),
     address       VARCHAR2(500),
     open_time     VARCHAR2(10), -- '09:00' 형태
-    close_time    VARCHAR2(10)  -- '20:00' 형태
+    close_time    VARCHAR2(10), -- '20:00' 형태
+    image_filename VARCHAR2(500)
 );
 
 -- 3-3. 바이크 (motorcycles)
@@ -196,9 +209,11 @@ CREATE TABLE boards (
     content     CLOB NOT NULL,
     view_count  NUMBER DEFAULT 0,
     like_count  NUMBER DEFAULT 0,
+    filename    VARCHAR2(500),
     created_at  DATE DEFAULT SYSDATE NOT NULL,
     CONSTRAINT fk_brd_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+
 
 -- 3-12. 댓글 (comments)
 CREATE TABLE comments (
@@ -246,6 +261,46 @@ CREATE TABLE penalties (
     CONSTRAINT fk_pen_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+-- 3-16. 면허증 검증 심사 (license_audit)
+CREATE TABLE license_audit (
+    audit_id        NUMBER PRIMARY KEY,
+    user_id         NUMBER NOT NULL,
+    license_type    VARCHAR2(100), -- 1종대형/2종소형/원동기 등
+    license_image   VARCHAR2(500),
+    status          VARCHAR2(50) DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED
+    reject_reason   VARCHAR2(1000),
+    audit_date      DATE,
+    admin_id        NUMBER,
+    CONSTRAINT fk_audit_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_audit_admin FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+-- 3-17. 차량 정비 이력 (bike_maintenance)
+CREATE TABLE bike_maintenance (
+    maintenance_id   NUMBER PRIMARY KEY,
+    bike_id          NUMBER NOT NULL,
+    maintenance_date DATE NOT NULL,
+    maintenance_type VARCHAR2(100), -- 정기점검/사고수리/소모품교체 등
+    content          CLOB,
+    cost             NUMBER,
+    shop_name        VARCHAR2(200),
+    next_check_date  DATE,
+    CONSTRAINT fk_maint_bike FOREIGN KEY (bike_id) REFERENCES motorcycles(bike_id) ON DELETE CASCADE
+);
+
+-- 3-18. 주유 및 배터리 충전 기록 (fuel_log)
+CREATE TABLE fuel_log (
+    fuel_log_id      NUMBER PRIMARY KEY,
+    bike_id          NUMBER NOT NULL,
+    reservation_id   NUMBER,
+    fuel_level       NUMBER, -- 반납시 주유량 (%)
+    penalty_amount   NUMBER, -- 부족액 청구금액
+    log_date         DATE DEFAULT SYSDATE NOT NULL,
+    CONSTRAINT fk_fuel_bike FOREIGN KEY (bike_id) REFERENCES motorcycles(bike_id) ON DELETE CASCADE,
+    CONSTRAINT fk_fuel_res FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id) ON DELETE SET NULL
+);
+
+
 
 -- =====================================================
 -- 4. 기초 샘플 데이터 삽입
@@ -259,35 +314,44 @@ INSERT INTO brands (brand_id, brand_name, country, description)
 VALUES (seq_brands.NEXTVAL, 'Yamaha', 'Japan', '독창적인 기술력과 뛰어난 디자인, 스포티한 주행 감각이 돋보이는 브랜드입니다.');
 
 INSERT INTO brands (brand_id, brand_name, country, description)
-VALUES (seq_brands.NEXTVAL, 'BMW Motorrad', 'Germany', '장거리 투어러 및 고배기량 스포츠 바이크의 명가입니다.');
+VALUES (seq_brands.NEXTVAL, 'BMW', 'Germany', '장거리 투어러 및 고배기량 스포츠 바이크의 명가입니다.');
+
+INSERT INTO brands (brand_id, brand_name, country, description)
+VALUES (seq_brands.NEXTVAL, 'Harley-Davidson', 'USA', '클래식한 아메리칸 크루저 바이크의 상징적인 브랜드입니다.');
+
+INSERT INTO brands (brand_id, brand_name, country, description)
+VALUES (seq_brands.NEXTVAL, 'Vespa', 'Italy', '유려한 디자인과 감성을 겸비한 이탈리아 프리미엄 스쿠터 브랜드입니다.');
+
+INSERT INTO brands (brand_id, brand_name, country, description)
+VALUES (seq_brands.NEXTVAL, 'Ducati', 'Italy', '레이싱 유전자를 바탕으로 최고의 주행 성능을 자랑하는 프리미엄 스포츠 브랜드입니다.');
 
 -- 4-2. 렌탈 지점 등록
-INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time)
-VALUES (seq_rental_shops.NEXTVAL, '대구 중앙 지점', '김철수', '053-123-4567', '대구 중구 달구벌대로 123', '09:00', '20:00');
+INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename)
+VALUES (seq_rental_shops.NEXTVAL, '대구 중앙 지점', '김철수', '053-123-4567', '대구 중구 달구벌대로 123', '09:00', '20:00', 'shop_1.png');
 
-INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time)
-VALUES (seq_rental_shops.NEXTVAL, '대구 동대구역 지점', '이영희', '053-987-6543', '대구 동구 동대구로 456', '09:00', '21:00');
+INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename)
+VALUES (seq_rental_shops.NEXTVAL, '대구 동대구역 지점', '이영희', '053-987-6543', '대구 동구 동대구로 456', '09:00', '21:00', 'shop_2.png');
 
-INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time)
-VALUES (seq_rental_shops.NEXTVAL, '대구 수성못 지점', '박민수', '053-765-4321', '대구 수성구 수성못길 789', '09:00', '22:00');
+INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename)
+VALUES (seq_rental_shops.NEXTVAL, '대구 수성못 지점', '박민수', '053-765-4321', '대구 수성구 수성못길 789', '09:00', '22:00', 'shop_3.png');
 
-INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time)
-VALUES (seq_rental_shops.NEXTVAL, '대구 계명대 지점', '최진혁', '053-580-1234', '대구 달서구 달구벌대로 1000', '09:00', '20:00');
+INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename)
+VALUES (seq_rental_shops.NEXTVAL, '대구 계명대 지점', '최진혁', '053-580-1234', '대구 달서구 달구벌대로 1000', '09:00', '20:00', 'shop_4.png');
 
-INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time)
-VALUES (seq_rental_shops.NEXTVAL, '대구 엑스코 지점', '정수빈', '053-601-5678', '대구 북구 유통단지로 789', '09:00', '20:00');
+INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename)
+VALUES (seq_rental_shops.NEXTVAL, '대구 엑스코 지점', '정수빈', '053-601-5678', '대구 북구 유통단지로 789', '09:00', '20:00', 'shop_5.png');
 
-INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time)
-VALUES (seq_rental_shops.NEXTVAL, '대구 칠곡 지점', '강진우', '053-321-4567', '대구 북구 태전로 123', '09:00', '20:00');
+INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename)
+VALUES (seq_rental_shops.NEXTVAL, '대구 칠곡 지점', '강진우', '053-321-4567', '대구 북구 태전로 123', '09:00', '20:00', 'shop_6.png');
 
-INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time)
-VALUES (seq_rental_shops.NEXTVAL, '대구 상인 지점', '윤지아', '053-643-9876', '대구 달서구 월배로 456', '09:00', '21:00');
+INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename)
+VALUES (seq_rental_shops.NEXTVAL, '대구 상인 지점', '윤지아', '053-643-9876', '대구 달서구 월배로 456', '09:00', '21:00', 'shop_7.png');
 
-INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time)
-VALUES (seq_rental_shops.NEXTVAL, '대구 현풍 지점', '오태양', '053-611-3456', '대구 달성군 테크노중앙대로 789', '09:00', '20:00');
+INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename)
+VALUES (seq_rental_shops.NEXTVAL, '대구 현풍 지점', '오태양', '053-611-3456', '대구 달성군 테크노중앙대로 789', '09:00', '20:00', 'shop_8.png');
 
-INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time)
-VALUES (seq_rental_shops.NEXTVAL, '대구 경북대 지점', '한소희', '053-950-1234', '대구 북구 대학로 80', '09:00', '22:00');
+INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename)
+VALUES (seq_rental_shops.NEXTVAL, '대구 경북대 지점', '한소희', '053-950-1234', '대구 북구 대학로 80', '09:00', '22:00', 'shop_9.png');
 
 -- 4-3. 회원 등록 (패스워드는 평문 보관 테스트용 또는 해싱 예정)
 INSERT INTO users (user_id, email, password, name, phone, birth_date, license_number, role, point, join_date)
@@ -301,165 +365,164 @@ INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 1, 'resources/images/bikes/scooter_pcx.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (2, 2, 1, 'YZF-R3', 321, 2022, 'Icon Blue', 80000, 0, 'AVAILABLE', '입문용 쿼터급 최고의 스포츠 바이크입니다. 가볍고 민첩한 핸들링이 돋보입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 2, 'resources/images/bikes/sports_r3.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (3, 1, 1, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '클래식한 디자인과 최고의 실용성을 겸비한 110cc 언더본 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 3, 'resources/images/bikes/classic_cub.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (4, 1, 1, 'CBR500R', 471, 2022, 'Grand Prix Red', 100000, 0, 'AVAILABLE', '스포티한 레이싱 룩과 일상 주행의 편안함을 모두 잡은 미들급 스포츠 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 4, 'resources/images/bikes/sports_cbr500r.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (5, 2, 1, 'MT-03', 321, 2023, 'Midnight Black', 85000, 0, 'AVAILABLE', '날렵하고 다이내믹한 주행성능을 선사하는 쿼터급 대표 네이키드 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 5, 'resources/images/bikes/naked_mt03.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (6, 1, 1, 'ADV350', 330, 2023, 'Spangle Silver Metallic', 90000, 0, 'AVAILABLE', '스마트한 주행 성능과 모험 심리를 자극하는 350cc 어드벤처 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 6, 'resources/images/bikes/scooter_adv350.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (7, 1, 1, 'C125', 125, 2023, 'Niltava Blue', 40000, 0, 'AVAILABLE', '초대 슈퍼커브의 오리지널 헤리티지를 계승한 프리미엄 125cc 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 7, 'resources/images/bikes/classic_c125.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (8, 3, 1, 'R nineT', 1170, 2022, 'Black Storm Metallic', 200000, 0, 'AVAILABLE', '클래식한 룩과 강력한 박서 엔진의 매력을 선사하는 프리미엄 로드스터입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (3, 4, 1, 'Iron 883', 883, 2021, 'Matte Black', 150000, 0, 'AVAILABLE', '클래식한 아메리칸 감성과 묵직한 고동감이 돋보이는 대표적인 크루저 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 3, 'resources/images/bikes/cruiser_iron883.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (4, 5, 1, 'Primavera 125', 124, 2023, 'Mint Green', 60000, 0, 'AVAILABLE', '유려한 이탈리아 디자인과 감성적인 주행을 선사하는 클래식 스쿠터입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 4, 'resources/images/bikes/scooter_primavera.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (5, 3, 1, 'R 1250 GS', 1254, 2022, 'Triple Black', 200000, 0, 'AVAILABLE', '온로드와 오프로드를 가리지 않는 세계 최고 성능의 어드벤처 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 5, 'resources/images/bikes/adventure_r1250gs.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (6, 6, 1, 'Panigale V4', 1103, 2023, 'Ducati Red', 250000, 0, 'AVAILABLE', '모토GP 레이싱 기술이 그대로 녹아든 고성능 이탈리아 레이싱 머신입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 6, 'resources/images/bikes/sports_panigale.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (7, 1, 1, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '최고의 내구성과 실용성을 자랑하는 110cc 클래식 언더본 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 7, 'resources/images/bikes/classic_cub.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (8, 3, 1, 'R nineT', 1170, 2022, 'Black Storm Metallic', 180000, 0, 'AVAILABLE', '클래식한 로드스터 감성과 수평대향 박서 엔진을 탑재한 프리미엄 바이크입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 8, 'resources/images/bikes/naked_rninet.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (9, 2, 1, 'YZF-R1', 998, 2023, 'Yamaha Black', 250000, 0, 'AVAILABLE', '야마하의 레이싱 기술이 총집약된 플래그십 리터급 슈퍼스포츠 머신입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (9, 2, 1, 'YZF-R1', 998, 2023, 'Yamaha Black', 220000, 0, 'AVAILABLE', '야마하의 정교한 4기통 크로스플레인 엔진이 탑재된 플래그십 스포츠 모델입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 9, 'resources/images/bikes/sports_r1.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (10, 1, 2, 'PCX 125', 125, 2023, 'Pearl White', 45000, 0, 'AVAILABLE', '도심 주행의 최강자이자 연비와 내구성 모두를 만족시키는 125cc 스쿠터입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 10, 'resources/images/bikes/scooter_pcx.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (11, 2, 2, 'YZF-R3', 321, 2022, 'Icon Blue', 80000, 0, 'AVAILABLE', '입문용 쿼터급 최고의 스포츠 바이크입니다. 가볍고 민첩한 핸들링이 돋보입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 11, 'resources/images/bikes/sports_r3.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (12, 1, 2, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '클래식한 디자인과 최고의 실용성을 겸비한 110cc 언더본 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 12, 'resources/images/bikes/classic_cub.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (13, 1, 2, 'CBR500R', 471, 2022, 'Grand Prix Red', 100000, 0, 'AVAILABLE', '스포티한 레이싱 룩과 일상 주행의 편안함을 모두 잡은 미들급 스포츠 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 13, 'resources/images/bikes/sports_cbr500r.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (14, 2, 2, 'MT-03', 321, 2023, 'Midnight Black', 85000, 0, 'AVAILABLE', '날렵하고 다이내믹한 주행성능을 선사하는 쿼터급 대표 네이키드 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 14, 'resources/images/bikes/naked_mt03.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (15, 1, 2, 'ADV350', 330, 2023, 'Spangle Silver Metallic', 90000, 0, 'AVAILABLE', '스마트한 주행 성능과 모험 심리를 자극하는 350cc 어드벤처 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 15, 'resources/images/bikes/scooter_adv350.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (16, 1, 2, 'C125', 125, 2023, 'Niltava Blue', 40000, 0, 'AVAILABLE', '초대 슈퍼커브의 오리지널 헤리티지를 계승한 프리미엄 125cc 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 16, 'resources/images/bikes/classic_c125.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (17, 3, 2, 'R nineT', 1170, 2022, 'Black Storm Metallic', 200000, 0, 'AVAILABLE', '클래식한 룩과 강력한 박서 엔진의 매력을 선사하는 프리미엄 로드스터입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (12, 4, 2, 'Iron 883', 883, 2021, 'Matte Black', 150000, 0, 'AVAILABLE', '클래식한 아메리칸 감성과 묵직한 고동감이 돋보이는 대표적인 크루저 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 12, 'resources/images/bikes/cruiser_iron883.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (13, 5, 2, 'Primavera 125', 124, 2023, 'Mint Green', 60000, 0, 'AVAILABLE', '유려한 이탈리아 디자인과 감성적인 주행을 선사하는 클래식 스쿠터입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 13, 'resources/images/bikes/scooter_primavera.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (14, 3, 2, 'R 1250 GS', 1254, 2022, 'Triple Black', 200000, 0, 'AVAILABLE', '온로드와 오프로드를 가리지 않는 세계 최고 성능의 어드벤처 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 14, 'resources/images/bikes/adventure_r1250gs.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (15, 6, 2, 'Panigale V4', 1103, 2023, 'Ducati Red', 250000, 0, 'AVAILABLE', '모토GP 레이싱 기술이 그대로 녹아든 고성능 이탈리아 레이싱 머신입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 15, 'resources/images/bikes/sports_panigale.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (16, 1, 2, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '최고의 내구성과 실용성을 자랑하는 110cc 클래식 언더본 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 16, 'resources/images/bikes/classic_cub.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (17, 3, 2, 'R nineT', 1170, 2022, 'Black Storm Metallic', 180000, 0, 'AVAILABLE', '클래식한 로드스터 감성과 수평대향 박서 엔진을 탑재한 프리미엄 바이크입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 17, 'resources/images/bikes/naked_rninet.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (18, 2, 2, 'YZF-R1', 998, 2023, 'Yamaha Black', 250000, 0, 'AVAILABLE', '야마하의 레이싱 기술이 총집약된 플래그십 리터급 슈퍼스포츠 머신입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (18, 2, 2, 'YZF-R1', 998, 2023, 'Yamaha Black', 220000, 0, 'AVAILABLE', '야마하의 정교한 4기통 크로스플레인 엔진이 탑재된 플래그십 스포츠 모델입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 18, 'resources/images/bikes/sports_r1.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (19, 1, 3, 'PCX 125', 125, 2023, 'Pearl White', 45000, 0, 'AVAILABLE', '도심 주행의 최강자이자 연비와 내구성 모두를 만족시키는 125cc 스쿠터입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 19, 'resources/images/bikes/scooter_pcx.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (20, 2, 3, 'YZF-R3', 321, 2022, 'Icon Blue', 80000, 0, 'AVAILABLE', '입문용 쿼터급 최고의 스포츠 바이크입니다. 가볍고 민첩한 핸들링이 돋보입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 20, 'resources/images/bikes/sports_r3.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (21, 1, 3, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '클래식한 디자인과 최고의 실용성을 겸비한 110cc 언더본 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 21, 'resources/images/bikes/classic_cub.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (22, 1, 3, 'CBR500R', 471, 2022, 'Grand Prix Red', 100000, 0, 'AVAILABLE', '스포티한 레이싱 룩과 일상 주행의 편안함을 모두 잡은 미들급 스포츠 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 22, 'resources/images/bikes/sports_cbr500r.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (23, 2, 3, 'MT-03', 321, 2023, 'Midnight Black', 85000, 0, 'AVAILABLE', '날렵하고 다이내믹한 주행성능을 선사하는 쿼터급 대표 네이키드 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 23, 'resources/images/bikes/naked_mt03.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (24, 1, 3, 'ADV350', 330, 2023, 'Spangle Silver Metallic', 90000, 0, 'AVAILABLE', '스마트한 주행 성능과 모험 심리를 자극하는 350cc 어드벤처 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 24, 'resources/images/bikes/scooter_adv350.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (25, 1, 3, 'C125', 125, 2023, 'Niltava Blue', 40000, 0, 'AVAILABLE', '초대 슈퍼커브의 오리지널 헤리티지를 계승한 프리미엄 125cc 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 25, 'resources/images/bikes/classic_c125.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (26, 3, 3, 'R nineT', 1170, 2022, 'Black Storm Metallic', 200000, 0, 'AVAILABLE', '클래식한 룩과 강력한 박서 엔진의 매력을 선사하는 프리미엄 로드스터입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (21, 4, 3, 'Iron 883', 883, 2021, 'Matte Black', 150000, 0, 'AVAILABLE', '클래식한 아메리칸 감성과 묵직한 고동감이 돋보이는 대표적인 크루저 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 21, 'resources/images/bikes/cruiser_iron883.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (22, 5, 3, 'Primavera 125', 124, 2023, 'Mint Green', 60000, 0, 'AVAILABLE', '유려한 이탈리아 디자인과 감성적인 주행을 선사하는 클래식 스쿠터입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 22, 'resources/images/bikes/scooter_primavera.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (23, 3, 3, 'R 1250 GS', 1254, 2022, 'Triple Black', 200000, 0, 'AVAILABLE', '온로드와 오프로드를 가리지 않는 세계 최고 성능의 어드벤처 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 23, 'resources/images/bikes/adventure_r1250gs.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (24, 6, 3, 'Panigale V4', 1103, 2023, 'Ducati Red', 250000, 0, 'AVAILABLE', '모토GP 레이싱 기술이 그대로 녹아든 고성능 이탈리아 레이싱 머신입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 24, 'resources/images/bikes/sports_panigale.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (25, 1, 3, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '최고의 내구성과 실용성을 자랑하는 110cc 클래식 언더본 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 25, 'resources/images/bikes/classic_cub.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (26, 3, 3, 'R nineT', 1170, 2022, 'Black Storm Metallic', 180000, 0, 'AVAILABLE', '클래식한 로드스터 감성과 수평대향 박서 엔진을 탑재한 프리미엄 바이크입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 26, 'resources/images/bikes/naked_rninet.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (27, 2, 3, 'YZF-R1', 998, 2023, 'Yamaha Black', 250000, 0, 'AVAILABLE', '야마하의 레이싱 기술이 총집약된 플래그십 리터급 슈퍼스포츠 머신입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (27, 2, 3, 'YZF-R1', 998, 2023, 'Yamaha Black', 220000, 0, 'AVAILABLE', '야마하의 정교한 4기통 크로스플레인 엔진이 탑재된 플래그십 스포츠 모델입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 27, 'resources/images/bikes/sports_r1.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (28, 1, 4, 'PCX 125', 125, 2023, 'Pearl White', 45000, 0, 'AVAILABLE', '도심 주행의 최강자이자 연비와 내구성 모두를 만족시키는 125cc 스쿠터입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 28, 'resources/images/bikes/scooter_pcx.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (29, 2, 4, 'YZF-R3', 321, 2022, 'Icon Blue', 80000, 0, 'AVAILABLE', '입문용 쿼터급 최고의 스포츠 바이크입니다. 가볍고 민첩한 핸들링이 돋보입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 29, 'resources/images/bikes/sports_r3.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (30, 1, 4, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '클래식한 디자인과 최고의 실용성을 겸비한 110cc 언더본 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 30, 'resources/images/bikes/classic_cub.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (31, 1, 4, 'CBR500R', 471, 2022, 'Grand Prix Red', 100000, 0, 'AVAILABLE', '스포티한 레이싱 룩과 일상 주행의 편안함을 모두 잡은 미들급 스포츠 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 31, 'resources/images/bikes/sports_cbr500r.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (32, 2, 4, 'MT-03', 321, 2023, 'Midnight Black', 85000, 0, 'AVAILABLE', '날렵하고 다이내믹한 주행성능을 선사하는 쿼터급 대표 네이키드 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 32, 'resources/images/bikes/naked_mt03.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (33, 1, 4, 'ADV350', 330, 2023, 'Spangle Silver Metallic', 90000, 0, 'AVAILABLE', '스마트한 주행 성능과 모험 심리를 자극하는 350cc 어드벤처 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 33, 'resources/images/bikes/scooter_adv350.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (34, 1, 4, 'C125', 125, 2023, 'Niltava Blue', 40000, 0, 'AVAILABLE', '초대 슈퍼커브의 오리지널 헤리티지를 계승한 프리미엄 125cc 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 34, 'resources/images/bikes/classic_c125.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (35, 3, 4, 'R nineT', 1170, 2022, 'Black Storm Metallic', 200000, 0, 'AVAILABLE', '클래식한 룩과 강력한 박서 엔진의 매력을 선사하는 프리미엄 로드스터입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (30, 4, 4, 'Iron 883', 883, 2021, 'Matte Black', 150000, 0, 'AVAILABLE', '클래식한 아메리칸 감성과 묵직한 고동감이 돋보이는 대표적인 크루저 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 30, 'resources/images/bikes/cruiser_iron883.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (31, 5, 4, 'Primavera 125', 124, 2023, 'Mint Green', 60000, 0, 'AVAILABLE', '유려한 이탈리아 디자인과 감성적인 주행을 선사하는 클래식 스쿠터입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 31, 'resources/images/bikes/scooter_primavera.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (32, 3, 4, 'R 1250 GS', 1254, 2022, 'Triple Black', 200000, 0, 'AVAILABLE', '온로드와 오프로드를 가리지 않는 세계 최고 성능의 어드벤처 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 32, 'resources/images/bikes/adventure_r1250gs.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (33, 6, 4, 'Panigale V4', 1103, 2023, 'Ducati Red', 250000, 0, 'AVAILABLE', '모토GP 레이싱 기술이 그대로 녹아든 고성능 이탈리아 레이싱 머신입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 33, 'resources/images/bikes/sports_panigale.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (34, 1, 4, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '최고의 내구성과 실용성을 자랑하는 110cc 클래식 언더본 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 34, 'resources/images/bikes/classic_cub.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (35, 3, 4, 'R nineT', 1170, 2022, 'Black Storm Metallic', 180000, 0, 'AVAILABLE', '클래식한 로드스터 감성과 수평대향 박서 엔진을 탑재한 프리미엄 바이크입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 35, 'resources/images/bikes/naked_rninet.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (36, 2, 4, 'YZF-R1', 998, 2023, 'Yamaha Black', 250000, 0, 'AVAILABLE', '야마하의 레이싱 기술이 총집약된 플래그십 리터급 슈퍼스포츠 머신입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (36, 2, 4, 'YZF-R1', 998, 2023, 'Yamaha Black', 220000, 0, 'AVAILABLE', '야마하의 정교한 4기통 크로스플레인 엔진이 탑재된 플래그십 스포츠 모델입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 36, 'resources/images/bikes/sports_r1.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (37, 1, 5, 'PCX 125', 125, 2023, 'Pearl White', 45000, 0, 'AVAILABLE', '도심 주행의 최강자이자 연비와 내구성 모두를 만족시키는 125cc 스쿠터입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 37, 'resources/images/bikes/scooter_pcx.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (38, 2, 5, 'YZF-R3', 321, 2022, 'Icon Blue', 80000, 0, 'AVAILABLE', '입문용 쿼터급 최고의 스포츠 바이크입니다. 가볍고 민첩한 핸들링이 돋보입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 38, 'resources/images/bikes/sports_r3.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (39, 1, 5, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '클래식한 디자인과 최고의 실용성을 겸비한 110cc 언더본 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 39, 'resources/images/bikes/classic_cub.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (40, 1, 5, 'CBR500R', 471, 2022, 'Grand Prix Red', 100000, 0, 'AVAILABLE', '스포티한 레이싱 룩과 일상 주행의 편안함을 모두 잡은 미들급 스포츠 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 40, 'resources/images/bikes/sports_cbr500r.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (41, 2, 5, 'MT-03', 321, 2023, 'Midnight Black', 85000, 0, 'AVAILABLE', '날렵하고 다이내믹한 주행성능을 선사하는 쿼터급 대표 네이키드 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 41, 'resources/images/bikes/naked_mt03.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (42, 1, 5, 'ADV350', 330, 2023, 'Spangle Silver Metallic', 90000, 0, 'AVAILABLE', '스마트한 주행 성능과 모험 심리를 자극하는 350cc 어드벤처 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 42, 'resources/images/bikes/scooter_adv350.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (43, 1, 5, 'C125', 125, 2023, 'Niltava Blue', 40000, 0, 'AVAILABLE', '초대 슈퍼커브의 오리지널 헤리티지를 계승한 프리미엄 125cc 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 43, 'resources/images/bikes/classic_c125.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (44, 3, 5, 'R nineT', 1170, 2022, 'Black Storm Metallic', 200000, 0, 'AVAILABLE', '클래식한 룩과 강력한 박서 엔진의 매력을 선사하는 프리미엄 로드스터입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (39, 4, 5, 'Iron 883', 883, 2021, 'Matte Black', 150000, 0, 'AVAILABLE', '클래식한 아메리칸 감성과 묵직한 고동감이 돋보이는 대표적인 크루저 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 39, 'resources/images/bikes/cruiser_iron883.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (40, 5, 5, 'Primavera 125', 124, 2023, 'Mint Green', 60000, 0, 'AVAILABLE', '유려한 이탈리아 디자인과 감성적인 주행을 선사하는 클래식 스쿠터입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 40, 'resources/images/bikes/scooter_primavera.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (41, 3, 5, 'R 1250 GS', 1254, 2022, 'Triple Black', 200000, 0, 'AVAILABLE', '온로드와 오프로드를 가리지 않는 세계 최고 성능의 어드벤처 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 41, 'resources/images/bikes/adventure_r1250gs.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (42, 6, 5, 'Panigale V4', 1103, 2023, 'Ducati Red', 250000, 0, 'AVAILABLE', '모토GP 레이싱 기술이 그대로 녹아든 고성능 이탈리아 레이싱 머신입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 42, 'resources/images/bikes/sports_panigale.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (43, 1, 5, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '최고의 내구성과 실용성을 자랑하는 110cc 클래식 언더본 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 43, 'resources/images/bikes/classic_cub.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (44, 3, 5, 'R nineT', 1170, 2022, 'Black Storm Metallic', 180000, 0, 'AVAILABLE', '클래식한 로드스터 감성과 수평대향 박서 엔진을 탑재한 프리미엄 바이크입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 44, 'resources/images/bikes/naked_rninet.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (45, 2, 5, 'YZF-R1', 998, 2023, 'Yamaha Black', 250000, 0, 'AVAILABLE', '야마하의 레이싱 기술이 총집약된 플래그십 리터급 슈퍼스포츠 머신입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (45, 2, 5, 'YZF-R1', 998, 2023, 'Yamaha Black', 220000, 0, 'AVAILABLE', '야마하의 정교한 4기통 크로스플레인 엔진이 탑재된 플래그십 스포츠 모델입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 45, 'resources/images/bikes/sports_r1.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (46, 1, 6, 'PCX 125', 125, 2023, 'Pearl White', 45000, 0, 'AVAILABLE', '도심 주행의 최강자이자 연비와 내구성 모두를 만족시키는 125cc 스쿠터입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 46, 'resources/images/bikes/scooter_pcx.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (47, 2, 6, 'YZF-R3', 321, 2022, 'Icon Blue', 80000, 0, 'AVAILABLE', '입문용 쿼터급 최고의 스포츠 바이크입니다. 가볍고 민첩한 핸들링이 돋보입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 47, 'resources/images/bikes/sports_r3.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (48, 1, 6, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '클래식한 디자인과 최고의 실용성을 겸비한 110cc 언더본 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 48, 'resources/images/bikes/classic_cub.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (49, 1, 6, 'CBR500R', 471, 2022, 'Grand Prix Red', 100000, 0, 'AVAILABLE', '스포티한 레이싱 룩과 일상 주행의 편안함을 모두 잡은 미들급 스포츠 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 49, 'resources/images/bikes/sports_cbr500r.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (50, 2, 6, 'MT-03', 321, 2023, 'Midnight Black', 85000, 0, 'AVAILABLE', '날렵하고 다이내믹한 주행성능을 선사하는 쿼터급 대표 네이키드 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 50, 'resources/images/bikes/naked_mt03.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (51, 1, 6, 'ADV350', 330, 2023, 'Spangle Silver Metallic', 90000, 0, 'AVAILABLE', '스마트한 주행 성능과 모험 심리를 자극하는 350cc 어드벤처 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 51, 'resources/images/bikes/scooter_adv350.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (52, 1, 6, 'C125', 125, 2023, 'Niltava Blue', 40000, 0, 'AVAILABLE', '초대 슈퍼커브의 오리지널 헤리티지를 계승한 프리미엄 125cc 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 52, 'resources/images/bikes/classic_c125.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (53, 3, 6, 'R nineT', 1170, 2022, 'Black Storm Metallic', 200000, 0, 'AVAILABLE', '클래식한 룩과 강력한 박서 엔진의 매력을 선사하는 프리미엄 로드스터입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (48, 4, 6, 'Iron 883', 883, 2021, 'Matte Black', 150000, 0, 'AVAILABLE', '클래식한 아메리칸 감성과 묵직한 고동감이 돋보이는 대표적인 크루저 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 48, 'resources/images/bikes/cruiser_iron883.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (49, 5, 6, 'Primavera 125', 124, 2023, 'Mint Green', 60000, 0, 'AVAILABLE', '유려한 이탈리아 디자인과 감성적인 주행을 선사하는 클래식 스쿠터입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 49, 'resources/images/bikes/scooter_primavera.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (50, 3, 6, 'R 1250 GS', 1254, 2022, 'Triple Black', 200000, 0, 'AVAILABLE', '온로드와 오프로드를 가리지 않는 세계 최고 성능의 어드벤처 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 50, 'resources/images/bikes/adventure_r1250gs.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (51, 6, 6, 'Panigale V4', 1103, 2023, 'Ducati Red', 250000, 0, 'AVAILABLE', '모토GP 레이싱 기술이 그대로 녹아든 고성능 이탈리아 레이싱 머신입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 51, 'resources/images/bikes/sports_panigale.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (52, 1, 6, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '최고의 내구성과 실용성을 자랑하는 110cc 클래식 언더본 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 52, 'resources/images/bikes/classic_cub.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (53, 3, 6, 'R nineT', 1170, 2022, 'Black Storm Metallic', 180000, 0, 'AVAILABLE', '클래식한 로드스터 감성과 수평대향 박서 엔진을 탑재한 프리미엄 바이크입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 53, 'resources/images/bikes/naked_rninet.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (54, 2, 6, 'YZF-R1', 998, 2023, 'Yamaha Black', 250000, 0, 'AVAILABLE', '야마하의 레이싱 기술이 총집약된 플래그십 리터급 슈퍼스포츠 머신입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (54, 2, 6, 'YZF-R1', 998, 2023, 'Yamaha Black', 220000, 0, 'AVAILABLE', '야마하의 정교한 4기통 크로스플레인 엔진이 탑재된 플래그십 스포츠 모델입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 54, 'resources/images/bikes/sports_r1.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (55, 1, 7, 'PCX 125', 125, 2023, 'Pearl White', 45000, 0, 'AVAILABLE', '도심 주행의 최강자이자 연비와 내구성 모두를 만족시키는 125cc 스쿠터입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 55, 'resources/images/bikes/scooter_pcx.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (56, 2, 7, 'YZF-R3', 321, 2022, 'Icon Blue', 80000, 0, 'AVAILABLE', '입문용 쿼터급 최고의 스포츠 바이크입니다. 가볍고 민첩한 핸들링이 돋보입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 56, 'resources/images/bikes/sports_r3.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (57, 1, 7, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '클래식한 디자인과 최고의 실용성을 겸비한 110cc 언더본 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 57, 'resources/images/bikes/classic_cub.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (58, 1, 7, 'CBR500R', 471, 2022, 'Grand Prix Red', 100000, 0, 'AVAILABLE', '스포티한 레이싱 룩과 일상 주행의 편안함을 모두 잡은 미들급 스포츠 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 58, 'resources/images/bikes/sports_cbr500r.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (59, 2, 7, 'MT-03', 321, 2023, 'Midnight Black', 85000, 0, 'AVAILABLE', '날렵하고 다이내믹한 주행성능을 선사하는 쿼터급 대표 네이키드 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 59, 'resources/images/bikes/naked_mt03.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (60, 1, 7, 'ADV350', 330, 2023, 'Spangle Silver Metallic', 90000, 0, 'AVAILABLE', '스마트한 주행 성능과 모험 심리를 자극하는 350cc 어드벤처 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 60, 'resources/images/bikes/scooter_adv350.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (61, 1, 7, 'C125', 125, 2023, 'Niltava Blue', 40000, 0, 'AVAILABLE', '초대 슈퍼커브의 오리지널 헤리티지를 계승한 프리미엄 125cc 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 61, 'resources/images/bikes/classic_c125.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (62, 3, 7, 'R nineT', 1170, 2022, 'Black Storm Metallic', 200000, 0, 'AVAILABLE', '클래식한 룩과 강력한 박서 엔진의 매력을 선사하는 프리미엄 로드스터입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (57, 4, 7, 'Iron 883', 883, 2021, 'Matte Black', 150000, 0, 'AVAILABLE', '클래식한 아메리칸 감성과 묵직한 고동감이 돋보이는 대표적인 크루저 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 57, 'resources/images/bikes/cruiser_iron883.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (58, 5, 7, 'Primavera 125', 124, 2023, 'Mint Green', 60000, 0, 'AVAILABLE', '유려한 이탈리아 디자인과 감성적인 주행을 선사하는 클래식 스쿠터입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 58, 'resources/images/bikes/scooter_primavera.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (59, 3, 7, 'R 1250 GS', 1254, 2022, 'Triple Black', 200000, 0, 'AVAILABLE', '온로드와 오프로드를 가리지 않는 세계 최고 성능의 어드벤처 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 59, 'resources/images/bikes/adventure_r1250gs.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (60, 6, 7, 'Panigale V4', 1103, 2023, 'Ducati Red', 250000, 0, 'AVAILABLE', '모토GP 레이싱 기술이 그대로 녹아든 고성능 이탈리아 레이싱 머신입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 60, 'resources/images/bikes/sports_panigale.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (61, 1, 7, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '최고의 내구성과 실용성을 자랑하는 110cc 클래식 언더본 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 61, 'resources/images/bikes/classic_cub.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (62, 3, 7, 'R nineT', 1170, 2022, 'Black Storm Metallic', 180000, 0, 'AVAILABLE', '클래식한 로드스터 감성과 수평대향 박서 엔진을 탑재한 프리미엄 바이크입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 62, 'resources/images/bikes/naked_rninet.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (63, 2, 7, 'YZF-R1', 998, 2023, 'Yamaha Black', 250000, 0, 'AVAILABLE', '야마하의 레이싱 기술이 총집약된 플래그십 리터급 슈퍼스포츠 머신입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (63, 2, 7, 'YZF-R1', 998, 2023, 'Yamaha Black', 220000, 0, 'AVAILABLE', '야마하의 정교한 4기통 크로스플레인 엔진이 탑재된 플래그십 스포츠 모델입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 63, 'resources/images/bikes/sports_r1.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (64, 1, 8, 'PCX 125', 125, 2023, 'Pearl White', 45000, 0, 'AVAILABLE', '도심 주행의 최강자이자 연비와 내구성 모두를 만족시키는 125cc 스쿠터입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 64, 'resources/images/bikes/scooter_pcx.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (65, 2, 8, 'YZF-R3', 321, 2022, 'Icon Blue', 80000, 0, 'AVAILABLE', '입문용 쿼터급 최고의 스포츠 바이크입니다. 가볍고 민첩한 핸들링이 돋보입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 65, 'resources/images/bikes/sports_r3.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (66, 1, 8, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '클래식한 디자인과 최고의 실용성을 겸비한 110cc 언더본 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 66, 'resources/images/bikes/classic_cub.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (67, 1, 8, 'CBR500R', 471, 2022, 'Grand Prix Red', 100000, 0, 'AVAILABLE', '스포티한 레이싱 룩과 일상 주행의 편안함을 모두 잡은 미들급 스포츠 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 67, 'resources/images/bikes/sports_cbr500r.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (68, 2, 8, 'MT-03', 321, 2023, 'Midnight Black', 85000, 0, 'AVAILABLE', '날렵하고 다이내믹한 주행성능을 선사하는 쿼터급 대표 네이키드 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 68, 'resources/images/bikes/naked_mt03.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (69, 1, 8, 'ADV350', 330, 2023, 'Spangle Silver Metallic', 90000, 0, 'AVAILABLE', '스마트한 주행 성능과 모험 심리를 자극하는 350cc 어드벤처 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 69, 'resources/images/bikes/scooter_adv350.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (70, 1, 8, 'C125', 125, 2023, 'Niltava Blue', 40000, 0, 'AVAILABLE', '초대 슈퍼커브의 오리지널 헤리티지를 계승한 프리미엄 125cc 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 70, 'resources/images/bikes/classic_c125.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (71, 3, 8, 'R nineT', 1170, 2022, 'Black Storm Metallic', 200000, 0, 'AVAILABLE', '클래식한 룩과 강력한 박서 엔진의 매력을 선사하는 프리미엄 로드스터입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (66, 4, 8, 'Iron 883', 883, 2021, 'Matte Black', 150000, 0, 'AVAILABLE', '클래식한 아메리칸 감성과 묵직한 고동감이 돋보이는 대표적인 크루저 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 66, 'resources/images/bikes/cruiser_iron883.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (67, 5, 8, 'Primavera 125', 124, 2023, 'Mint Green', 60000, 0, 'AVAILABLE', '유려한 이탈리아 디자인과 감성적인 주행을 선사하는 클래식 스쿠터입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 67, 'resources/images/bikes/scooter_primavera.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (68, 3, 8, 'R 1250 GS', 1254, 2022, 'Triple Black', 200000, 0, 'AVAILABLE', '온로드와 오프로드를 가리지 않는 세계 최고 성능의 어드벤처 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 68, 'resources/images/bikes/adventure_r1250gs.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (69, 6, 8, 'Panigale V4', 1103, 2023, 'Ducati Red', 250000, 0, 'AVAILABLE', '모토GP 레이싱 기술이 그대로 녹아든 고성능 이탈리아 레이싱 머신입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 69, 'resources/images/bikes/sports_panigale.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (70, 1, 8, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '최고의 내구성과 실용성을 자랑하는 110cc 클래식 언더본 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 70, 'resources/images/bikes/classic_cub.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (71, 3, 8, 'R nineT', 1170, 2022, 'Black Storm Metallic', 180000, 0, 'AVAILABLE', '클래식한 로드스터 감성과 수평대향 박서 엔진을 탑재한 프리미엄 바이크입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 71, 'resources/images/bikes/naked_rninet.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (72, 2, 8, 'YZF-R1', 998, 2023, 'Yamaha Black', 250000, 0, 'AVAILABLE', '야마하의 레이싱 기술이 총집약된 플래그십 리터급 슈퍼스포츠 머신입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (72, 2, 8, 'YZF-R1', 998, 2023, 'Yamaha Black', 220000, 0, 'AVAILABLE', '야마하의 정교한 4기통 크로스플레인 엔진이 탑재된 플래그십 스포츠 모델입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 72, 'resources/images/bikes/sports_r1.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (73, 1, 9, 'PCX 125', 125, 2023, 'Pearl White', 45000, 0, 'AVAILABLE', '도심 주행의 최강자이자 연비와 내구성 모두를 만족시키는 125cc 스쿠터입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 73, 'resources/images/bikes/scooter_pcx.png', 'Y');
 INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (74, 2, 9, 'YZF-R3', 321, 2022, 'Icon Blue', 80000, 0, 'AVAILABLE', '입문용 쿼터급 최고의 스포츠 바이크입니다. 가볍고 민첩한 핸들링이 돋보입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 74, 'resources/images/bikes/sports_r3.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (75, 1, 9, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '클래식한 디자인과 최고의 실용성을 겸비한 110cc 언더본 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 75, 'resources/images/bikes/classic_cub.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (76, 1, 9, 'CBR500R', 471, 2022, 'Grand Prix Red', 100000, 0, 'AVAILABLE', '스포티한 레이싱 룩과 일상 주행의 편안함을 모두 잡은 미들급 스포츠 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 76, 'resources/images/bikes/sports_cbr500r.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (77, 2, 9, 'MT-03', 321, 2023, 'Midnight Black', 85000, 0, 'AVAILABLE', '날렵하고 다이내믹한 주행성능을 선사하는 쿼터급 대표 네이키드 바이크입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 77, 'resources/images/bikes/naked_mt03.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (78, 1, 9, 'ADV350', 330, 2023, 'Spangle Silver Metallic', 90000, 0, 'AVAILABLE', '스마트한 주행 성능과 모험 심리를 자극하는 350cc 어드벤처 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 78, 'resources/images/bikes/scooter_adv350.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (79, 1, 9, 'C125', 125, 2023, 'Niltava Blue', 40000, 0, 'AVAILABLE', '초대 슈퍼커브의 오리지널 헤리티지를 계승한 프리미엄 125cc 스쿠터입니다.');
-INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 79, 'resources/images/bikes/classic_c125.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (80, 3, 9, 'R nineT', 1170, 2022, 'Black Storm Metallic', 200000, 0, 'AVAILABLE', '클래식한 룩과 강력한 박서 엔진의 매력을 선사하는 프리미엄 로드스터입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (75, 4, 9, 'Iron 883', 883, 2021, 'Matte Black', 150000, 0, 'AVAILABLE', '클래식한 아메리칸 감성과 묵직한 고동감이 돋보이는 대표적인 크루저 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 75, 'resources/images/bikes/cruiser_iron883.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (76, 5, 9, 'Primavera 125', 124, 2023, 'Mint Green', 60000, 0, 'AVAILABLE', '유려한 이탈리아 디자인과 감성적인 주행을 선사하는 클래식 스쿠터입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 76, 'resources/images/bikes/scooter_primavera.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (77, 3, 9, 'R 1250 GS', 1254, 2022, 'Triple Black', 200000, 0, 'AVAILABLE', '온로드와 오프로드를 가리지 않는 세계 최고 성능의 어드벤처 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 77, 'resources/images/bikes/adventure_r1250gs.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (78, 6, 9, 'Panigale V4', 1103, 2023, 'Ducati Red', 250000, 0, 'AVAILABLE', '모토GP 레이싱 기술이 그대로 녹아든 고성능 이탈리아 레이싱 머신입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 78, 'resources/images/bikes/sports_panigale.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (79, 1, 9, 'Super Cub 110', 109, 2023, 'Classic Yellow', 35000, 0, 'AVAILABLE', '최고의 내구성과 실용성을 자랑하는 110cc 클래식 언더본 바이크입니다.');
+INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 79, 'resources/images/bikes/classic_cub.png', 'Y');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (80, 3, 9, 'R nineT', 1170, 2022, 'Black Storm Metallic', 180000, 0, 'AVAILABLE', '클래식한 로드스터 감성과 수평대향 박서 엔진을 탑재한 프리미엄 바이크입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 80, 'resources/images/bikes/naked_rninet.png', 'Y');
-INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (81, 2, 9, 'YZF-R1', 998, 2023, 'Yamaha Black', 250000, 0, 'AVAILABLE', '야마하의 레이싱 기술이 총집약된 플래그십 리터급 슈퍼스포츠 머신입니다.');
+INSERT INTO motorcycles (bike_id, brand_id, shop_id, model_name, cc, year, color, daily_price, mileage, status, description) VALUES (81, 2, 9, 'YZF-R1', 998, 2023, 'Yamaha Black', 220000, 0, 'AVAILABLE', '야마하의 정교한 4기통 크로스플레인 엔진이 탑재된 플래그십 스포츠 모델입니다.');
 INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq_bike_images.NEXTVAL, 81, 'resources/images/bikes/sports_r1.png', 'Y');
-
 
 -- 4-6. 옵션 장비 등록
 INSERT INTO option_items (option_id, option_name, stock_quantity, daily_price, image_filename, status)

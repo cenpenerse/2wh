@@ -12,6 +12,7 @@ public class BoardDto {
     private String boardType; // FREE, REVIEW, NOTICE
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private String filename;
 
     // 조인용 확장 속성
     private String memberNickname;
@@ -96,4 +97,13 @@ public class BoardDto {
     public void setMemberNickname(String memberNickname) {
         this.memberNickname = memberNickname;
     }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
 }
+

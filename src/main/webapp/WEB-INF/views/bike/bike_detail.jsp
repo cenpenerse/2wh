@@ -182,7 +182,7 @@
                     <label style="display: block; margin-bottom: 5px; color: #ccc;">인수 지점 선택</label>
                     <select name="pickupShopId" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff;" required>
                         <c:forEach var="shop" items="${shopList}">
-                            <option value="${shop.shopId}" ${shop.shopId == bike.shopId ? 'selected' : ''}>${shop.shopName}</option>
+                            <option value="${shop.shopId}" ${shop.shopId == selectedShopId or (empty selectedShopId and shop.shopId == bike.shopId) ? 'selected' : ''}>${shop.shopName}</option>
                         </c:forEach>
                     </select>
                 </div>
@@ -190,7 +190,7 @@
                     <label style="display: block; margin-bottom: 5px; color: #ccc;">반납 지점 선택</label>
                     <select name="dropoffShopId" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff;" required>
                         <c:forEach var="shop" items="${shopList}">
-                            <option value="${shop.shopId}" ${shop.shopId == bike.shopId ? 'selected' : ''}>${shop.shopName}</option>
+                            <option value="${shop.shopId}" ${shop.shopId == selectedShopId or (empty selectedShopId and shop.shopId == bike.shopId) ? 'selected' : ''}>${shop.shopName}</option>
                         </c:forEach>
                     </select>
                 </div>

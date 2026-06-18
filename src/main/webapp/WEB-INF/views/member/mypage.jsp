@@ -149,10 +149,14 @@
                 <button class="tab-btn" onclick="openTab(event, 'tab-admin-inquiries')">💬 1:1 문의 답변 관리</button>
                 <button class="tab-btn" onclick="openTab(event, 'tab-admin-coupons')">🎫 쿠폰 발급</button>
                 <button class="tab-btn" onclick="openTab(event, 'tab-admin-penalties')">💸 패널티 및 벌금 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-license')">🪪 면허 검증 심사</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-maintenance')">🔧 차량 정비 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-fuel')">⛽ 반납/주유 기록</button>
             </c:when>
             <c:otherwise>
                 <button class="tab-btn active" onclick="openTab(event, 'tab-user-bookings')">🏍️ 내 예약 내역</button>
                 <button class="tab-btn" onclick="openTab(event, 'tab-user-coupons')">🎫 쿠폰 보관함</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-license')">🪪 면허증 관리</button>
                 <button class="tab-btn" onclick="openTab(event, 'tab-user-inquiries')">💬 1:1 문의 내역</button>
                 <button class="tab-btn" onclick="openTab(event, 'tab-user-edit')">👤 내 정보 수정</button>
             </c:otherwise>
@@ -371,6 +375,7 @@
                                         <thead>
                                             <tr>
                                                 <th>ID</th>
+                                                <th>이미지</th>
                                                 <th>지점명</th>
                                                 <th>연락처 / 주소</th>
                                                 <th>동작</th>
@@ -380,6 +385,23 @@
                                             <c:forEach var="sh" items="${adminShopList}">
                                                 <tr>
                                                     <td>${sh.shopId}</td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty sh.imageFilename}">
+                                                                <div style="position: relative; width: 80px; height: 50px; overflow: hidden; border-radius: 4px; border: 1px solid #333; margin-bottom: 5px;">
+                                                                    <img src="${pageContext.request.contextPath}/resources/images/shops/${sh.imageFilename}" style="width: 100%; height: 100%; object-fit: cover;">
+                                                                </div>
+                                                                <a href="${pageContext.request.contextPath}/adminShopImageDeleteAction.do?shopId=${sh.shopId}" class="btn-sm btn-reject" style="display: inline-block; padding: 2px 6px; font-size: 0.7rem; line-height: 1; text-decoration: none;" onclick="return confirm('지점 이미지를 삭제하시겠습니까?');">이미지 삭제</a>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <form action="${pageContext.request.contextPath}/adminShopImageUploadAction.do" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 4px;">
+                                                                    <input type="hidden" name="shopId" value="${sh.shopId}">
+                                                                    <input type="file" name="shopImage" accept="image/*" style="font-size: 0.7rem; width: 120px; color: #aaa;" required>
+                                                                    <button type="submit" class="btn-sm btn-action-main" style="padding: 2px 6px; font-size: 0.7rem; background: #2563eb; width: fit-content; border: none; border-radius: 4px;">업로드</button>
+                                                                </form>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
                                                     <td><strong>${sh.shopName}</strong></td>
                                                     <td>
                                                         <span class="sub-text">${sh.tel}</span><br>
@@ -396,7 +418,7 @@
                             </div>
                             <div>
                                 <h5 style="margin-bottom:10px;">신규 지점 추가</h5>
-                                <form action="${pageContext.request.contextPath}/adminShopAddAction.do" method="post">
+                                <form action="${pageContext.request.contextPath}/adminShopAddAction.do" method="post" enctype="multipart/form-data">
                                     <div class="form-group" style="margin-bottom:10px;">
                                         <label style="font-size:0.85rem; color:#aaa;">지점명</label>
                                         <input type="text" name="shopName" required placeholder="예: 대구 중앙점" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
@@ -411,6 +433,10 @@
                                     <div class="form-group" style="margin-bottom:10px;">
                                         <label style="font-size:0.85rem; color:#aaa;">지점 주소</label>
                                         <input type="text" name="address" required placeholder="대구광역시 중구 달구벌대로 123" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom:10px;">
+                                        <label style="font-size:0.85rem; color:#aaa;">지점 이미지 첨부</label>
+                                        <input type="file" name="shopImage" accept="image/*" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
                                     </div>
                                     <div style="display:flex; gap:10px; margin-bottom:10px;">
                                         <div style="flex:1;">
@@ -717,6 +743,293 @@
                                     </form>
                                 </div>
                             </div>
+                    </div>
+                </div>
+
+                <!-- ================= [관리자] 탭 7: 면허 검증 심사 ================= -->
+                <div id="tab-admin-license" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🪪 면허 검증 심사 관리</h3>
+                        <div class="table-wrapper">
+                            <table class="mypage-table">
+                                <thead>
+                                    <tr>
+                                        <th>심사번호</th>
+                                        <th>신청인 정보</th>
+                                        <th>면허 종류</th>
+                                        <th>면허증 사진</th>
+                                        <th>심사 상태</th>
+                                        <th>반려 사유</th>
+                                        <th>처리 일시 / 담당자</th>
+                                        <th>심사 관리</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty adminLicenseAuditList}">
+                                            <c:forEach var="audit" items="${adminLicenseAuditList}">
+                                                <tr>
+                                                    <td>#${audit.auditId}</td>
+                                                    <td>
+                                                        <strong>${audit.userNickname}</strong><br>
+                                                        <span style="font-size:0.75rem; color:#888;">${audit.userEmail}</span>
+                                                    </td>
+                                                    <td><span style="padding: 2px 6px; background: #222; border-radius: 4px; font-weight: bold; color:#fff;">${audit.licenseType}</span></td>
+                                                    <td>
+                                                        <c:if test="${not empty audit.licenseImage}">
+                                                            <a href="${pageContext.request.contextPath}/${audit.licenseImage}" target="_blank">
+                                                                <img src="${pageContext.request.contextPath}/${audit.licenseImage}" alt="면허증" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #444; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1.0)'"/>
+                                                            </a>
+                                                        </c:if>
+                                                        <c:if test="${empty audit.licenseImage}">-</c:if>
+                                                    </td>
+                                                    <td>
+                                                        <span class="status-badge" style="padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; 
+                                                            background: ${audit.status eq 'APPROVED' ? '#10b981' : (audit.status eq 'REJECTED' ? '#ef4444' : '#f59e0b')}; color: #fff;">
+                                                            <c:choose>
+                                                                <c:when test="${audit.status eq 'APPROVED'}">승인 완료</c:when>
+                                                                <c:when test="${audit.status eq 'REJECTED'}">반려됨</c:when>
+                                                                <c:otherwise>대기 중</c:otherwise>
+                                                            </c:choose>
+                                                        </span>
+                                                    </td>
+                                                    <td style="color:#aaa;">${empty audit.rejectReason ? '-' : audit.rejectReason}</td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty audit.auditDate}">
+                                                                <span style="font-size:0.8rem;"><fmt:formatDate value="${audit.auditDate}" pattern="yyyy-MM-dd HH:mm"/></span><br>
+                                                                <span style="font-size:0.75rem; color:#888;">담당: ${audit.adminNickname} (${audit.adminEmail})</span>
+                                                            </c:when>
+                                                            <c:otherwise>-</c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>
+                                                        <c:if test="${audit.status eq 'PENDING'}">
+                                                            <button onclick="approveLicense(${audit.auditId})" class="btn-sm" style="padding: 4px 8px; border:none; border-radius: 4px; background: #10b981; color: #fff; font-weight:bold; cursor:pointer; margin-right:5px;">승인</button>
+                                                            <button onclick="rejectLicense(${audit.auditId})" class="btn-sm" style="padding: 4px 8px; border:none; border-radius: 4px; background: #ef4444; color: #fff; font-weight:bold; cursor:pointer;">반려</button>
+                                                        </c:if>
+                                                        <c:if test="${audit.status ne 'PENDING'}">
+                                                            <span style="color:#666;">처리 완료</span>
+                                                        </c:if>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="8" style="text-align: center; padding: 20px; color: #888;">대기 중이거나 심사 완료된 면허증 심사 내역이 없습니다.</td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= [관리자] 탭 8: 차량 정비 관리 ================= -->
+                <div id="tab-admin-maintenance" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🔧 차량 정비 이력 관리</h3>
+                        
+                        <div class="crud-section-grid">
+                            <!-- 정비 이력 테이블 -->
+                            <div>
+                                <h4 style="margin-bottom: 10px; color:#fff;">정비 이력 내역</h4>
+                                <div class="table-wrapper">
+                                    <table class="mypage-table" style="font-size: 0.85rem;">
+                                        <thead>
+                                            <tr>
+                                                <th>정비번호</th>
+                                                <th>바이크 모델</th>
+                                                <th>정비일자</th>
+                                                <th>정비종류</th>
+                                                <th>정비 내용</th>
+                                                <th>정비비용</th>
+                                                <th>정비소</th>
+                                                <th>차기 점검일</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <c:choose>
+                                                <c:when test="${not empty adminMaintenanceList}">
+                                                    <c:forEach var="maint" items="${adminMaintenanceList}">
+                                                        <tr>
+                                                            <td>#${maint.maintenanceId}</td>
+                                                            <td><strong>${maint.modelName}</strong></td>
+                                                            <td>${maint.maintenanceDate}</td>
+                                                            <td><span style="padding: 2px 6px; background: #222; border-radius: 4px; font-weight: bold; color: var(--primary-color);">${maint.maintenanceType}</span></td>
+                                                            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${maint.content}">${maint.content}</td>
+                                                            <td>₩<fmt:formatNumber value="${maint.cost}" pattern="#,###"/></td>
+                                                            <td>${maint.shopName}</td>
+                                                            <td>${empty maint.nextCheckDate ? '-' : maint.nextCheckDate}</td>
+                                                        </tr>
+                                                    </c:forEach>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <tr>
+                                                        <td colspan="8" style="text-align: center; padding: 20px; color: #888;">등록된 차량 정비 이력이 없습니다.</td>
+                                                    </tr>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- 신규 정비 등록 폼 -->
+                            <div>
+                                <h4 style="margin-bottom: 10px; color:#fff;">🔧 신규 정비 등록</h4>
+                                <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px;">
+                                    <form action="${pageContext.request.contextPath}/adminMaintenanceAddAction.do" method="post">
+                                        <div class="form-group" style="margin-bottom: 12px;">
+                                            <label style="font-size:0.85rem; color:#aaa;">바이크 모델 선택</label>
+                                            <select name="bikeId" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                                <option value="">--- 바이크를 선택하세요 ---</option>
+                                                <c:forEach var="bike" items="${adminBikeList}">
+                                                    <option value="${bike.bikeId}">${bike.modelName} (차량 ID: ${bike.bikeId})</option>
+                                                </c:forEach>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin-bottom: 12px;">
+                                            <label style="font-size:0.85rem; color:#aaa;">정비 일자</label>
+                                            <input type="date" name="maintenanceDate" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;"/>
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin-bottom: 12px;">
+                                            <label style="font-size:0.85rem; color:#aaa;">정비 종류</label>
+                                            <select name="maintenanceType" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                                <option value="정기점검">정기점검</option>
+                                                <option value="사고수리">사고수리</option>
+                                                <option value="소모품교체">소모품교체</option>
+                                                <option value="기타">기타</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin-bottom: 12px;">
+                                            <label style="font-size:0.85rem; color:#aaa;">정비 비용 (₩)</label>
+                                            <input type="number" name="cost" required placeholder="예: 35000" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;"/>
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin-bottom: 12px;">
+                                            <label style="font-size:0.85rem; color:#aaa;">정비소명</label>
+                                            <input type="text" name="shopName" required placeholder="예: 대구 바이크나라" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;"/>
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin-bottom: 12px;">
+                                            <label style="font-size:0.85rem; color:#aaa;">차기 점검 예정일 (선택)</label>
+                                            <input type="date" name="nextCheckDate" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;"/>
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin-bottom: 15px;">
+                                            <label style="font-size:0.85rem; color:#aaa;">정비 상세 내용</label>
+                                            <textarea name="content" required placeholder="예: 엔진오일 10W40 및 오일필터 신품 교환 진행" style="width:100%; height:60px; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff; resize:none;"></textarea>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-action-main" style="width:100%; padding:10px; font-weight:bold;">정비 기록 등록</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= [관리자] 탭 9: 반납/주유 기록 ================= -->
+                <div id="tab-admin-fuel" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">⛽ 반납 및 주유/배터리 충전 기록</h3>
+                        
+                        <div class="crud-section-grid">
+                            <!-- 반납 및 주유 로그 -->
+                            <div>
+                                <h4 style="margin-bottom: 10px; color:#fff;">반납 및 주유 로그</h4>
+                                <div class="table-wrapper">
+                                    <table class="mypage-table" style="font-size: 0.85rem;">
+                                        <thead>
+                                            <tr>
+                                                <th>로그번호</th>
+                                                <th>바이크 모델</th>
+                                                <th>예약 번호</th>
+                                                <th>반납자</th>
+                                                <th>반납 주유량</th>
+                                                <th>부과 패널티</th>
+                                                <th>반납 기록일</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <c:choose>
+                                                <c:when test="${not empty adminFuelLogList}">
+                                                    <c:forEach var="fuel" items="${adminFuelLogList}">
+                                                        <tr>
+                                                            <td>#${fuel.fuelLogId}</td>
+                                                            <td><strong>${fuel.modelName}</strong></td>
+                                                            <td>#${fuel.reservationId}</td>
+                                                            <td>
+                                                                <strong>${fuel.userNickname}</strong><br>
+                                                                <span style="font-size:0.75rem; color:#888;">${fuel.userEmail}</span>
+                                                            </td>
+                                                            <td>
+                                                                <span style="font-weight:bold; color: ${fuel.fuelLevel eq 100 ? '#10b981' : '#f59e0b'};">
+                                                                    ${fuel.fuelLevel}%
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <c:if test="${fuel.penaltyAmount > 0}">
+                                                                    <span style="color:#ef4444; font-weight:bold;">₩<fmt:formatNumber value="${fuel.penaltyAmount}" pattern="#,###"/></span>
+                                                                </c:if>
+                                                                <c:if test="${fuel.penaltyAmount eq 0}">
+                                                                    <span style="color:#666;">없음</span>
+                                                                </c:if>
+                                                            </td>
+                                                            <td><span style="font-size:0.8rem;"><fmt:formatDate value="${fuel.logDate}" pattern="yyyy-MM-dd HH:mm"/></span></td>
+                                                        </tr>
+                                                    </c:forEach>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <tr>
+                                                        <td colspan="7" style="text-align: center; padding: 20px; color: #888;">반납 및 주유/충전 로그가 없습니다.</td>
+                                                    </tr>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- 차량 반납 처리 폼 -->
+                            <div>
+                                <h4 style="margin-bottom: 10px; color:#fff;">🏍️ 차량 반납 및 주유 검사</h4>
+                                <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px;">
+                                    <form action="${pageContext.request.contextPath}/adminFuelLogAddAction.do" method="post">
+                                        <div class="form-group" style="margin-bottom: 12px;">
+                                            <label style="font-size:0.85rem; color:#aaa;">대여 중인 예약 선택</label>
+                                            <select name="reservationId" id="fuel-res-selector" onchange="calculateFuelPenalty()" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                                <option value="">--- 대여 중인 예약을 선택하세요 ---</option>
+                                                <c:forEach var="book" items="${bookingList}">
+                                                    <c:if test="${book.bookingStatus eq 'APPROVED'}">
+                                                        <option value="${book.bookingId}">${book.memberNickname} 님 - 예약 #${book.bookingId} (${book.bikeName})</option>
+                                                    </c:if>
+                                                </c:forEach>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin-bottom: 12px;">
+                                            <label style="font-size:0.85rem; color:#aaa;">반납 시 주유/배터리 잔량 (%)</label>
+                                            <input type="number" name="fuelLevel" id="fuel-level-input" min="0" max="100" required placeholder="0 ~ 100 입력" oninput="calculateFuelPenalty()" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;"/>
+                                        </div>
+                                        
+                                        <!-- 실시간 계산된 패널티 경고 표시 -->
+                                        <div id="fuel-penalty-calc-box" style="margin-bottom:15px; padding:12px; border-radius:6px; background:#1a1a1a; border:1px solid #333; font-size:0.85rem; display:none;">
+                                            <span style="color:#aaa;">부족 유량에 따른 벌금: </span>
+                                            <strong id="fuel-penalty-display" style="color:#ef4444;">₩0</strong>
+                                            <p style="font-size:0.75rem; color:#777; margin-top:4px;">* 100% 미만 주유 시 1%당 ₩1,000원의 패널티가 사용자에게 고지됩니다.</p>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-action-main" style="width:100%; padding:10px; font-weight:bold; background: #e50914;">반납 및 주유 등록 완료</button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -981,6 +1294,140 @@
                     </div>
                 </div>
 
+                <!-- ================= [사용자] 탭: 면허증 관리 ================= -->
+                <div id="tab-user-license" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222; max-width:800px;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🪪 내 운전면허증 관리</h3>
+                        
+                        <!-- 현재 면허 상태 카드 -->
+                        <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px; margin-bottom:20px; display:flex; align-items:center; gap:20px;">
+                            <div style="font-size:3rem;">🪪</div>
+                            <div>
+                                <h4 style="margin:0 0 5px 0; color:#fff;">면허 상태: 
+                                    <span style="color: ${loginUser.licenseStatus eq 'APPROVED' ? '#10b981' : (loginUser.licenseStatus eq 'REJECTED' ? '#ef4444' : '#f59e0b')}; font-weight:bold;">
+                                        <c:choose>
+                                            <c:when test="${loginUser.licenseStatus eq 'APPROVED'}">인증 승인 완료</c:when>
+                                            <c:when test="${loginUser.licenseStatus eq 'REJECTED'}">인증 반려됨</c:when>
+                                            <c:otherwise>승인 대기 중</c:otherwise>
+                                        </c:choose>
+                                    </span>
+                                </h4>
+                                <p style="margin:0; font-size:0.9rem; color:#aaa;">등록된 면허증 번호: ${empty loginUser.licenseNumber ? '없음' : loginUser.licenseNumber}</p>
+                            </div>
+                        </div>
+
+                        <!-- 반려 사유 및 안내 고지 -->
+                        <c:if test="${loginUser.licenseStatus eq 'REJECTED'}">
+                            <c:set var="latestRejectReason" value="면허 정보가 불명확하거나 누락되었습니다."/>
+                            <c:forEach var="audit" items="${userLicenseAuditList}">
+                                <c:if test="${audit.status eq 'REJECTED' and not empty audit.rejectReason}">
+                                    <c:set var="latestRejectReason" value="${audit.rejectReason}"/>
+                                </c:if>
+                            </c:forEach>
+                            <div style="background: rgba(229, 9, 20, 0.1); border: 1px solid #E50914; padding:15px; border-radius:6px; margin-bottom:20px; color:#ff3838; font-size:0.9rem;">
+                                <strong>⚠️ 면허 반려 사유:</strong> ${latestRejectReason}<br/>
+                                <span style="font-size:0.8rem; color:#ccc; margin-top:5px; display:block;">아래 폼을 이용하여 유효한 운전면허증 사진과 정보를 다시 제출해 주세요.</span>
+                            </div>
+                        </c:if>
+
+                        <c:if test="${loginUser.licenseStatus eq 'PENDING'}">
+                            <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding:15px; border-radius:6px; margin-bottom:20px; color:#f59e0b; font-size:0.9rem;">
+                                <strong>⏳ 심사가 대기 중입니다.</strong><br/>
+                                <span style="font-size:0.8rem; color:#ccc; margin-top:5px; display:block;">관리자가 업로드된 면허증을 확인하고 있습니다. 영업일 기준 보통 1~2시간 이내에 처리가 완료됩니다.</span>
+                            </div>
+                        </c:if>
+
+                        <!-- 면허증 신청/재신청 폼 -->
+                        <c:if test="${loginUser.licenseStatus ne 'APPROVED'}">
+                            <h4 style="margin-bottom:10px; color:#fff;">면허 검증 신청하기</h4>
+                            <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px; margin-bottom:30px;">
+                                <form action="${pageContext.request.contextPath}/userLicenseSubmitAction.do" method="post" enctype="multipart/form-data">
+                                    <div class="form-group" style="margin-bottom:12px;">
+                                        <label style="font-size:0.85rem; color:#aaa;">면허증 종류</label>
+                                        <select name="licenseType" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                            <option value="2종소형">2종 소형 면허 (125cc 초과 기종 탑재 필수)</option>
+                                            <option value="원동기">원동기 장치 자전거 면허 (125cc 이하 스쿠터 전용)</option>
+                                            <option value="1종대형">1종 대형 면허</option>
+                                            <option value="기타">기타 면허</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group" style="margin-bottom:12px;">
+                                        <label style="font-size:0.85rem; color:#aaa;">면허 번호</label>
+                                        <input type="text" name="licenseNumber" required placeholder="예: 11-12-345678-01" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;"/>
+                                    </div>
+
+                                    <div class="form-group" style="margin-bottom:15px;">
+                                        <label style="font-size:0.85rem; color:#aaa;">면허증 사진 첨부 (위조 여부 식별용)</label>
+                                        <input type="file" name="licenseImage" accept="image/*" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;"/>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-action-main" style="width:100%; padding:10px; font-weight:bold;">면허증 검증 심사 요청</button>
+                                </form>
+                            </div>
+                        </c:if>
+
+                        <!-- 심사 이력 목록 -->
+                        <h4 style="margin-bottom:10px; color:#fff;">면허 심사 이력</h4>
+                        <div class="table-wrapper">
+                            <table class="mypage-table" style="font-size:0.85rem;">
+                                <thead>
+                                    <tr>
+                                        <th>신청 ID</th>
+                                        <th>면허 종류</th>
+                                        <th>면허증 사진</th>
+                                        <th>심사 상태</th>
+                                        <th>반려 사유</th>
+                                        <th>심사 일시 / 담당자</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty userLicenseAuditList}">
+                                            <c:forEach var="audit" items="${userLicenseAuditList}">
+                                                <tr>
+                                                    <td>#${audit.auditId}</td>
+                                                    <td>${audit.licenseType}</td>
+                                                    <td>
+                                                        <c:if test="${not empty audit.licenseImage}">
+                                                            <a href="${pageContext.request.contextPath}/${audit.licenseImage}" target="_blank" style="color:var(--primary-color);">[이미지 보기]</a>
+                                                        </c:if>
+                                                        <c:if test="${empty audit.licenseImage}">-</c:if>
+                                                    </td>
+                                                    <td>
+                                                        <span style="font-weight:bold; color: ${audit.status eq 'APPROVED' ? '#10b981' : (audit.status eq 'REJECTED' ? '#ef4444' : '#f59e0b')};">
+                                                            <c:choose>
+                                                                <c:when test="${audit.status eq 'APPROVED'}">승인 완료</c:when>
+                                                                <c:when test="${audit.status eq 'REJECTED'}">반려됨</c:when>
+                                                                <c:otherwise>대기 중</c:otherwise>
+                                                            </c:choose>
+                                                        </span>
+                                                    </td>
+                                                    <td>${empty audit.rejectReason ? '-' : audit.rejectReason}</td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty audit.auditDate}">
+                                                                <fmt:formatDate value="${audit.auditDate}" pattern="yyyy-MM-dd HH:mm"/><br/>
+                                                                <span style="font-size:0.75rem; color:#777;">담당: ${audit.adminNickname}</span>
+                                                            </c:when>
+                                                            <c:otherwise>진행 중</c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="6" style="text-align: center; padding: 20px; color: #888;">제출된 심사 신청 내역이 없습니다.</td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ================= [사용자] 탭 4: 내 정보 수정 ================= -->
                 <div id="tab-user-edit" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222; max-width:550px;">
@@ -1142,5 +1589,53 @@
             err.style.display = 'none';
         }
         return true;
+    }
+
+    // 면허 심사 승인
+    function approveLicense(auditId) {
+        if (confirm("해당 면허 검증 신청을 승인하시겠습니까?\n승인 시 사용자의 면허 상태가 '승인 완료'로 즉시 변경됩니다.")) {
+            location.href = "${pageContext.request.contextPath}/adminLicenseAuditAction.do?auditId=" + auditId + "&status=APPROVED";
+        }
+    }
+
+    // 면허 심사 반려
+    function rejectLicense(auditId) {
+        let reason = prompt("반려 사유를 입력해 주세요:", "첨부된 면허증 사진이 흐릿하여 식별할 수 없습니다.");
+        if (reason === null) return; // 취소 버튼
+        if (reason.trim() === "") {
+            alert("반려 사유는 필수 입력 사항입니다.");
+            return;
+        }
+        location.href = "${pageContext.request.contextPath}/adminLicenseAuditAction.do?auditId=" + auditId + "&status=REJECTED&rejectReason=" + encodeURIComponent(reason);
+    }
+
+    // 반납 주유 패널티 실시간 계산
+    function calculateFuelPenalty() {
+        let levelInput = document.getElementById("fuel-level-input");
+        let calcBox = document.getElementById("fuel-penalty-calc-box");
+        let display = document.getElementById("fuel-penalty-display");
+        
+        if (!levelInput || !calcBox || !display) return;
+        
+        let val = levelInput.value;
+        if (val === "" || isNaN(val)) {
+            calcBox.style.display = "none";
+            return;
+        }
+        
+        let fuelLevel = parseInt(val);
+        if (fuelLevel < 0 || fuelLevel > 100) {
+            calcBox.style.display = "none";
+            return;
+        }
+        
+        if (fuelLevel < 100) {
+            let penalty = (100 - fuelLevel) * 1000;
+            display.innerText = "₩" + penalty.toLocaleString();
+            calcBox.style.display = "block";
+        } else {
+            display.innerText = "₩0 (패널티 없음)";
+            calcBox.style.display = "block";
+        }
     }
 </script>

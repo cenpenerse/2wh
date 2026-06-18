@@ -78,7 +78,7 @@
                                         <span class="stars">★</span> <strong>${bike.ratingAvg}</strong> (${bike.reviewCount} 리뷰)
                                     </div>
                                 </div>
-                                <a href="${pageContext.request.contextPath}/bikeDetail.do?bikeId=${bike.bikeId}" class="card-btn">상세 정보 및 예약</a>
+                                <a href="${pageContext.request.contextPath}/bikeDetail.do?bikeId=${bike.bikeId}&shopId=${selectedShopId}" class="card-btn">상세 정보 및 예약</a>
                             </div>
                         </c:forEach>
                     </c:when>

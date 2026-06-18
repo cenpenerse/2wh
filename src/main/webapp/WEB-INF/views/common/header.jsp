@@ -23,11 +23,11 @@
                 <li class="dropdown">
                     <a href="${pageContext.request.contextPath}/gearInfo.do">대여 장비</a>
                     <ul class="dropdown-menu">
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#helmet">⛑️ 헬멧</a></li>
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#intercom">🛜 인터콤</a></li>
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#topbox">📦 탑박스</a></li>
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#holder">📱 거치대</a></li>
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#protector">🛡️ 보호대</a></li>
+                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#helmet">헬멧</a></li>
+                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#intercom">인터콤</a></li>
+                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#topbox">탑박스</a></li>
+                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#holder">거치대</a></li>
+                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#protector">보호대</a></li>
                     </ul>
                 </li>
                 <li><a href="${pageContext.request.contextPath}/pricing.do">요금 안내</a></li>

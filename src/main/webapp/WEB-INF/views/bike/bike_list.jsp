@@ -15,21 +15,16 @@
             <div class="bike-list-container list-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px;">
                 <c:forEach var="shop" items="${shopList}">
                     <div class="bike-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 420px; background: rgba(30, 30, 48, 0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; transition: all 0.3s ease;">
-                        <div class="bike-image-wrapper" style="height: 180px; position: relative; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                            <div style="font-size: 4.5rem; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.35)); transition: transform 0.3s ease;">
-                                <c:choose>
-                                    <c:when test="${shop.shopId == 1}">🏛️</c:when>
-                                    <c:when test="${shop.shopId == 2}">🚄</c:when>
-                                    <c:when test="${shop.shopId == 3}">🏞️</c:when>
-                                    <c:when test="${shop.shopId == 4}">🎓</c:when>
-                                    <c:when test="${shop.shopId == 5}">🎪</c:when>
-                                    <c:when test="${shop.shopId == 6}">⛰️</c:when>
-                                    <c:when test="${shop.shopId == 7}">🛍️</c:when>
-                                    <c:when test="${shop.shopId == 8}">🚜</c:when>
-                                    <c:when test="${shop.shopId == 9}">🏫</c:when>
-                                    <c:otherwise>🏢</c:otherwise>
-                                </c:choose>
-                            </div>
+                        <div class="bike-image-wrapper" style="height: 180px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #121212;">
+                            <c:choose>
+                                <c:when test="${not empty shop.imageFilename}">
+                                    <img src="${pageContext.request.contextPath}/resources/images/shops/${shop.imageFilename}" alt="${shop.shopName}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${pageContext.request.contextPath}/resources/images/shops/shop_1.png" alt="${shop.shopName}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">
+                                </c:otherwise>
+                            </c:choose>
+                            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4));"></div>
                             <span class="badge" style="background: #10b981 !important; color: #fff !important; position: absolute; top: 15px; right: 15px; font-weight: 600; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem;">영업 중</span>
                         </div>
                         <div class="bike-info" style="padding: 24px; flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start;">
@@ -68,8 +63,8 @@
         box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
         border-color: rgba(96, 165, 250, 0.3) !important;
     }
-    .bike-card:hover .bike-image-wrapper div {
-        transform: scale(1.15);
+    .bike-card:hover .bike-image-wrapper img {
+        transform: scale(1.1);
     }
 </style>
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

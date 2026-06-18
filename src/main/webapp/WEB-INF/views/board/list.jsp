@@ -45,6 +45,9 @@
                                     <a href="${pageContext.request.contextPath}/boardDetail.do?postId=${post.postId}">
                                         ${post.title}
                                     </a>
+                                    <c:if test="${not empty post.filename}">
+                                        <span style="color: #60a5fa; font-size: 0.95rem; margin-left: 6px;" title="첨부파일 있음">📎</span>
+                                    </c:if>
                                 </td>
                                 <td><strong>${post.memberNickname}</strong></td>
                                 <td><fmt:formatDate value="${post.createdAt}" pattern="yyyy-MM-dd"/></td>

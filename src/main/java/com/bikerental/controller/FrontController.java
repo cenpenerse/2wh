@@ -137,6 +137,11 @@ public class FrontController extends HttpServlet {
                         List<java.util.Map<String, Object>> adminShopList = BikeDao.getInstance().getShopListAll();
                         List<PenaltyDto> adminPenaltyList = PenaltyDao.getInstance().getPenaltiesAll();
                         
+                        // 신규 추가: 면허 검증 심사, 차량 정비, 반납/주유 기록 조회
+                        List<LicenseAuditDto> adminLicenseAuditList = LicenseAuditDao.getInstance().getAuditsAll();
+                        List<BikeMaintenanceDto> adminMaintenanceList = BikeMaintenanceDao.getInstance().getMaintenanceList();
+                        List<FuelLogDto> adminFuelLogList = FuelLogDao.getInstance().getFuelLogList();
+                        
                         request.setAttribute("bookingList", bookingList);
                         request.setAttribute("memberList", memberList);
                         request.setAttribute("adminInquiryList", adminInquiryList);
@@ -144,16 +149,25 @@ public class FrontController extends HttpServlet {
                         request.setAttribute("adminBrandList", adminBrandList);
                         request.setAttribute("adminShopList", adminShopList);
                         request.setAttribute("adminPenaltyList", adminPenaltyList);
+                        
+                        request.setAttribute("adminLicenseAuditList", adminLicenseAuditList);
+                        request.setAttribute("adminMaintenanceList", adminMaintenanceList);
+                        request.setAttribute("adminFuelLogList", adminFuelLogList);
                     } else {
                         // 일반 회원이면 본인 예약 목록 조회
                         List<BookingDto> bookingList = BookingDao.getInstance().getBookingListByUser(loginUser.getMemberId());
                         List<CouponDto> couponList = CouponDao.getInstance().getCouponsByUser(loginUser.getMemberId());
                         List<InquiryDto> inquiryList = InquiryDao.getInstance().getInquiriesByUser(loginUser.getMemberId());
                         List<PenaltyDto> penaltyList = PenaltyDao.getInstance().getPenaltiesByUser(loginUser.getMemberId());
+                        
+                        // 신규 추가: 본인 면허 심사 이력 조회
+                        List<LicenseAuditDto> userLicenseAuditList = LicenseAuditDao.getInstance().getAuditsByUser(loginUser.getMemberId());
+                        
                         request.setAttribute("bookingList", bookingList);
                         request.setAttribute("couponList", couponList);
                         request.setAttribute("inquiryList", inquiryList);
                         request.setAttribute("penaltyList", penaltyList);
+                        request.setAttribute("userLicenseAuditList", userLicenseAuditList);
                     }
                     viewPage = "/WEB-INF/views/member/mypage.jsp";
                 }
@@ -272,6 +286,9 @@ public class FrontController extends HttpServlet {
                     
                     List<java.util.Map<String, Object>> shopList = BikeDao.getInstance().getShopList();
                     request.setAttribute("shopList", shopList);
+                    
+                    String selectedShopId = request.getParameter("shopId");
+                    request.setAttribute("selectedShopId", selectedShopId);
                     
                     HttpSession session = request.getSession(false);
                     MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
@@ -412,6 +429,152 @@ public class FrontController extends HttpServlet {
                 isRedirect = true;
                 viewPage = "mypage.do";
                 
+            } else if (command.equals("/userLicenseSubmitAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                
+                if (loginUser != null) {
+                    String licenseType = request.getParameter("licenseType");
+                    String licenseNumber = request.getParameter("licenseNumber");
+                    
+                    String imageFilename = null;
+                    try {
+                        jakarta.servlet.http.Part filePart = request.getPart("licenseImage");
+                        if (filePart != null && filePart.getSize() > 0) {
+                            String originalName = filePart.getSubmittedFileName();
+                            String extension = "";
+                            int dotIndex = originalName.lastIndexOf('.');
+                            if (dotIndex > 0) {
+                                extension = originalName.substring(dotIndex);
+                            }
+                            imageFilename = "license_" + System.currentTimeMillis() + extension;
+                            
+                            // 톰캣 배포 경로에 저장
+                            String deployDir = request.getServletContext().getRealPath("/resources/images/licenses");
+                            java.io.File uploadDir = new java.io.File(deployDir);
+                            if (!uploadDir.exists()) {
+                                uploadDir.mkdirs();
+                            }
+                            String deployFilePath = deployDir + java.io.File.separator + imageFilename;
+                            filePart.write(deployFilePath);
+                            
+                            // 소스 폴더 경로에도 복사
+                            String srcDir = "c:\\2_eclipse\\hp\\bikerental\\src\\main\\webapp\\resources\\images\\licenses";
+                            java.io.File srcUploadDir = new java.io.File(srcDir);
+                            if (srcUploadDir.exists()) {
+                                try {
+                                    java.nio.file.Files.copy(
+                                        java.nio.file.Paths.get(deployFilePath),
+                                        java.nio.file.Paths.get(srcDir + java.io.File.separator + imageFilename),
+                                        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                                    );
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    
+                    if (imageFilename != null) {
+                        LicenseAuditDto auditDto = new LicenseAuditDto();
+                        auditDto.setUserId(loginUser.getMemberId());
+                        auditDto.setLicenseType(licenseType);
+                        auditDto.setLicenseImage("resources/images/licenses/" + imageFilename);
+                        
+                        LicenseAuditDao.getInstance().insertAudit(auditDto);
+                        MemberDao.getInstance().updateLicenseInfo(loginUser.getMemberId(), licenseNumber, "PENDING");
+                    }
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
+                
+            } else if (command.equals("/adminLicenseAuditAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                
+                if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
+                    int auditId = Integer.parseInt(request.getParameter("auditId"));
+                    String status = request.getParameter("status"); // APPROVED, REJECTED
+                    String rejectReason = request.getParameter("rejectReason");
+                    
+                    LicenseAuditDao.getInstance().updateAuditStatus(auditId, status, rejectReason, loginUser.getMemberId());
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
+                
+            } else if (command.equals("/adminMaintenanceAddAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                
+                if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
+                    int bikeId = Integer.parseInt(request.getParameter("bikeId"));
+                    String maintType = request.getParameter("maintenanceType");
+                    String content = request.getParameter("content");
+                    int cost = 0;
+                    try {
+                        cost = Integer.parseInt(request.getParameter("cost"));
+                    } catch (Exception e) {}
+                    String shopName = request.getParameter("shopName");
+                    
+                    String maintDateStr = request.getParameter("maintenanceDate");
+                    java.sql.Date maintDate = null;
+                    if (maintDateStr != null && !maintDateStr.trim().isEmpty()) {
+                        try {
+                            maintDate = java.sql.Date.valueOf(maintDateStr);
+                        } catch (Exception e) {}
+                    }
+                    if (maintDate == null) {
+                        maintDate = new java.sql.Date(System.currentTimeMillis());
+                    }
+                    
+                    String nextCheckDateStr = request.getParameter("nextCheckDate");
+                    java.sql.Date nextCheckDate = null;
+                    if (nextCheckDateStr != null && !nextCheckDateStr.trim().isEmpty()) {
+                        try {
+                            nextCheckDate = java.sql.Date.valueOf(nextCheckDateStr);
+                        } catch (Exception e) {}
+                    }
+                    
+                    BikeMaintenanceDto dto = new BikeMaintenanceDto();
+                    dto.setBikeId(bikeId);
+                    dto.setMaintenanceDate(maintDate);
+                    dto.setMaintenanceType(maintType);
+                    dto.setContent(content);
+                    dto.setCost(cost);
+                    dto.setShopName(shopName);
+                    dto.setNextCheckDate(nextCheckDate);
+                    
+                    BikeMaintenanceDao.getInstance().insertMaintenance(dto);
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
+                
+            } else if (command.equals("/adminFuelLogAddAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                
+                if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
+                    int reservationId = Integer.parseInt(request.getParameter("reservationId"));
+                    int fuelLevel = Integer.parseInt(request.getParameter("fuelLevel"));
+                    
+                    // 패널티 부과 계산: 100% 미만일 경우 1%당 1,000원
+                    int penaltyAmount = 0;
+                    if (fuelLevel < 100) {
+                        penaltyAmount = (100 - fuelLevel) * 1000;
+                    }
+                    
+                    FuelLogDto dto = new FuelLogDto();
+                    dto.setReservationId(reservationId);
+                    dto.setFuelLevel(fuelLevel);
+                    dto.setPenaltyAmount(penaltyAmount);
+                    
+                    FuelLogDao.getInstance().insertFuelLogAndUpdateBooking(dto);
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
+                
             } else if (command.equals("/bookingCancelAction.do")) {
                 // 예약 취소 (일반 회원 기능)
                 HttpSession session = request.getSession(false);
@@ -489,11 +652,49 @@ public class FrontController extends HttpServlet {
                     String title = request.getParameter("title");
                     String content = request.getParameter("content");
                     
+                    String imageFilename = null;
+                    try {
+                        jakarta.servlet.http.Part filePart = request.getPart("attachedFile");
+                        if (filePart != null && filePart.getSize() > 0) {
+                            String originalName = filePart.getSubmittedFileName();
+                            String safeName = originalName != null ? originalName.replaceAll("[\\\\/:*?\"<>|\\s]", "_") : "file";
+                            imageFilename = "board_" + System.currentTimeMillis() + "_" + safeName;
+                            
+                            // 톰캣 배포 경로에 저장
+                            String deployDir = request.getServletContext().getRealPath("/resources/upload");
+                            java.io.File uploadDir = new java.io.File(deployDir);
+                            if (!uploadDir.exists()) {
+                                uploadDir.mkdirs();
+                            }
+                            String deployFilePath = deployDir + java.io.File.separator + imageFilename;
+                            filePart.write(deployFilePath);
+                            
+                            // 소스 폴더 경로에도 복사
+                            String srcDir = "c:\\2_eclipse\\hp\\bikerental\\src\\main\\webapp\\resources\\upload";
+                            java.io.File srcUploadDir = new java.io.File(srcDir);
+                            if (!srcUploadDir.exists()) {
+                                srcUploadDir.mkdirs();
+                            }
+                            try {
+                                java.nio.file.Files.copy(
+                                    java.nio.file.Paths.get(deployFilePath),
+                                    java.nio.file.Paths.get(srcDir + java.io.File.separator + imageFilename),
+                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                                );
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    
                     BoardDto dto = new BoardDto();
                     dto.setMemberId(loginUser.getMemberId());
                     dto.setTitle(title);
                     dto.setContent(content);
                     dto.setBoardType(boardType);
+                    dto.setFilename(imageFilename);
                     
                     int r = BoardDao.getInstance().insertPost(dto);
                     isRedirect = true;
@@ -510,11 +711,81 @@ public class FrontController extends HttpServlet {
                 int postId = Integer.parseInt(request.getParameter("postId"));
                 String title = request.getParameter("title");
                 String content = request.getParameter("content");
+                String deleteExistingStr = request.getParameter("deleteExistingFile");
+                boolean deleteExisting = "true".equals(deleteExistingStr);
+                
+                BoardDto existingPost = BoardDao.getInstance().getPost(postId);
+                String filename = (existingPost != null) ? existingPost.getFilename() : null;
+                
+                jakarta.servlet.http.Part filePart = null;
+                try {
+                    filePart = request.getPart("attachedFile");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                
+                boolean hasNewFile = filePart != null && filePart.getSize() > 0;
+                
+                if (deleteExisting || hasNewFile) {
+                    // 기존 파일 삭제
+                    if (filename != null && !filename.isEmpty()) {
+                        try {
+                            String deployDir = request.getServletContext().getRealPath("/resources/upload");
+                            java.io.File deployFile = new java.io.File(deployDir + java.io.File.separator + filename);
+                            if (deployFile.exists()) {
+                                deployFile.delete();
+                            }
+                            String srcDir = "c:\\2_eclipse\\hp\\bikerental\\src\\main\\webapp\\resources\\upload";
+                            java.io.File srcFile = new java.io.File(srcDir + java.io.File.separator + filename);
+                            if (srcFile.exists()) {
+                                srcFile.delete();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        filename = null;
+                    }
+                    
+                    // 새 파일 저장
+                    if (hasNewFile) {
+                        try {
+                            String originalName = filePart.getSubmittedFileName();
+                            String safeName = originalName != null ? originalName.replaceAll("[\\\\/:*?\"<>|\\s]", "_") : "file";
+                            filename = "board_" + System.currentTimeMillis() + "_" + safeName;
+                            
+                            String deployDir = request.getServletContext().getRealPath("/resources/upload");
+                            java.io.File uploadDir = new java.io.File(deployDir);
+                            if (!uploadDir.exists()) {
+                                uploadDir.mkdirs();
+                            }
+                            String deployFilePath = deployDir + java.io.File.separator + filename;
+                            filePart.write(deployFilePath);
+                            
+                            String srcDir = "c:\\2_eclipse\\hp\\bikerental\\src\\main\\webapp\\resources\\upload";
+                            java.io.File srcUploadDir = new java.io.File(srcDir);
+                            if (!srcUploadDir.exists()) {
+                                srcUploadDir.mkdirs();
+                            }
+                            try {
+                                java.nio.file.Files.copy(
+                                    java.nio.file.Paths.get(deployFilePath),
+                                    java.nio.file.Paths.get(srcDir + java.io.File.separator + filename),
+                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                                );
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
                 
                 BoardDto dto = new BoardDto();
                 dto.setPostId(postId);
                 dto.setTitle(title);
                 dto.setContent(content);
+                dto.setFilename(filename);
                 
                 BoardDao.getInstance().updatePost(dto);
                 
@@ -524,6 +795,26 @@ public class FrontController extends HttpServlet {
             } else if (command.equals("/boardDeleteAction.do")) {
                 int postId = Integer.parseInt(request.getParameter("postId"));
                 String boardType = request.getParameter("boardType");
+                
+                // 첨부파일 삭제
+                try {
+                    BoardDto post = BoardDao.getInstance().getPost(postId);
+                    if (post != null && post.getFilename() != null && !post.getFilename().isEmpty()) {
+                        String filename = post.getFilename();
+                        String deployDir = request.getServletContext().getRealPath("/resources/upload");
+                        java.io.File deployFile = new java.io.File(deployDir + java.io.File.separator + filename);
+                        if (deployFile.exists()) {
+                            deployFile.delete();
+                        }
+                        String srcDir = "c:\\2_eclipse\\hp\\bikerental\\src\\main\\webapp\\resources\\upload";
+                        java.io.File srcFile = new java.io.File(srcDir + java.io.File.separator + filename);
+                        if (srcFile.exists()) {
+                            srcFile.delete();
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 
                 BoardDao.getInstance().deletePost(postId);
                 
@@ -739,7 +1030,139 @@ public class FrontController extends HttpServlet {
                     String address = request.getParameter("address");
                     String openTime = request.getParameter("openTime");
                     String closeTime = request.getParameter("closeTime");
-                    BikeDao.getInstance().insertShop(shopName, managerName, tel, address, openTime, closeTime);
+                    
+                    String imageFilename = null;
+                    try {
+                        jakarta.servlet.http.Part filePart = request.getPart("shopImage");
+                        if (filePart != null && filePart.getSize() > 0) {
+                            String originalName = filePart.getSubmittedFileName();
+                            String extension = "";
+                            int dotIndex = originalName.lastIndexOf('.');
+                            if (dotIndex > 0) {
+                                extension = originalName.substring(dotIndex);
+                            }
+                            imageFilename = "shop_" + System.currentTimeMillis() + extension;
+                            
+                            // 톰캣 배포 경로에 저장
+                            String deployDir = request.getServletContext().getRealPath("/resources/images/shops");
+                            java.io.File uploadDir = new java.io.File(deployDir);
+                            if (!uploadDir.exists()) {
+                                uploadDir.mkdirs();
+                            }
+                            String deployFilePath = deployDir + java.io.File.separator + imageFilename;
+                            filePart.write(deployFilePath);
+                            
+                            // 소스 폴더 경로에도 복사
+                            String srcDir = "c:\\2_eclipse\\hp\\bikerental\\src\\main\\webapp\\resources\\images\\shops";
+                            java.io.File srcUploadDir = new java.io.File(srcDir);
+                            if (srcUploadDir.exists()) {
+                                try {
+                                    java.nio.file.Files.copy(
+                                        java.nio.file.Paths.get(deployFilePath),
+                                        java.nio.file.Paths.get(srcDir + java.io.File.separator + imageFilename),
+                                        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                                    );
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    
+                    BikeDao.getInstance().insertShop(shopName, managerName, tel, address, openTime, closeTime, imageFilename);
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
+                
+            } else if (command.equals("/adminShopImageUploadAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
+                    try {
+                        int shopId = Integer.parseInt(request.getParameter("shopId"));
+                        jakarta.servlet.http.Part filePart = request.getPart("shopImage");
+                        if (filePart != null && filePart.getSize() > 0) {
+                            String originalName = filePart.getSubmittedFileName();
+                            String extension = "";
+                            int dotIndex = originalName.lastIndexOf('.');
+                            if (dotIndex > 0) {
+                                extension = originalName.substring(dotIndex);
+                            }
+                            String imageFilename = "shop_" + System.currentTimeMillis() + extension;
+                            
+                            // 톰캣 배포 경로에 저장
+                            String deployDir = request.getServletContext().getRealPath("/resources/images/shops");
+                            java.io.File uploadDir = new java.io.File(deployDir);
+                            if (!uploadDir.exists()) {
+                                uploadDir.mkdirs();
+                            }
+                            String deployFilePath = deployDir + java.io.File.separator + imageFilename;
+                            filePart.write(deployFilePath);
+                            
+                            // 소스 폴더 경로에도 복사
+                            String srcDir = "c:\\2_eclipse\\hp\\bikerental\\src\\main\\webapp\\resources\\images\\shops";
+                            java.io.File srcUploadDir = new java.io.File(srcDir);
+                            if (srcUploadDir.exists()) {
+                                try {
+                                    java.nio.file.Files.copy(
+                                        java.nio.file.Paths.get(deployFilePath),
+                                        java.nio.file.Paths.get(srcDir + java.io.File.separator + imageFilename),
+                                        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                                    );
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            
+                            // DB 업데이트
+                            BikeDao.getInstance().updateShopImage(shopId, imageFilename);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
+
+            } else if (command.equals("/adminShopImageDeleteAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
+                    try {
+                        int shopId = Integer.parseInt(request.getParameter("shopId"));
+                        
+                        // 지점 정보 조회해서 기존 파일명 찾기
+                        List<java.util.Map<String, Object>> shopList = BikeDao.getInstance().getShopListAll();
+                        String imageFilename = null;
+                        for (java.util.Map<String, Object> shop : shopList) {
+                            if (((Integer) shop.get("shopId")) == shopId) {
+                                imageFilename = (String) shop.get("imageFilename");
+                                break;
+                            }
+                        }
+                        
+                        // 파일 삭제 (shop_1.png 등 기본 적재 파일이 아닐 경우에만 삭제)
+                        if (imageFilename != null && imageFilename.startsWith("shop_") && imageFilename.length() > 15) {
+                            String deployDir = request.getServletContext().getRealPath("/resources/images/shops");
+                            java.io.File deployFile = new java.io.File(deployDir + java.io.File.separator + imageFilename);
+                            if (deployFile.exists()) {
+                                deployFile.delete();
+                            }
+                            
+                            String srcDir = "c:\\2_eclipse\\hp\\bikerental\\src\\main\\webapp\\resources\\images\\shops";
+                            java.io.File srcFile = new java.io.File(srcDir + java.io.File.separator + imageFilename);
+                            if (srcFile.exists()) {
+                                srcFile.delete();
+                            }
+                        }
+                        
+                        // DB 컬럼 null로 업데이트
+                        BikeDao.getInstance().updateShopImage(shopId, null);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
                 isRedirect = true;
                 viewPage = "mypage.do";
@@ -749,6 +1172,34 @@ public class FrontController extends HttpServlet {
                 MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
                 if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
                     int shopId = Integer.parseInt(request.getParameter("shopId"));
+                    
+                    // 지점의 파일 삭제 시도
+                    List<java.util.Map<String, Object>> shopList = BikeDao.getInstance().getShopListAll();
+                    String imageFilename = null;
+                    for (java.util.Map<String, Object> shop : shopList) {
+                        if (((Integer) shop.get("shopId")) == shopId) {
+                            imageFilename = (String) shop.get("imageFilename");
+                            break;
+                        }
+                    }
+                    if (imageFilename != null && imageFilename.startsWith("shop_") && imageFilename.length() > 15) {
+                        try {
+                            String deployDir = request.getServletContext().getRealPath("/resources/images/shops");
+                            java.io.File deployFile = new java.io.File(deployDir + java.io.File.separator + imageFilename);
+                            if (deployFile.exists()) {
+                                deployFile.delete();
+                            }
+                            
+                            String srcDir = "c:\\2_eclipse\\hp\\bikerental\\src\\main\\webapp\\resources\\images\\shops";
+                            java.io.File srcFile = new java.io.File(srcDir + java.io.File.separator + imageFilename);
+                            if (srcFile.exists()) {
+                                srcFile.delete();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    
                     BikeDao.getInstance().deleteShop(shopId);
                 }
                 isRedirect = true;

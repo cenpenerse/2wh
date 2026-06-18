@@ -10,7 +10,7 @@
     </div>
 
     <div class="form-card-box">
-        <form action="${pageContext.request.contextPath}/boardWriteAction.do" method="post" class="board-write-form">
+        <form action="${pageContext.request.contextPath}/boardWriteAction.do" method="post" enctype="multipart/form-data" class="board-write-form">
             <input type="hidden" name="boardType" value="${boardType}">
             
             <div class="form-group">
@@ -26,6 +26,12 @@
             <div class="form-group">
                 <label for="content">본문 내용</label>
                 <textarea id="content" name="content" rows="12" placeholder="내용을 작성하세요. 음해성 글이나 부적절한 광고는 게시 제한될 수 있습니다." required></textarea>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="attachedFile">파일 첨부</label>
+                <input type="file" id="attachedFile" name="attachedFile" style="background: #222; color: #ccc; border: 1px solid #444; padding: 10px; border-radius: 6px; width: 100%;">
+                <p style="font-size: 0.8rem; color: #888; margin-top: 6px;">📄 이미지(jpg, png 등) 또는 일반 문서 파일을 최대 10MB까지 첨부할 수 있습니다.</p>
             </div>
 
             <div class="form-actions-row" style="text-align: right; margin-top: 30px;">

@@ -20,6 +20,8 @@ public class BikeDto {
     private String brandCountry;
     private String shopName;
     private String shopAddress;
+    private int brandId;
+    private int shopId;
 
     // Getters and Setters
     public int getBikeId() {
@@ -160,5 +162,21 @@ public class BikeDto {
 
     public void setShopAddress(String shopAddress) {
         this.shopAddress = shopAddress;
+    }
+
+    public int getBrandId() {
+        return brandId;
+    }
+
+    public void setBrandId(int brandId) {
+        this.brandId = brandId;
+    }
+
+    public int getShopId() {
+        return shopId;
+    }
+
+    public void setShopId(int shopId) {
+        this.shopId = shopId;
     }
 }

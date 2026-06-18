@@ -22,6 +22,9 @@
         "DROP TABLE motorcycles CASCADE CONSTRAINTS",
         "DROP TABLE rental_shops CASCADE CONSTRAINTS",
         "DROP TABLE brands CASCADE CONSTRAINTS",
+        "DROP TABLE license_audit CASCADE CONSTRAINTS",
+        "DROP TABLE bike_maintenance CASCADE CONSTRAINTS",
+        "DROP TABLE fuel_log CASCADE CONSTRAINTS",
         "DROP SEQUENCE seq_comments",
         "DROP SEQUENCE seq_boards",
         "DROP SEQUENCE seq_inquiries",
@@ -36,7 +39,10 @@
         "DROP SEQUENCE seq_bike_images",
         "DROP SEQUENCE seq_motorcycles",
         "DROP SEQUENCE seq_rental_shops",
-        "DROP SEQUENCE seq_brands"
+        "DROP SEQUENCE seq_brands",
+        "DROP SEQUENCE seq_license_audit",
+        "DROP SEQUENCE seq_bike_maintenance",
+        "DROP SEQUENCE seq_fuel_log"
     };
 
     // 2. 생성 쿼리 목록 (시퀀스 및 테이블)
@@ -56,9 +62,12 @@
         "CREATE SEQUENCE seq_inquiries START WITH 1 INCREMENT BY 1 NOCACHE",
         "CREATE SEQUENCE seq_boards START WITH 1 INCREMENT BY 1 NOCACHE",
         "CREATE SEQUENCE seq_comments START WITH 1 INCREMENT BY 1 NOCACHE",
+        "CREATE SEQUENCE seq_license_audit START WITH 1 INCREMENT BY 1 NOCACHE",
+        "CREATE SEQUENCE seq_bike_maintenance START WITH 1 INCREMENT BY 1 NOCACHE",
+        "CREATE SEQUENCE seq_fuel_log START WITH 1 INCREMENT BY 1 NOCACHE",
         
         "CREATE TABLE brands ( brand_id NUMBER PRIMARY KEY, brand_name VARCHAR2(100) NOT NULL, country VARCHAR2(100), description CLOB )",
-        "CREATE TABLE rental_shops ( shop_id NUMBER PRIMARY KEY, shop_name VARCHAR2(100) NOT NULL, manager_name VARCHAR2(100), tel VARCHAR2(30), address VARCHAR2(500), open_time VARCHAR2(10), close_time VARCHAR2(10) )",
+        "CREATE TABLE rental_shops ( shop_id NUMBER PRIMARY KEY, shop_name VARCHAR2(100) NOT NULL, manager_name VARCHAR2(100), tel VARCHAR2(30), address VARCHAR2(500), open_time VARCHAR2(10), close_time VARCHAR2(10), image_filename VARCHAR2(500) )",
         "CREATE TABLE motorcycles ( bike_id NUMBER PRIMARY KEY, brand_id NUMBER, shop_id NUMBER, model_name VARCHAR2(200) NOT NULL, cc NUMBER, year NUMBER(4), color VARCHAR2(50), daily_price NUMBER NOT NULL, mileage NUMBER DEFAULT 0, status VARCHAR2(50) DEFAULT 'AVAILABLE', description CLOB, CONSTRAINT fk_bike_brand FOREIGN KEY (brand_id) REFERENCES brands(brand_id) ON DELETE SET NULL, CONSTRAINT fk_bike_shop FOREIGN KEY (shop_id) REFERENCES rental_shops(shop_id) ON DELETE SET NULL )",
         "CREATE TABLE bike_images ( image_id NUMBER PRIMARY KEY, bike_id NUMBER NOT NULL, image_url VARCHAR2(512) NOT NULL, is_thumbnail CHAR(1) DEFAULT 'N', CONSTRAINT fk_img_bike FOREIGN KEY (bike_id) REFERENCES motorcycles(bike_id) ON DELETE CASCADE )",
         "CREATE TABLE users ( user_id NUMBER PRIMARY KEY, email VARCHAR2(100) NOT NULL UNIQUE, password VARCHAR2(255) NOT NULL, name VARCHAR2(100) NOT NULL, phone VARCHAR2(30), birth_date DATE, license_number VARCHAR2(100), license_status VARCHAR2(50) DEFAULT 'PENDING', role VARCHAR2(50) DEFAULT 'USER', point NUMBER DEFAULT 0, join_date DATE DEFAULT SYSDATE NOT NULL )",
@@ -67,28 +76,34 @@
         "CREATE TABLE coupons ( coupon_id NUMBER PRIMARY KEY, user_id NUMBER NOT NULL, coupon_name VARCHAR2(200) NOT NULL, discount_amount NUMBER NOT NULL, issue_date DATE DEFAULT SYSDATE NOT NULL, expire_date DATE NOT NULL, status VARCHAR2(50) DEFAULT 'UNUSED', CONSTRAINT fk_coupon_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE )",
         "CREATE TABLE reviews ( review_id NUMBER PRIMARY KEY, user_id NUMBER NOT NULL, reservation_id NUMBER NOT NULL, bike_id NUMBER NOT NULL, rating NUMBER(1) NOT NULL, title VARCHAR2(200), content CLOB, created_at DATE DEFAULT SYSDATE NOT NULL, CONSTRAINT fk_rev_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE, CONSTRAINT fk_rev_res FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id) ON DELETE CASCADE, CONSTRAINT fk_rev_bike FOREIGN KEY (bike_id) REFERENCES motorcycles(bike_id) ON DELETE CASCADE )",
         "CREATE TABLE inquiries ( inquiry_id NUMBER PRIMARY KEY, user_id NUMBER NOT NULL, title VARCHAR2(300) NOT NULL, content CLOB NOT NULL, answer_content CLOB, status VARCHAR2(50) DEFAULT 'PENDING', created_at DATE DEFAULT SYSDATE NOT NULL, answered_at DATE, CONSTRAINT fk_inq_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE )",
-        "CREATE TABLE boards ( board_id NUMBER PRIMARY KEY, user_id NUMBER NOT NULL, category VARCHAR2(50) NOT NULL, title VARCHAR2(300) NOT NULL, content CLOB NOT NULL, view_count NUMBER DEFAULT 0, like_count NUMBER DEFAULT 0, created_at DATE DEFAULT SYSDATE NOT NULL, CONSTRAINT fk_brd_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE )",
+        "CREATE TABLE boards ( board_id NUMBER PRIMARY KEY, user_id NUMBER NOT NULL, category VARCHAR2(50) NOT NULL, title VARCHAR2(300) NOT NULL, content CLOB NOT NULL, view_count NUMBER DEFAULT 0, like_count NUMBER DEFAULT 0, filename VARCHAR2(500), created_at DATE DEFAULT SYSDATE NOT NULL, CONSTRAINT fk_brd_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE )",
         "CREATE TABLE comments ( comment_id NUMBER PRIMARY KEY, board_id NUMBER NOT NULL, user_id NUMBER NOT NULL, content CLOB NOT NULL, created_at DATE DEFAULT SYSDATE NOT NULL, CONSTRAINT fk_cmt_board FOREIGN KEY (board_id) REFERENCES boards(board_id) ON DELETE CASCADE, CONSTRAINT fk_cmt_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE )",
         "CREATE TABLE option_items ( option_id NUMBER PRIMARY KEY, option_name VARCHAR2(200) NOT NULL, stock_quantity NUMBER DEFAULT 0, daily_price NUMBER NOT NULL, image_filename VARCHAR2(500), status VARCHAR2(50) DEFAULT 'AVAILABLE' )",
         "CREATE TABLE booking_options ( booking_option_id NUMBER PRIMARY KEY, reservation_id NUMBER NOT NULL, option_id NUMBER NOT NULL, quantity NUMBER DEFAULT 1, daily_price NUMBER NOT NULL, CONSTRAINT fk_bo_res FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id) ON DELETE CASCADE, CONSTRAINT fk_bo_opt FOREIGN KEY (option_id) REFERENCES option_items(option_id) ON DELETE CASCADE )",
-        "CREATE TABLE penalties ( penalty_id NUMBER PRIMARY KEY, reservation_id NUMBER NOT NULL, user_id NUMBER NOT NULL, penalty_type VARCHAR2(100) NOT NULL, amount NUMBER NOT NULL, is_paid CHAR(1) DEFAULT 'N', reason VARCHAR2(1000), created_at DATE DEFAULT SYSDATE NOT NULL, CONSTRAINT fk_pen_res FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id) ON DELETE CASCADE, CONSTRAINT fk_pen_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE )"
+        "CREATE TABLE penalties ( penalty_id NUMBER PRIMARY KEY, reservation_id NUMBER NOT NULL, user_id NUMBER NOT NULL, penalty_type VARCHAR2(100) NOT NULL, amount NUMBER NOT NULL, is_paid CHAR(1) DEFAULT 'N', reason VARCHAR2(1000), created_at DATE DEFAULT SYSDATE NOT NULL, CONSTRAINT fk_pen_res FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id) ON DELETE CASCADE, CONSTRAINT fk_pen_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE )",
+        "CREATE TABLE license_audit ( audit_id NUMBER PRIMARY KEY, user_id NUMBER NOT NULL, license_type VARCHAR2(100), license_image VARCHAR2(500), status VARCHAR2(50) DEFAULT 'PENDING', reject_reason VARCHAR2(1000), audit_date DATE, admin_id NUMBER, CONSTRAINT fk_audit_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE, CONSTRAINT fk_audit_admin FOREIGN KEY (admin_id) REFERENCES users(user_id) ON DELETE SET NULL )",
+        "CREATE TABLE bike_maintenance ( maintenance_id NUMBER PRIMARY KEY, bike_id NUMBER NOT NULL, maintenance_date DATE NOT NULL, maintenance_type VARCHAR2(100), content CLOB, cost NUMBER, shop_name VARCHAR2(200), next_check_date DATE, CONSTRAINT fk_maint_bike FOREIGN KEY (bike_id) REFERENCES motorcycles(bike_id) ON DELETE CASCADE )",
+        "CREATE TABLE fuel_log ( fuel_log_id NUMBER PRIMARY KEY, bike_id NUMBER NOT NULL, reservation_id NUMBER, fuel_level NUMBER, penalty_amount NUMBER, log_date DATE DEFAULT SYSDATE NOT NULL, CONSTRAINT fk_fuel_bike FOREIGN KEY (bike_id) REFERENCES motorcycles(bike_id) ON DELETE CASCADE, CONSTRAINT fk_fuel_res FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id) ON DELETE SET NULL )"
     };
 
     // 3. 테스트 데이터 삽입 쿼리 목록
     String[] insertQueries = {
         "INSERT INTO brands (brand_id, brand_name, country, description) VALUES (seq_brands.NEXTVAL, 'Honda', 'Japan', '세계 최대의 이륜차 제조업체로, 높은 내구성과 신뢰성을 자랑합니다.')",
         "INSERT INTO brands (brand_id, brand_name, country, description) VALUES (seq_brands.NEXTVAL, 'Yamaha', 'Japan', '독창적인 기술력과 뛰어난 디자인, 스포티한 주행 감각이 돋보이는 브랜드입니다.')",
-        "INSERT INTO brands (brand_id, brand_name, country, description) VALUES (seq_brands.NEXTVAL, 'BMW Motorrad', 'Germany', '장거리 투어러 및 고배기량 스포츠 바이크의 명가입니다.')",
+        "INSERT INTO brands (brand_id, brand_name, country, description) VALUES (seq_brands.NEXTVAL, 'BMW', 'Germany', '장거리 투어러 및 고배기량 스포츠 바이크의 명가입니다.')",
+        "INSERT INTO brands (brand_id, brand_name, country, description) VALUES (seq_brands.NEXTVAL, 'Harley-Davidson', 'USA', '클래식한 아메리칸 크루저 바이크의 상징적인 브랜드입니다.')",
+        "INSERT INTO brands (brand_id, brand_name, country, description) VALUES (seq_brands.NEXTVAL, 'Vespa', 'Italy', '유려한 디자인과 감성을 겸비한 이탈리아 프리미엄 스쿠터 브랜드입니다.')",
+        "INSERT INTO brands (brand_id, brand_name, country, description) VALUES (seq_brands.NEXTVAL, 'Ducati', 'Italy', '레이싱 유전자를 바탕으로 최고의 주행 성능을 자랑하는 프리미엄 스포츠 브랜드입니다.')",
         
-        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time) VALUES (seq_rental_shops.NEXTVAL, '대구 중앙 지점', '김철수', '053-123-4567', '대구 중구 달구벌대로 123', '09:00', '20:00')",
-        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time) VALUES (seq_rental_shops.NEXTVAL, '대구 동대구역 지점', '이영희', '053-987-6543', '대구 동구 동대구로 456', '09:00', '21:00')",
-        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time) VALUES (seq_rental_shops.NEXTVAL, '대구 수성못 지점', '박민수', '053-765-4321', '대구 수성구 수성못길 789', '09:00', '22:00')",
-        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time) VALUES (seq_rental_shops.NEXTVAL, '대구 계명대 지점', '최진혁', '053-580-1234', '대구 달서구 달구벌대로 1000', '09:00', '20:00')",
-        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time) VALUES (seq_rental_shops.NEXTVAL, '대구 엑스코 지점', '정수빈', '053-601-5678', '대구 북구 유통단지로 789', '09:00', '20:00')",
-        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time) VALUES (seq_rental_shops.NEXTVAL, '대구 칠곡 지점', '강진우', '053-321-4567', '대구 북구 태전로 123', '09:00', '20:00')",
-        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time) VALUES (seq_rental_shops.NEXTVAL, '대구 상인 지점', '윤지아', '053-643-9876', '대구 달서구 월배로 456', '09:00', '21:00')",
-        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time) VALUES (seq_rental_shops.NEXTVAL, '대구 현풍 지점', '오태양', '053-611-3456', '대구 달성군 테크노중앙대로 789', '09:00', '20:00')",
-        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time) VALUES (seq_rental_shops.NEXTVAL, '대구 경북대 지점', '한소희', '053-950-1234', '대구 북구 대학로 80', '09:00', '22:00')",
+        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename) VALUES (seq_rental_shops.NEXTVAL, '대구 중앙 지점', '김철수', '053-123-4567', '대구 중구 달구벌대로 123', '09:00', '20:00', 'shop_1.png')",
+        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename) VALUES (seq_rental_shops.NEXTVAL, '대구 동대구역 지점', '이영희', '053-987-6543', '대구 동구 동대구로 456', '09:00', '21:00', 'shop_2.png')",
+        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename) VALUES (seq_rental_shops.NEXTVAL, '대구 수성못 지점', '박민수', '053-765-4321', '대구 수성구 수성못길 789', '09:00', '22:00', 'shop_3.png')",
+        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename) VALUES (seq_rental_shops.NEXTVAL, '대구 계명대 지점', '최진혁', '053-580-1234', '대구 달서구 달구벌대로 1000', '09:00', '20:00', 'shop_4.png')",
+        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename) VALUES (seq_rental_shops.NEXTVAL, '대구 엑스코 지점', '정수빈', '053-601-5678', '대구 북구 유통단지로 789', '09:00', '20:00', 'shop_5.png')",
+        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename) VALUES (seq_rental_shops.NEXTVAL, '대구 칠곡 지점', '강진우', '053-321-4567', '대구 북구 태전로 123', '09:00', '20:00', 'shop_6.png')",
+        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename) VALUES (seq_rental_shops.NEXTVAL, '대구 상인 지점', '윤지아', '053-643-9876', '대구 달서구 월배로 456', '09:00', '21:00', 'shop_7.png')",
+        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename) VALUES (seq_rental_shops.NEXTVAL, '대구 현풍 지점', '오태양', '053-611-3456', '대구 달성군 테크노중앙대로 789', '09:00', '20:00', 'shop_8.png')",
+        "INSERT INTO rental_shops (shop_id, shop_name, manager_name, tel, address, open_time, close_time, image_filename) VALUES (seq_rental_shops.NEXTVAL, '대구 경북대 지점', '한소희', '053-950-1234', '대구 북구 대학로 80', '09:00', '22:00', 'shop_9.png')",
         
         "INSERT INTO users (user_id, email, password, name, phone, birth_date, license_number, license_status, role, point, join_date) VALUES (101, 'admin@baren.com', 'admin123', '최고관리자', '010-1111-2222', TO_DATE('1990-01-01', 'YYYY-MM-DD'), '11-12-345678-01', 'APPROVED', 'ADMIN', 1000, SYSDATE)",
         "INSERT INTO users (user_id, email, password, name, phone, birth_date, license_number, license_status, role, point, join_date) VALUES (102, 'user1@test.com', 'pass1234', '홍길동', '010-3333-4444', TO_DATE('1995-05-15', 'YYYY-MM-DD'), '22-12-987654-02', 'APPROVED', 'USER', 100, SYSDATE)",
@@ -111,7 +126,10 @@
         "INSERT INTO reservations (reservation_id, user_id, bike_id, pickup_shop_id, dropoff_shop_id, start_date, end_date, rental_days, total_price, status, created_at) VALUES (1001, 102, (SELECT MIN(bike_id) FROM motorcycles), (SELECT MIN(shop_id) FROM rental_shops), (SELECT MAX(shop_id) FROM rental_shops), TO_DATE('2026-06-20', 'YYYY-MM-DD'), TO_DATE('2026-06-22', 'YYYY-MM-DD'), 2, 90000, 'APPROVED', SYSDATE)",
         "INSERT INTO payments (payment_id, reservation_id, amount, payment_method, payment_status, paid_at) VALUES (seq_payments.NEXTVAL, 1001, 90000, 'CARD', 'PAID', SYSDATE)",
         "INSERT INTO booking_options (booking_option_id, reservation_id, option_id, quantity, daily_price) VALUES (seq_booking_options.NEXTVAL, 1001, (SELECT MIN(option_id) FROM option_items), 1, 5000)",
-        "INSERT INTO penalties (penalty_id, reservation_id, user_id, penalty_type, amount, is_paid, reason, created_at) VALUES (seq_penalties.NEXTVAL, 1001, 102, '과태료', 50000, 'N', '신천대로 속도 위반 과태료 고지서 발부', SYSDATE)"
+        "INSERT INTO penalties (penalty_id, reservation_id, user_id, penalty_type, amount, is_paid, reason, created_at) VALUES (seq_penalties.NEXTVAL, 1001, 102, '과태료', 50000, 'N', '신천대로 속도 위반 과태료 고지서 발부', SYSDATE)",
+        "INSERT INTO license_audit (audit_id, user_id, license_type, license_image, status, reject_reason, audit_date, admin_id) VALUES (seq_license_audit.NEXTVAL, 102, '2종소형', 'resources/images/licenses/user_102.png', 'APPROVED', NULL, SYSDATE, 101)",
+        "INSERT INTO bike_maintenance (maintenance_id, bike_id, maintenance_date, maintenance_type, content, cost, shop_name, next_check_date) VALUES (seq_bike_maintenance.NEXTVAL, (SELECT MIN(bike_id) FROM motorcycles), SYSDATE - 10, '소모품교체', '엔진오일 및 에어클리너 교체', 55000, '대구 바이크나라', SYSDATE + 90)",
+        "INSERT INTO fuel_log (fuel_log_id, bike_id, reservation_id, fuel_level, penalty_amount, log_date) VALUES (seq_fuel_log.NEXTVAL, (SELECT MIN(bike_id) FROM motorcycles), 1001, 85, 4500, SYSDATE)"
     };
 
     try {
@@ -140,17 +158,16 @@
             stmt.executeUpdate(sql);
         }
         
-        // 4. 지점별 바이크 종류 전지점 세팅 (9개 지점 * 9개 모델 = 81대)
         String[][] models = {
             {"1", "PCX 125", "125", "2023", "Pearl White", "45000", "resources/images/bikes/scooter_pcx.png", "도심 주행의 최강자이자 연비와 내구성 모두를 만족시키는 125cc 스쿠터입니다."},
             {"2", "YZF-R3", "321", "2022", "Icon Blue", "80000", "resources/images/bikes/sports_r3.png", "입문용 쿼터급 최고의 스포츠 바이크입니다. 가볍고 민첩한 핸들링이 돋보입니다."},
-            {"1", "Super Cub 110", "109", "2023", "Classic Yellow", "35000", "resources/images/bikes/classic_cub.png", "클래식한 디자인과 최고의 실용성을 겸비한 110cc 언더본 바이크입니다."},
-            {"1", "CBR500R", "471", "2022", "Grand Prix Red", "100000", "resources/images/bikes/sports_cbr500r.png", "스포티한 레이싱 룩과 일상 주행의 편안함을 모두 잡은 미들급 스포츠 바이크입니다."},
-            {"2", "MT-03", "321", "2023", "Midnight Black", "85000", "resources/images/bikes/naked_mt03.png", "날렵하고 다이내믹한 주행성능을 선사하는 쿼터급 대표 네이키드 바이크입니다."},
-            {"1", "ADV350", "330", "2023", "Spangle Silver Metallic", "90000", "resources/images/bikes/scooter_adv350.png", "스마트한 주행 성능과 모험 심리를 자극하는 350cc 어드벤처 스쿠터입니다."},
-            {"1", "C125", "125", "2023", "Niltava Blue", "40000", "resources/images/bikes/classic_c125.png", "초대 슈퍼커브의 오리지널 헤리티지를 계승한 프리미엄 125cc 스쿠터입니다."},
-            {"3", "R nineT", "1170", "2022", "Black Storm Metallic", "200000", "resources/images/bikes/naked_rninet.png", "클래식한 룩과 강력한 박서 엔진의 매력을 선사하는 프리미엄 로드스터입니다."},
-            {"2", "YZF-R1", "998", "2023", "Yamaha Black", "250000", "resources/images/bikes/sports_r1.png", "야마하의 레이싱 기술이 총집약된 플래그십 리터급 슈퍼스포츠 머신입니다."}
+            {"4", "Iron 883", "883", "2021", "Matte Black", "150000", "resources/images/bikes/cruiser_iron883.png", "클래식한 아메리칸 감성과 묵직한 고동감이 돋보이는 대표적인 크루저 바이크입니다."},
+            {"5", "Primavera 125", "124", "2023", "Mint Green", "60000", "resources/images/bikes/scooter_primavera.png", "유려한 이탈리아 디자인과 감성적인 주행을 선사하는 클래식 스쿠터입니다."},
+            {"3", "R 1250 GS", "1254", "2022", "Triple Black", "200000", "resources/images/bikes/adventure_r1250gs.png", "온로드와 오프로드를 가리지 않는 세계 최고 성능의 어드벤처 바이크입니다."},
+            {"6", "Panigale V4", "1103", "2023", "Ducati Red", "250000", "resources/images/bikes/sports_panigale.png", "모토GP 레이싱 기술이 그대로 녹아든 고성능 이탈리아 레이싱 머신입니다."},
+            {"1", "Super Cub 110", "109", "2023", "Classic Yellow", "35000", "resources/images/bikes/classic_cub.png", "최고의 내구성과 실용성을 자랑하는 110cc 클래식 언더본 바이크입니다."},
+            {"3", "R nineT", "1170", "2022", "Black Storm Metallic", "180000", "resources/images/bikes/naked_rninet.png", "클래식한 로드스터 감성과 수평대향 박서 엔진을 탑재한 프리미엄 바이크입니다."},
+            {"2", "YZF-R1", "998", "2023", "Yamaha Black", "220000", "resources/images/bikes/sports_r1.png", "야마하의 정교한 4기통 크로스플레인 엔진이 탑재된 플래그십 스포츠 모델입니다."}
         };
 
         try (PreparedStatement pstmtBike = conn.prepareStatement(
