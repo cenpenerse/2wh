@@ -205,4 +205,25 @@ public class MemberDao {
         }
         return result;
     }
+
+    // 면허 번호 및 면허 상태 변경 (사용자 신청용)
+    public int updateLicenseInfo(int memberId, String licenseNumber, String status) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        String sql = "UPDATE users SET license_number = ?, license_status = ? WHERE user_id = ?";
+        int result = -1;
+        try {
+            conn = DBConnection.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, licenseNumber);
+            pstmt.setString(2, status);
+            pstmt.setInt(3, memberId);
+            result = pstmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.close(conn, pstmt, null);
+        }
+        return result;
+    }
 }
