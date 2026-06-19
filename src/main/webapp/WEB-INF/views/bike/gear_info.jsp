@@ -13,86 +13,71 @@
                 <h2 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 800; color: #fff; margin-top: 10px; margin-bottom: 12px; letter-spacing: -0.5px;">대여 장비 안내</h2>
                 <p style="color: var(--light-text-color); font-size: 1.05rem;">안전하고 즐거운 라이딩을 위해 마련된 바렌의 프리미엄 추가 장비 라인업입니다.</p>
                 <div style="margin-top: 20px;">
-                    <a href="${pageContext.request.contextPath}/bikeList.do" class="btn" style="background: linear-gradient(135deg, var(--primary-color) 0%, #FF5E62 100%); border: none; padding: 10px 25px; font-weight: 600; text-transform: uppercase; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);">장비 선택하고 바이크 예약하기 ⚡</a>
+                    <a href="${pageContext.request.contextPath}/bikeList.do" class="btn" style="background: linear-gradient(135deg, var(--primary-color) 0%, #FF5E62 100%); border: none; padding: 10px 25px; font-weight: 600; text-transform: uppercase; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);">장비 선택하고 바이크 예약하기 </a>
                 </div>
             </div>
 
             <!-- 대여 장비 카드 그리드 -->
-            <div class="gear-info-grid" style="display: flex; flex-direction: column; gap: 40px; max-width: 900px; margin: 0 auto;">
+            <div class="gear-info-grid">
                 <c:forEach var="opt" items="${gearList}">
                     <!-- 카테고리에 맞는 카드 ID 및 이미지 매핑 -->
                     <c:set var="cardId" value="" />
-                    <c:set var="imageUrl" value="" />
                     <c:set var="gearSpec" value="" />
                     <c:choose>
                         <c:when test="${fn:contains(opt.optionName, '헬멧')}">
                             <c:set var="cardId" value="helmet" />
-                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_helmet.png" />
                             <c:set var="gearSpec" value="안전 규격 인증 완료 | 김서림 방지 실드 제공 | 위생 세척 및 소독 완료" />
                         </c:when>
                         <c:when test="${fn:contains(opt.optionName, '인터콤')}">
                             <c:set var="cardId" value="intercom" />
-                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_intercom.png" />
                             <c:set var="gearSpec" value="블루투스 5.0 탑재 | 최대 1.2km 무선 통신 | 노이즈 캔슬링 마이크 | 하만카돈 스피커" />
                         </c:when>
                         <c:when test="${fn:contains(opt.optionName, '탑박스')}">
                             <c:set var="cardId" value="topbox" />
-                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_topbox.png" />
                             <c:set var="gearSpec" value="용량 45L / 65L 선택 가능 | 완전 방수 설계 | 알루미늄 하드쉘 보호 구조" />
                         </c:when>
                         <c:when test="${fn:contains(opt.optionName, '거치대')}">
                             <c:set var="cardId" value="holder" />
-                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_holder.png" />
                             <c:set var="gearSpec" value="초강력 네오디뮴 자석 장착 | 고속 무선 충전 케이블 내장 | 이중 안전 잠금 고리" />
                         </c:when>
                         <c:when test="${fn:contains(opt.optionName, '보호대')}">
                             <c:set var="cardId" value="protector" />
-                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_protector.png" />
                             <c:set var="gearSpec" value="CE 레벨 2 안전 패드 내장 | 통풍 메시 재질 | 벨크로 밴딩 조절 방식" />
                         </c:when>
                         <c:when test="${fn:contains(opt.optionName, '장갑')}">
                             <c:set var="cardId" value="gloves" />
-                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_gloves.png" />
                             <c:set var="gearSpec" value="천연 가죽 및 고강도 매쉬 | 카본 너클 관절 보호대 | 스마트폰 터치 원단 지원" />
                         </c:when>
                         <c:when test="${fn:contains(opt.optionName, '재킷')}">
                             <c:set var="cardId" value="jacket" />
-                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_jacket.png" />
-                            <c:set var="gearSpec" value="CE 인증 어깨/팔꿈치 보호대 기본 장착 | 탈부착식 방풍 내피 | 고휘도 반사 스카치" />
+                            <c:set var="gearSpec" value="CE 인증 어깨/팔꿈치 보호 패드 기본 장착 | 탈부착식 방풍 내피 | 고휘도 반사 스카치" />
                         </c:when>
                         <c:when test="${fn:contains(opt.optionName, '팬츠')}">
                             <c:set var="cardId" value="pants" />
-                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_pants.png" />
                             <c:set var="gearSpec" value="CE 인증 무릎/골반 보호대 기본 장착 | 고강도 케블라 안감 보강 | 사방 스트레치 데님" />
                         </c:when>
                     </c:choose>
                     
-                    <!-- 개별 장비 정보 카드 -->
-                    <div id="${cardId}" class="gear-card" style="background: #121212; border: 1px solid #222; border-radius: 16px; display: flex; flex-direction: row; gap: 0; overflow: hidden; transition: all 0.3s ease; scroll-margin-top: 100px;">
-                        <div class="gear-img-wrapper" style="width: 35%; min-height: 250px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
-                            <img src="${imageUrl}" alt="${opt.optionName}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">
-                            <div style="position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.8); border: 1px solid var(--primary-color); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color:#fff; font-weight: 600;">
-                                Daily Item
-                            </div>
+                    <!-- 개별 장비 정보 카드 (오토바이 카드와 동일 사이즈 및 그리드 구조) -->
+                    <div id="${cardId}" class="info-card" style="scroll-margin-top: 100px;">
+                        <div class="image-box">
+                            <img src="${pageContext.request.contextPath}/resources/images/gears/${opt.imageFilename}" alt="${opt.optionName}">
+                            <span class="cc-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--success-color); border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700;">
+                                재고 ${opt.stockQuantity}개
+                            </span>
                         </div>
-                        <div class="gear-info-body" style="width: 65%; padding: 30px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div class="info-body">
                             <div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                                    <h3 style="font-size: 1.45rem; font-weight: 700; color: #fff; margin: 0;">
-                                        ${opt.optionName}
-                                    </h3>
-                                    <div style="text-align: right;">
-                                        <span style="font-size: 0.8rem; color: #888; display: block; text-transform: uppercase;">1일 대여료</span>
-                                        <strong style="font-size: 1.35rem; color: var(--primary-color); font-family: 'Outfit';">
-                                            ₩<fmt:formatNumber value="${opt.dailyPrice}" pattern="#,###"/>
-                                        </strong>
-                                    </div>
-                                </div>
-                                
-                                <p style="color: #bbb; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px; min-height: 48px;">
+                                <span class="brand-tag">
+                                    Premium Gear
+                                </span>
+                                <h3>
+                                    ${opt.optionName}
+                                </h3>
+                                <p style="min-height: 80px; margin-bottom: 15px;">
                                     <c:choose>
                                         <c:when test="${fn:contains(opt.optionName, '헬멧')}">
-                                            안전성이 철저하게 입증된 프리미엄 HJC 헬멧으로, 장거리 고속 투어 및 시티 라이딩 시 라이더의 머리를 보호합니다. 사용 전 완벽한 자외선 살균 및 소독 청결 처리를 보장합니다.
+                                            안전성이 철저하게 입증된 프리미엄 HJC 헬멧으로, 장거리 고속 투어 및 시티 라이딩 시 라이더의 머리를 보호합니다. 사용 전 완벽한 살균 및 소독 청결 처리를 보장합니다.
                                         </c:when>
                                         <c:when test="${fn:contains(opt.optionName, '인터콤')}">
                                             라이딩 중 스마트폰 내비게이션의 음성 안내와 음악 감상을 무손실 오디오로 즐기거나, 동반 라이더와 실시간 음성 통신(메시 통신)이 가능한 고성능 무선 인터콤 장비입니다.
@@ -115,14 +100,23 @@
                                         <c:when test="${fn:contains(opt.optionName, '팬츠')}">
                                             골반 및 무릎 보호대가 기본 포함된 고기능성 라이딩 진입니다. 고강도 아라미드 케블라 보강재 라이닝으로 마찰 내마모성을 극대화하여 슬립 시 라이더 하체를 안전하게 보호합니다.
                                         </c:when>
+                                        <c:otherwise>
+                                            라이더의 안전과 편안한 주행 환경을 보장하기 위해 세심하게 선별되고 정밀하게 관리되는 프리미엄 라이딩 장비입니다.
+                                        </c:otherwise>
                                     </c:choose>
                                 </p>
                             </div>
                             
-                            <!-- 제원/특징 요약 한 줄 -->
-                            <div style="border-top: 1px solid #222; padding-top: 18px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
-                                <span style="color: #666; font-style: italic;">Spec: ${gearSpec}</span>
-                                <span style="color: #10b981; font-weight: 600;">재고 보유량: ${opt.stockQuantity}개</span>
+                            <!-- 제원 안내 (대여료, 특징) -->
+                            <div class="spec-table" style="border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: auto;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem;">
+                                    <span style="color: #888;">1일 대여료</span>
+                                    <strong style="color: var(--primary-color); font-weight: 700;">₩<fmt:formatNumber value="${opt.dailyPrice}" pattern="#,###"/></strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                                    <span style="color: #888;">기능/특징</span>
+                                    <span style="color: #ddd; font-weight: 600; font-size: 0.75rem; text-align: right; max-width: 70%; word-break: keep-all;">${gearSpec}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -132,22 +126,97 @@
     </section>
 
 <style>
-    .gear-card:hover {
-        border-color: var(--primary-color) !important;
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(229, 9, 20, 0.12);
+    .gear-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 24px;
     }
-    .gear-card:hover .gear-img-wrapper img {
+    
+    .info-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .info-card:hover {
+        border-color: var(--primary-color) !important;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(229, 9, 20, 0.15);
+    }
+    
+    .info-card .image-box {
+        position: relative;
+        height: 180px;
+        background: var(--light-gray-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .info-card .image-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .info-card:hover .image-box img {
         transform: scale(1.05);
     }
     
-    @media (max-width: 768px) {
-        .gear-card {
-            flex-direction: column !important;
-        }
-        .gear-img-wrapper, .gear-info-body {
-            width: 100% !important;
-        }
+    .info-card .cc-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(0,0,0,0.75);
+        border: 1px solid var(--primary-color);
+        color: #fff;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        z-index: 2;
+    }
+    
+    .info-card .info-body {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .info-card .brand-tag {
+        color: var(--primary-color);
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+    .info-card h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 8px;
+        letter-spacing: -0.3px;
+    }
+    
+    .info-card p {
+        color: #888;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin-bottom: 15px;
+        min-height: 48px;
     }
 </style>
 

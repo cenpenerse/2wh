@@ -22,7 +22,7 @@
         <form action="${pageContext.request.contextPath}/bikeSelect.do" method="get" class="hero-search-bar" style="display: flex; align-items: center; background: rgba(22, 22, 22, 0.85); border: 1px solid #333; border-radius: 100px; padding: 8px 8px 8px 30px; max-width: 780px; width: 100%; box-shadow: 0 15px 35px rgba(0,0,0,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
             <!-- 대여 위치 -->
             <div style="display: flex; align-items: center; gap: 12px; flex: 1; text-align: left;">
-                <span style="color: #E50914; font-size: 1.35rem;">📍</span>
+                <span style="color: #E50914; font-size: 1.35rem;"></span>
                 <div style="display: flex; flex-direction: column; flex: 1;">
                     <label style="font-size: 0.75rem; color: #888; font-weight: 700; margin-bottom: 2px;">대여 위치</label>
                     <select name="shopId" style="background: transparent; border: none; outline: none; color: #fff; font-size: 0.95rem; font-weight: 700; width: 100%; cursor: pointer; padding-right: 15px; appearance: none; -webkit-appearance: none; -moz-appearance: none; background: url('data:image/svg+xml;utf8,<svg fill=%23ffffff height=18 viewBox=\'0 0 24 24\' width=18 xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/><path d=\'M0 0h24v24H0z\' fill=\'none\'/></svg>') no-repeat; background-position: right 0 center;">
@@ -38,7 +38,7 @@
 
             <!-- 대여 시간 -->
             <div style="display: flex; align-items: center; gap: 12px; flex: 1.2; text-align: left;">
-                <span style="color: #E50914; font-size: 1.3rem;">📅</span>
+                <span style="color: #E50914; font-size: 1.3rem;"></span>
                 <div style="display: flex; flex-direction: column; flex: 1;">
                     <label style="font-size: 0.75rem; color: #888; font-weight: 700; margin-bottom: 2px;">대여 시간</label>
                     <input type="text" id="hero-date-range" placeholder="대여 기간 선택" style="background: transparent; border: none; outline: none; color: #fff; font-size: 0.95rem; font-weight: 700; width: 100%; cursor: pointer;">
@@ -47,7 +47,7 @@
 
             <!-- 검색 버튼 -->
             <button type="submit" style="background: #E50914; color: #fff; border: none; padding: 15px 35px; border-radius: 50px; font-weight: 800; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);" onmouseover="this.style.backgroundColor='#B20710'; this.style.transform='scale(1.02)';" onmouseout="this.style.backgroundColor='#E50914'; this.style.transform='scale(1)';">
-                <span>🔍</span> 차량 검색
+                <span></span> 차량 검색
             </button>
         </form>
     </div>
@@ -126,8 +126,7 @@
                             </div>
 
                             <a href="${pageContext.request.contextPath}/bikeDetail.do?bikeId=${bike.bikeId}" class="card-action-btn" style="display: block; text-align: center; background: transparent; color: #fff; border: 1px solid #E50914; padding: 12px 0; border-radius: 8px; font-weight: 700; text-decoration: none; transition: all 0.3s ease;">
-                                상세 정보 및 예약하기 ⚡
-                            </a>
+                                상세 정보 및 예약하기 </a>
                         </div>
                     </div>
                 </div>
@@ -146,17 +145,17 @@
         
         <div class="features-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
             <div class="feature-card" style="background: #121212; border: 1px solid #222; padding: 40px; border-radius: 16px; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
-                <div style="font-size: 2.8rem; margin-bottom: 20px;">🛡️</div>
+                <div style="font-size: 2.8rem; margin-bottom: 20px;"></div>
                 <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 12px;">현업 미캐닉 전문 정비</h3>
                 <p style="color: #888; font-size: 0.95rem; line-height: 1.6; margin: 0;">매 반납 즉시 조향, 구동계, 전자 계통 등 20개 핵심 안전 진단 항목을 전용 장비로 확인하여 최고의 주행 질감을 보장합니다.</p>
             </div>
             <div class="feature-card" style="background: #121212; border: 1px solid #222; padding: 40px; border-radius: 16px; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
-                <div style="font-size: 2.8rem; margin-bottom: 20px;">⛑️</div>
+                <div style="font-size: 2.8rem; margin-bottom: 20px;"></div>
                 <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 12px;">프리미엄 보호 장구 포함</h3>
                 <p style="color: #888; font-size: 0.95rem; line-height: 1.6; margin: 0;">안전 검사를 획득한 풀페이스/오픈페이스 헬멧 및 신체 보호 반사 밴드를 고객의 생명을 위해 추가 과금 없이 무상 렌탈합니다.</p>
             </div>
             <div class="feature-card" style="background: #121212; border: 1px solid #222; padding: 40px; border-radius: 16px; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
-                <div style="font-size: 2.8rem; margin-bottom: 20px;">📞</div>
+                <div style="font-size: 2.8rem; margin-bottom: 20px;"></div>
                 <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 12px;">24시 긴급 출동 케어</h3>
                 <p style="color: #888; font-size: 0.95rem; line-height: 1.6; margin: 0;">라이딩 중 돌발 상황이나 펑크, 고장 등 긴급 사태가 벌어지면 당사 긴급 픽업 팀이 현장으로 24시간 즉시 출동하여 대처합니다.</p>
             </div>
@@ -170,7 +169,7 @@
         <h2 style="font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 800; margin-bottom: 20px; text-shadow: 0 4px 15px rgba(0,0,0,0.3);">지금, 바람을 가르며 달릴 시간입니다</h2>
         <p style="font-size: 1.2rem; color: rgba(255,255,255,0.9); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto;">최고의 머신들과 함께하는 자유로운 투어링 라이프. Baren이 라이더의 첫 시동을 동행합니다.</p>
         <div>
-            <a href="${pageContext.request.contextPath}/bikeList.do" style="display: inline-block; background: #000; color: #fff; padding: 18px 45px; font-size: 1.1rem; font-weight: 700; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: all 0.3s ease; text-transform: uppercase; text-decoration: none;" onmouseover="this.style.transform='scale(1.05)'; this.style.backgroundColor='#111';" onmouseout="this.style.transform='scale(1)'; this.style.backgroundColor='#000';">바이크 예약하러 가기 ⚡</a>
+            <a href="${pageContext.request.contextPath}/bikeList.do" style="display: inline-block; background: #000; color: #fff; padding: 18px 45px; font-size: 1.1rem; font-weight: 700; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: all 0.3s ease; text-transform: uppercase; text-decoration: none;" onmouseover="this.style.transform='scale(1.05)'; this.style.backgroundColor='#111';" onmouseout="this.style.transform='scale(1)'; this.style.backgroundColor='#000';">바이크 예약하러 가기 </a>
         </div>
     </div>
 </section>

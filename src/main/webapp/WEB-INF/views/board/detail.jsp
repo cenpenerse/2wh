@@ -26,7 +26,7 @@
         <c:if test="${not empty post.filename}">
             <div class="post-attachment-box" style="margin-top: 30px; padding: 20px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px;">
                 <h4 style="font-size: 0.95rem; color: #aaa; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px;">
-                    📎 첨부파일
+                    첨부파일
                 </h4>
                 
                 <c:set var="fileNameLower" value="${post.filename.toLowerCase()}" />
@@ -42,7 +42,7 @@
                 </c:if>
                 
                 <a href="${pageContext.request.contextPath}/resources/upload/${post.filename}" download="${post.filename}" style="display: inline-flex; align-items: center; gap: 8px; color: #60a5fa; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='#93c5fd'" onmouseout="this.style.color='#60a5fa'">
-                    💾 ${post.filename} (다운로드)
+                    ${post.filename} (다운로드)
                 </a>
             </div>
         </c:if>
@@ -72,7 +72,7 @@
                     <c:forEach var="comment" items="${commentList}">
                         <div class="comment-item">
                             <div class="comment-header">
-                                <span class="comment-author">👤 ${comment.memberNickname}</span>
+                                <span class="comment-author">${comment.memberNickname}</span>
                                 <span class="comment-date"><fmt:formatDate value="${comment.createdAt}" pattern="yyyy-MM-dd HH:mm"/></span>
                             </div>
                             <div class="comment-body">
