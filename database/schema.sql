@@ -526,28 +526,28 @@ INSERT INTO bike_images (image_id, bike_id, image_url, is_thumbnail) VALUES (seq
 
 -- 4-6. 옵션 장비 등록
 INSERT INTO option_items (option_id, option_name, stock_quantity, daily_price, image_filename, status)
-VALUES (seq_option_items.NEXTVAL, '⛑️ 홍진 HJC 오픈페이스 헬멧', 50, 5000, 'gear_helmet.png', 'AVAILABLE');
+VALUES (seq_option_items.NEXTVAL, '홍진 HJC 오픈페이스 헬멧', 50, 5000, 'gear_helmet.png', 'AVAILABLE');
 
 INSERT INTO option_items (option_id, option_name, stock_quantity, daily_price, image_filename, status)
-VALUES (seq_option_items.NEXTVAL, '🛜 세나 50S 블루투스 인터콤', 30, 7000, 'gear_intercom.png', 'AVAILABLE');
+VALUES (seq_option_items.NEXTVAL, '세나 50S 블루투스 인터콤', 30, 7000, 'gear_intercom.png', 'AVAILABLE');
 
 INSERT INTO option_items (option_id, option_name, stock_quantity, daily_price, image_filename, status)
-VALUES (seq_option_items.NEXTVAL, '📦 알루미늄 대용량 탑박스', 20, 4000, 'gear_topbox.png', 'AVAILABLE');
+VALUES (seq_option_items.NEXTVAL, '알루미늄 대용량 탑박스', 20, 4000, 'gear_topbox.png', 'AVAILABLE');
 
 INSERT INTO option_items (option_id, option_name, stock_quantity, daily_price, image_filename, status)
-VALUES (seq_option_items.NEXTVAL, '📱 초고속 자석 스마트폰 거치대', 40, 2000, 'gear_holder.png', 'AVAILABLE');
+VALUES (seq_option_items.NEXTVAL, '초고속 자석 스마트폰 거치대', 40, 2000, 'gear_holder.png', 'AVAILABLE');
 
 INSERT INTO option_items (option_id, option_name, stock_quantity, daily_price, image_filename, status)
-VALUES (seq_option_items.NEXTVAL, '🛡️ 프리미엄 무릎 및 팔꿈치 보호대', 25, 3000, 'gear_protector.png', 'AVAILABLE');
+VALUES (seq_option_items.NEXTVAL, '프리미엄 무릎 및 팔꿈치 보호대', 25, 3000, 'gear_protector.png', 'AVAILABLE');
 
 INSERT INTO option_items (option_id, option_name, stock_quantity, daily_price, image_filename, status)
-VALUES (seq_option_items.NEXTVAL, '🧤 프리미엄 가죽 메쉬 장갑', 30, 3000, 'gear_gloves.png', 'AVAILABLE');
+VALUES (seq_option_items.NEXTVAL, '프리미엄 가죽 메쉬 장갑', 30, 3000, 'gear_gloves.png', 'AVAILABLE');
 
 INSERT INTO option_items (option_id, option_name, stock_quantity, daily_price, image_filename, status)
-VALUES (seq_option_items.NEXTVAL, '🧥 사계절 전천후 라이딩 재킷', 20, 8000, 'gear_jacket.png', 'AVAILABLE');
+VALUES (seq_option_items.NEXTVAL, '사계절 전천후 라이딩 재킷', 20, 8000, 'gear_jacket.png', 'AVAILABLE');
 
 INSERT INTO option_items (option_id, option_name, stock_quantity, daily_price, image_filename, status)
-VALUES (seq_option_items.NEXTVAL, '👖 다기능 아머드 라이딩 팬츠', 20, 6000, 'gear_pants.png', 'AVAILABLE');
+VALUES (seq_option_items.NEXTVAL, '다기능 아머드 라이딩 팬츠', 20, 6000, 'gear_pants.png', 'AVAILABLE');
 
 -- 4-7. 예약 등록
 INSERT INTO reservations (reservation_id, user_id, bike_id, pickup_shop_id, dropoff_shop_id, start_date, end_date, rental_days, total_price, status, created_at)

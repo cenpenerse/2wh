@@ -31,7 +31,7 @@
             <div class="form-group" style="margin-top: 20px;">
                 <label for="attachedFile">파일 첨부</label>
                 <input type="file" id="attachedFile" name="attachedFile" style="background: #222; color: #ccc; border: 1px solid #444; padding: 10px; border-radius: 6px; width: 100%;">
-                <p style="font-size: 0.8rem; color: #888; margin-top: 6px;">📄 이미지(jpg, png 등) 또는 일반 문서 파일을 최대 10MB까지 첨부할 수 있습니다.</p>
+                <p style="font-size: 0.8rem; color: #888; margin-top: 6px;">이미지(jpg, png 등) 또는 일반 문서 파일을 최대 10MB까지 첨부할 수 있습니다.</p>
             </div>
 
             <div class="form-actions-row" style="text-align: right; margin-top: 30px;">
