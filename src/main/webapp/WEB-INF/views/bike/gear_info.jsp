@@ -50,6 +50,21 @@
                             <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_protector.png" />
                             <c:set var="gearSpec" value="CE 레벨 2 안전 패드 내장 | 통풍 메시 재질 | 벨크로 밴딩 조절 방식" />
                         </c:when>
+                        <c:when test="${fn:contains(opt.optionName, '장갑')}">
+                            <c:set var="cardId" value="gloves" />
+                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_gloves.png" />
+                            <c:set var="gearSpec" value="천연 가죽 및 고강도 매쉬 | 카본 너클 관절 보호대 | 스마트폰 터치 원단 지원" />
+                        </c:when>
+                        <c:when test="${fn:contains(opt.optionName, '재킷')}">
+                            <c:set var="cardId" value="jacket" />
+                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_jacket.png" />
+                            <c:set var="gearSpec" value="CE 인증 어깨/팔꿈치 보호대 기본 장착 | 탈부착식 방풍 내피 | 고휘도 반사 스카치" />
+                        </c:when>
+                        <c:when test="${fn:contains(opt.optionName, '팬츠')}">
+                            <c:set var="cardId" value="pants" />
+                            <c:set var="imageUrl" value="${pageContext.request.contextPath}/resources/images/gears/gear_pants.png" />
+                            <c:set var="gearSpec" value="CE 인증 무릎/골반 보호대 기본 장착 | 고강도 케블라 안감 보강 | 사방 스트레치 데님" />
+                        </c:when>
                     </c:choose>
                     
                     <!-- 개별 장비 정보 카드 -->
@@ -90,6 +105,15 @@
                                         </c:when>
                                         <c:when test="${fn:contains(opt.optionName, '보호대')}">
                                             기어 조작이나 예기치 못한 전도 상황에서 무릎과 팔꿈치 뼈, 피부를 최적으로 감싸 보호해 주는 라이더 필수 보호 장비 세트입니다. 통기성이 뛰어나 답답하지 않습니다.
+                                        </c:when>
+                                        <c:when test="${fn:contains(opt.optionName, '장갑')}">
+                                            넘어짐 시 손을 보호하고 스로틀 및 그립 조작의 그립력을 대폭 향상해 주는 고기능성 메쉬 가죽 장갑입니다. 엄지와 검지에 전도성 패치가 있어 착용한 상태로 터치가 가능합니다.
+                                        </c:when>
+                                        <c:when test="${fn:contains(opt.optionName, '재킷')}">
+                                            어깨, 팔꿈치 보호 패드 기본 내장 및 내마모성이 뛰어난 코듀라 원단으로 제작된 사계절용 라이딩 재킷입니다. 방풍/방수 기능과 통기 벤틸레이션 지퍼가 설계되어 있습니다.
+                                        </c:when>
+                                        <c:when test="${fn:contains(opt.optionName, '팬츠')}">
+                                            골반 및 무릎 보호대가 기본 포함된 고기능성 라이딩 진입니다. 고강도 아라미드 케블라 보강재 라이닝으로 마찰 내마모성을 극대화하여 슬립 시 라이더 하체를 안전하게 보호합니다.
                                         </c:when>
                                     </c:choose>
                                 </p>

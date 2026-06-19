@@ -139,7 +139,6 @@
         </div>
     </div>
 
-    <!-- 2. 탭 메뉴 영역 -->
     <div class="mypage-tabs">
         <c:choose>
             <c:when test="${loginUser.memberStatus eq 'ADMIN'}">
@@ -152,6 +151,11 @@
                 <button class="tab-btn" onclick="openTab(event, 'tab-admin-license')">🪪 면허 검증 심사</button>
                 <button class="tab-btn" onclick="openTab(event, 'tab-admin-maintenance')">🔧 차량 정비 관리</button>
                 <button class="tab-btn" onclick="openTab(event, 'tab-admin-fuel')">⛽ 반납/주유 기록</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-payment')">💳 결제 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-notification')">🔔 알림 발송 이력</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-accident')">💥 사고 처리 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-blacklist')">🚫 블랙리스트 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-refund')">💸 환불 내역 관리</button>
             </c:when>
             <c:otherwise>
                 <button class="tab-btn active" onclick="openTab(event, 'tab-user-bookings')">🏍️ 내 예약 내역</button>
@@ -159,6 +163,11 @@
                 <button class="tab-btn" onclick="openTab(event, 'tab-user-license')">🪪 면허증 관리</button>
                 <button class="tab-btn" onclick="openTab(event, 'tab-user-inquiries')">💬 1:1 문의 내역</button>
                 <button class="tab-btn" onclick="openTab(event, 'tab-user-edit')">👤 내 정보 수정</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-payment')">💳 내 결제 이력</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-notification')">🔔 내 알림함</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-point')">🪙 내 포인트/등급</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-accident')">💥 사고 접수 내역</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-refund')">💸 내 환불 내역</button>
             </c:otherwise>
         </c:choose>
     </div>
@@ -743,6 +752,7 @@
                                     </form>
                                 </div>
                             </div>
+                        </div>
                     </div>
                 </div>
 
@@ -887,7 +897,7 @@
                                             <select name="bikeId" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
                                                 <option value="">--- 바이크를 선택하세요 ---</option>
                                                 <c:forEach var="bike" items="${adminBikeList}">
-                                                    <option value="${bike.bikeId}">${bike.modelName} (차량 ID: ${bike.bikeId})</option>
+                                                    <option value="${bike.bikeId}">${bike.bikeName} (차량 ID: ${bike.bikeId})</option>
                                                 </c:forEach>
                                             </select>
                                         </div>
@@ -1033,6 +1043,428 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ================= [관리자] 탭 10: 결제 관리 ================= -->
+                <div id="tab-admin-payment" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">💳 전체 회원 결제 내역 관리</h3>
+                        <div class="table-wrapper">
+                            <table class="mypage-table">
+                                <thead>
+                                    <tr>
+                                        <th>결제번호</th>
+                                        <th>예약번호</th>
+                                        <th>결제자 정보</th>
+                                        <th>결제 수단</th>
+                                        <th>PG사 승인번호</th>
+                                        <th>결제 금액</th>
+                                        <th>결제 일시</th>
+                                        <th>결제 상태</th>
+                                        <th>취소/환불 금액</th>
+                                        <th>결제 관리</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty adminPaymentList}">
+                                            <c:forEach var="pay" items="${adminPaymentList}">
+                                                <tr>
+                                                    <td>#${pay.paymentId}</td>
+                                                    <td>#${pay.reservationId}</td>
+                                                    <td>
+                                                        <strong>${pay.userNickname}</strong><br>
+                                                        <span style="font-size:0.75rem; color:#888;">${pay.userEmail}</span>
+                                                    </td>
+                                                    <td><span style="padding:2px 6px; background:#222; border-radius:4px; font-weight:bold;">${pay.paymentMethod}</span></td>
+                                                    <td><code style="color:#aaa;">${pay.pgApprovalNum}</code></td>
+                                                    <td>₩<fmt:formatNumber value="${pay.amount}" pattern="#,###"/></td>
+                                                    <td><span style="font-size:0.8rem;"><fmt:formatDate value="${pay.paidAt}" pattern="yyyy-MM-dd HH:mm"/></span></td>
+                                                    <td>
+                                                        <span class="status-badge" style="padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; 
+                                                            background: ${pay.paymentStatus eq '결제완료' ? '#10b981' : (pay.paymentStatus eq '부분취소' ? '#f59e0b' : '#ef4444')}; color: #fff;">
+                                                            ${pay.paymentStatus}
+                                                        </span>
+                                                    </td>
+                                                    <td style="color:${pay.refundAmount > 0 ? '#ef4444' : '#666'}; font-weight:bold;">
+                                                        ₩<fmt:formatNumber value="${pay.refundAmount}" pattern="#,###"/>
+                                                    </td>
+                                                    <td>
+                                                        <c:if test="${pay.paymentStatus ne '전체취소'}">
+                                                            <button onclick="openRefundModal(${pay.paymentId}, ${pay.amount}, ${pay.refundAmount})" class="btn-sm" style="padding: 4px 8px; border:none; border-radius: 4px; background: #ef4444; color: #fff; font-weight:bold; cursor:pointer;">취소/환불</button>
+                                                        </c:if>
+                                                        <c:if test="${pay.paymentStatus eq '전체취소'}">
+                                                            <span style="color:#666;">취소 완료</span>
+                                                        </c:if>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="10" style="text-align: center; padding: 20px; color: #888;">조회된 회원 결제 이력이 없습니다.</td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= [관리자] 탭 11: 알림 발송 이력 ================= -->
+                <div id="tab-admin-notification" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🔔 전체 회원 알림 발송 현황</h3>
+                        
+                        <div class="crud-section-grid">
+                            <!-- 알림 이력 목록 -->
+                            <div>
+                                <h4 style="margin-bottom: 10px; color:#fff;">알림 발송 이력</h4>
+                                <div class="table-wrapper">
+                                    <table class="mypage-table" style="font-size: 0.85rem;">
+                                        <thead>
+                                            <tr>
+                                                <th>알림번호</th>
+                                                <th>수신자</th>
+                                                <th>알림 타입</th>
+                                                <th>알림 내용</th>
+                                                <th>발송 일시</th>
+                                                <th>수신 여부</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <c:choose>
+                                                <c:when test="${not empty adminNotificationList}">
+                                                    <c:forEach var="noti" items="${adminNotificationList}">
+                                                        <tr>
+                                                            <td>#${noti.notificationId}</td>
+                                                            <td>
+                                                                <strong>${noti.userNickname}</strong><br>
+                                                                <span style="font-size:0.75rem; color:#888;">${noti.userEmail}</span>
+                                                            </td>
+                                                            <td><span style="padding:2px 6px; background:#222; border-radius:4px; font-weight:bold; color:var(--primary-color);">${noti.notificationType}</span></td>
+                                                            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${noti.content}">${noti.content}</td>
+                                                            <td><span style="font-size:0.8rem;"><fmt:formatDate value="${noti.createdAt}" pattern="yyyy-MM-dd HH:mm"/></span></td>
+                                                            <td>
+                                                                <span style="font-weight:bold; color: ${noti.isReceived eq 'Y' ? '#10b981' : '#f59e0b'};">
+                                                                    ${noti.isReceived eq 'Y' ? '수신완료' : '전송대기'}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </c:forEach>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <tr>
+                                                        <td colspan="6" style="text-align: center; padding: 20px; color: #888;">조회된 알림 발송 이력이 없습니다.</td>
+                                                    </tr>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- 알림 직접 발송 폼 -->
+                            <div>
+                                <h4 style="margin-bottom: 10px; color:#fff;">🔔 개별 알림 직접 발송</h4>
+                                <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px;">
+                                    <form action="${pageContext.request.contextPath}/adminNotificationAddAction.do" method="post">
+                                        <div class="form-group" style="margin-bottom: 12px;">
+                                            <label style="font-size:0.85rem; color:#aaa;">대상 회원 선택</label>
+                                            <select name="userId" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                                <option value="">--- 알림을 보낼 회원을 선택하세요 ---</option>
+                                                <c:forEach var="member" items="${memberList}">
+                                                    <c:if test="${member.memberStatus ne 'ADMIN'}">
+                                                        <option value="${member.memberId}">${member.nickname} (${member.email})</option>
+                                                    </c:if>
+                                                </c:forEach>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin-bottom: 12px;">
+                                            <label style="font-size:0.85rem; color:#aaa;">알림 타입</label>
+                                            <select name="notificationType" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                                <option value="알림톡">알림톡 (KakaoTalk)</option>
+                                                <option value="SMS">SMS 문자메시지</option>
+                                                <option value="앱푸시">앱푸시 (App Push)</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group" style="margin-bottom: 15px;">
+                                            <label style="font-size:0.85rem; color:#aaa;">알림 내용</label>
+                                            <textarea name="content" required placeholder="전송할 알림 메세지 내용을 입력하세요." style="width:100%; height:120px; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff; resize:none;"></textarea>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-action-main" style="width:100%; padding:10px; font-weight:bold; background:#e50914;">알림 발송하기</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 💥 사고 처리 관리 탭 -->
+                <div id="tab-admin-accident" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">💥 사고 접수 및 처리 관리</h3>
+                        <div class="table-wrapper">
+                            <table class="mypage-table">
+                                <thead>
+                                    <tr>
+                                        <th>사고번호</th>
+                                        <th>회원 정보</th>
+                                        <th>예약번호</th>
+                                        <th>사고일시</th>
+                                        <th>사고장소</th>
+                                        <th>현장사진</th>
+                                        <th>보험접수번호</th>
+                                        <th>과실비율</th>
+                                        <th>처리상태</th>
+                                        <th>상태 변경</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty adminAccidentList}">
+                                            <c:forEach var="acc" items="${adminAccidentList}">
+                                                <tr>
+                                                    <td><strong>#${acc.reportId}</strong></td>
+                                                    <td>
+                                                        <strong>${acc.userNickname}</strong><br>
+                                                        <span style="font-size:0.8rem; color:#888;">${acc.userEmail}</span>
+                                                    </td>
+                                                    <td>#${acc.reservationId}</td>
+                                                    <td><fmt:formatDate value="${acc.accidentDate}" pattern="yyyy-MM-dd HH:mm"/></td>
+                                                    <td>${acc.accidentLocation}</td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty acc.photoPath}">
+                                                                <a href="${pageContext.request.contextPath}/${acc.photoPath}" target="_blank" class="btn" style="padding:4px 8px; font-size:0.8rem; background:#333; border:1px solid #555; color:#fff;">👁️ 사진보기</a>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span style="color:#666;">사진 없음</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty acc.insuranceClaimNum}">
+                                                                <strong>${acc.insuranceClaimNum}</strong>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span style="color:#666;">미발급</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${acc.status eq '접수'}">
+                                                                <span style="color:#666;">산정 전</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <strong>${acc.faultRatio}%</strong>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${acc.status eq '접수'}">
+                                                                <span style="background:#444; color:#fff; padding:3px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">접수</span>
+                                                            </c:when>
+                                                            <c:when test="${acc.status eq '손해사정중'}">
+                                                                <span style="background:#e0a82e; color:#000; padding:3px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">손해사정중</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span style="background:#28a745; color:#fff; padding:3px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">종결</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>
+                                                        <button onclick="openAccidentModal('${acc.reportId}', '${acc.status}', '${acc.insuranceClaimNum}', '${acc.faultRatio}')" class="btn" style="padding:5px 10px; font-size:0.8rem; background:#333; border:1px solid #555; color:#fff; cursor:pointer;">🛠️ 변경</button>
+                                                    </td>
+                                                </tr>
+                                                <tr style="background:#151515;">
+                                                    <td colspan="10" style="padding:10px 15px; border-top:none; text-align:left;">
+                                                        <div style="font-size:0.85rem; color:#ccc; line-height:1.5;">
+                                                            <strong>💬 사고경위:</strong> ${acc.accidentDescription}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="10" style="text-align:center; padding:30px; color:#888;">접수된 사고 건이 없습니다.</td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🚫 블랙리스트 관리 탭 -->
+                <div id="tab-admin-blacklist" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222; margin-bottom: 25px;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🚫 악성 회원 블랙리스트 등록</h3>
+                        <form action="${pageContext.request.contextPath}/adminBlacklistAddAction.do" method="post" style="display:flex; flex-direction:column; gap:15px;">
+                            <div style="display:flex; gap:15px;">
+                                <div style="flex:1;">
+                                    <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">회원 선택</label>
+                                    <select name="userId" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                        <option value="">-- 차단할 회원 선택 --</option>
+                                        <c:forEach var="m" items="${memberList}">
+                                            <c:if test="${m.memberStatus eq 'USER'}">
+                                                <option value="${m.memberId}">${m.nickname} (${m.email})</option>
+                                            </c:if>
+                                        </c:forEach>
+                                    </select>
+                                </div>
+                                <div style="flex:1;">
+                                    <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">차단 유형</label>
+                                    <select name="banType" id="ban-type-selector" onchange="toggleBanDate()" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                        <option value="영구차단">영구차단</option>
+                                        <option value="기간차단">기간차단</option>
+                                    </select>
+                                </div>
+                                <div style="flex:1; display:none;" id="ban-date-group">
+                                    <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">차단 만료일</label>
+                                    <input type="date" name="endDate" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">차단 사유</label>
+                                <textarea name="reason" required placeholder="사유를 입력해 주세요 (예: 체납, 무면허 대여, 오토바이 파손 등)" style="width:100%; height:80px; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff; resize:none;"></textarea>
+                            </div>
+                            <button type="submit" class="btn" style="padding:12px; font-weight:bold; background:#e50914; color:#fff; border:none; border-radius:6px; cursor:pointer;">블랙리스트 차단 등록</button>
+                        </form>
+                    </div>
+
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">📋 블랙리스트 차단 목록</h3>
+                        <div class="table-wrapper">
+                            <table class="mypage-table">
+                                <thead>
+                                    <tr>
+                                        <th>차단번호</th>
+                                        <th>회원 정보</th>
+                                        <th>차단 유형</th>
+                                        <th>차단 사유</th>
+                                        <th>차단 시작일</th>
+                                        <th>차단 만료일</th>
+                                        <th>등록 관리자</th>
+                                        <th>조치 해제</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty adminBlacklist}">
+                                            <c:forEach var="bl" items="${adminBlacklist}">
+                                                <tr>
+                                                    <td><strong>#${bl.blacklistId}</strong></td>
+                                                    <td>
+                                                        <strong>${bl.userNickname}</strong><br>
+                                                        <span style="font-size:0.8rem; color:#888;">${bl.userEmail}</span>
+                                                    </td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${bl.banType eq '영구차단'}">
+                                                                <span style="color:#e50914; font-weight:bold;">영구차단</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span style="color:#e0a82e; font-weight:bold;">기간차단</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>${bl.reason}</td>
+                                                    <td>${bl.startDate}</td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty bl.endDate}">
+                                                                ${bl.endDate}
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span style="color:#666;">없음</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>${bl.adminNickname}</td>
+                                                    <td>
+                                                        <form action="${pageContext.request.contextPath}/adminBlacklistReleaseAction.do" method="post" onsubmit="return confirm('해당 회원의 차단 조치를 해제하시겠습니까?');" style="display:inline;">
+                                                            <input type="hidden" name="blacklistId" value="${bl.blacklistId}">
+                                                            <input type="hidden" name="userId" value="${bl.userId}">
+                                                            <button type="submit" class="btn" style="padding:5px 10px; font-size:0.8rem; background:#333; color:#fff; border:1px solid #555; cursor:pointer;">🔓 해제</button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="8" style="text-align:center; padding:30px; color:#888;">차단된 회원이 없습니다.</td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- 💸 환불 내역 관리 탭 -->
+                <div id="tab-admin-refund" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">💸 전체 회원 환불 내역 관리</h3>
+                        <div class="table-wrapper">
+                            <table class="mypage-table">
+                                <thead>
+                                    <tr>
+                                        <th>환불번호</th>
+                                        <th>결제번호</th>
+                                        <th>예약번호</th>
+                                        <th>회원 정보</th>
+                                        <th>결제 금액</th>
+                                        <th>적용 위약금율</th>
+                                        <th>최종 환불금액</th>
+                                        <th>환불 수단</th>
+                                        <th>취소 요청일시</th>
+                                        <th>처리 상태</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty adminRefundList}">
+                                            <c:forEach var="ref" items="${adminRefundList}">
+                                                <tr>
+                                                    <td><strong>#${ref.refundId}</strong></td>
+                                                    <td>#${ref.paymentId}</td>
+                                                    <td>#${ref.reservationId}</td>
+                                                    <td>
+                                                        <strong>${ref.userNickname}</strong><br>
+                                                        <span style="font-size:0.75rem; color:#888;">${ref.userEmail}</span>
+                                                    </td>
+                                                    <td>₩<fmt:formatNumber value="${ref.paymentAmount}" pattern="#,###"/></td>
+                                                    <td style="color:#ef4444; font-weight:bold;">${ref.penaltyRate}%</td>
+                                                    <td style="color:#10b981; font-weight:bold;">₩<fmt:formatNumber value="${ref.refundAmount}" pattern="#,###"/></td>
+                                                    <td><span style="padding:2px 6px; background:#222; border-radius:4px; font-weight:bold;">${ref.refundMethod}</span></td>
+                                                    <td><span style="font-size:0.8rem;"><fmt:formatDate value="${ref.cancelRequestDate}" pattern="yyyy-MM-dd HH:mm"/></span></td>
+                                                    <td>
+                                                        <span style="background:#10b981; color:#fff; padding:3px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">${ref.status}</span>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="10" style="text-align:center; padding:30px; color:#888;">조회된 환불 내역이 없습니다.</td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </c:when>
             
             <c:otherwise>
@@ -1108,6 +1540,11 @@
                                                             <div class="bike-cell-desc">
                                                                 <strong>${book.bikeName}</strong><br>
                                                                 <span class="sub-text">${book.bikeType}</span>
+                                                                 <c:if test="${not empty book.insuranceName}">
+                                                                     <div style="font-size:0.8rem; color:#e0a82e; margin-top:2px;">
+                                                                         🛡️ 보험: <strong>${book.insuranceName}</strong> (+₩<fmt:formatNumber value="${book.insuranceFee * book.rentalDays}" pattern="#,###"/>)
+                                                                     </div>
+                                                                 </c:if>
                                                                 <c:if test="${not empty book.bookingOptions}">
                                                                     <div style="font-size:0.8rem; color:#aaa; margin-top:4px; line-height:1.4;">
                                                                         🛠️ 옵션: 
@@ -1134,12 +1571,12 @@
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <c:if test="${book.bookingStatus eq 'PENDING'}">
+                                                        <c:if test="${book.bookingStatus eq 'PENDING' or book.bookingStatus eq 'APPROVED'}">
                                                             <a href="${pageContext.request.contextPath}/bookingCancelAction.do?bookingId=${book.bookingId}" class="btn-sm btn-reject" onclick="return confirm('정말로 예약을 취소하시겠습니까?');">대여취소</a>
                                                         </c:if>
                                                         <c:if test="${book.bookingStatus eq 'APPROVED'}">
                                                             <!-- 리뷰 작성 버튼 제공 -->
-                                                            <button class="btn-sm btn-approve" onclick="openReviewModal('${book.bookingId}', '${book.bikeId}', '${book.bikeName}')">리뷰작성</button>
+                                                            <button class="btn-sm btn-approve" style="margin-left: 5px;" onclick="openReviewModal('${book.bookingId}', '${book.bikeId}', '${book.bikeName}')">리뷰작성</button>
                                                         </c:if>
                                                         <c:if test="${book.bookingStatus eq 'CANCELLED'}">
                                                             <span class="done-text">-</span>
@@ -1458,6 +1895,347 @@
                         </form>
                     </div>
                 </div>
+
+                <!-- ================= [사용자] 탭 6: 내 결제 이력 ================= -->
+                <div id="tab-user-payment" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">💳 내 결제 및 취소 내역</h3>
+                        <div class="table-wrapper">
+                            <table class="mypage-table">
+                                <thead>
+                                    <tr>
+                                        <th>결제번호</th>
+                                        <th>예약번호</th>
+                                        <th>결제 수단</th>
+                                        <th>PG사 승인번호</th>
+                                        <th>결제 금액</th>
+                                        <th>결제 일시</th>
+                                        <th>결제 상태</th>
+                                        <th>취소/환불 금액</th>
+                                        <th>취소 신청</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty userPaymentList}">
+                                            <c:forEach var="pay" items="${userPaymentList}">
+                                                <tr>
+                                                    <td>#${pay.paymentId}</td>
+                                                    <td>#${pay.reservationId}</td>
+                                                    <td><span style="padding:2px 6px; background:#222; border-radius:4px; font-weight:bold;">${pay.paymentMethod}</span></td>
+                                                    <td><code style="color:#aaa;">${pay.pgApprovalNum}</code></td>
+                                                    <td>₩<fmt:formatNumber value="${pay.amount}" pattern="#,###"/></td>
+                                                    <td><span style="font-size:0.8rem;"><fmt:formatDate value="${pay.paidAt}" pattern="yyyy-MM-dd HH:mm"/></span></td>
+                                                    <td>
+                                                        <span class="status-badge" style="padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; 
+                                                            background: ${pay.paymentStatus eq '결제완료' ? '#10b981' : (pay.paymentStatus eq '부분취소' ? '#f59e0b' : '#ef4444')}; color: #fff;">
+                                                            ${pay.paymentStatus}
+                                                        </span>
+                                                    </td>
+                                                    <td style="color:${pay.refundAmount > 0 ? '#ef4444' : '#666'}; font-weight:bold;">
+                                                        ₩<fmt:formatNumber value="${pay.refundAmount}" pattern="#,###"/>
+                                                    </td>
+                                                    <td>
+                                                        <c:if test="${pay.paymentStatus eq '결제완료'}">
+                                                            <form action="${pageContext.request.contextPath}/paymentCancelAction.do" method="post" onsubmit="return confirm('해당 결제를 정말 취소/환불하시겠습니까?');" style="display:inline;">
+                                                                <input type="hidden" name="paymentId" value="${pay.paymentId}"/>
+                                                                <input type="hidden" name="cancelType" value="FULL"/>
+                                                                <input type="hidden" name="cancelAmount" value="${pay.amount}"/>
+                                                                <button type="submit" class="btn-sm" style="padding: 4px 8px; border:none; border-radius: 4px; background: #ef4444; color: #fff; font-weight:bold; cursor:pointer;">결제취소</button>
+                                                            </form>
+                                                        </c:if>
+                                                        <c:if test="${pay.paymentStatus ne '결제완료'}">
+                                                            <span style="color:#666;">신청 불가</span>
+                                                        </c:if>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="9" style="text-align: center; padding: 20px; color: #888;">결제 내역이 존재하지 않습니다.</td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= [사용자] 탭 7: 내 알림함 ================= -->
+                <div id="tab-user-notification" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🔔 내 알림함</h3>
+                        <div class="table-wrapper">
+                            <table class="mypage-table">
+                                <thead>
+                                    <tr>
+                                        <th>알림번호</th>
+                                        <th>알림 타입</th>
+                                        <th>알림 내용</th>
+                                        <th>수신 일시</th>
+                                        <th>읽음 표시</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty userNotificationList}">
+                                            <c:forEach var="noti" items="${userNotificationList}">
+                                                <tr style="opacity: ${noti.isReceived eq 'Y' ? '0.6' : '1.0'};">
+                                                    <td>#${noti.notificationId}</td>
+                                                    <td><span style="padding:2px 6px; background:#222; border-radius:4px; font-weight:bold; color:var(--primary-color);">${noti.notificationType}</span></td>
+                                                    <td style="text-align:left; font-size: 0.9rem; padding-left: 15px;">${noti.content}</td>
+                                                    <td><span style="font-size:0.8rem;"><fmt:formatDate value="${noti.createdAt}" pattern="yyyy-MM-dd HH:mm"/></span></td>
+                                                    <td>
+                                                        <c:if test="${noti.isReceived eq 'N'}">
+                                                            <form action="${pageContext.request.contextPath}/userNotificationReadAction.do" method="post" style="display:inline;">
+                                                                <input type="hidden" name="notificationId" value="${noti.notificationId}"/>
+                                                                <button type="submit" class="btn-sm" style="padding: 4px 8px; border:none; border-radius: 4px; background: var(--primary-color); color: #fff; font-weight:bold; cursor:pointer;">읽음표시</button>
+                                                            </form>
+                                                        </c:if>
+                                                        <c:if test="${noti.isReceived eq 'Y'}">
+                                                            <span style="color:#666;">읽음</span>
+                                                        </c:if>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="5" style="text-align: center; padding: 20px; color: #888;">수신된 알림 메세지가 없습니다.</td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🪙 내 포인트/등급 탭 -->
+                <div id="tab-user-point" class="tab-content">
+                    <div style="display:flex; gap:20px; margin-bottom:25px;">
+                        <div class="panel-form" style="flex:1; border:1px solid #222; text-align:center; padding:30px;">
+                            <h4 style="color:#aaa; margin-bottom:10px;">현재 회원 등급</h4>
+                            <h2 style="font-family:'Outfit'; color:#e0a82e; font-size:2.5rem; margin-bottom:10px;">
+                                <c:choose>
+                                    <c:when test="${loginUser.userGrade eq 'VIP'}">👑 VIP 등급</c:when>
+                                    <c:when test="${loginUser.userGrade eq 'GOLD'}">✨ GOLD 등급</c:when>
+                                    <c:otherwise>🚲 SILVER 등급</c:otherwise>
+                                </c:choose>
+                            </h2>
+                            <p style="color:#ccc; font-size:0.95rem;">
+                                <c:choose>
+                                    <c:when test="${loginUser.userGrade eq 'VIP'}">대여료 <strong>10% 즉시 할인</strong> & 결제 금액의 <strong>10% 포인트 적립</strong></c:when>
+                                    <c:when test="${loginUser.userGrade eq 'GOLD'}">대여료 <strong>5% 즉시 할인</strong> & 결제 금액의 <strong>7% 포인트 적립</strong></c:when>
+                                    <c:otherwise>결제 금액의 <strong>5% 포인트 적립</strong> (GOLD 등급 달성 시 5% 할인 혜택)</c:otherwise>
+                                </c:choose>
+                            </p>
+                        </div>
+                        <div class="panel-form" style="flex:1; border:1px solid #222; text-align:center; padding:30px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                            <h4 style="color:#aaa; margin-bottom:10px;">보유 포인트</h4>
+                            <h2 style="font-family:'Outfit'; color:var(--primary-color); font-size:2.5rem; margin-bottom:10px;">
+                                <fmt:formatNumber value="${loginUser.point}" pattern="#,###"/> P
+                            </h2>
+                            <p style="color:#888; font-size:0.85rem;">대여 예약 시 현금처럼 제한 없이 사용 가능합니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🪙 포인트 적립 및 사용 이력</h3>
+                        <div class="table-wrapper">
+                            <table class="mypage-table">
+                                <thead>
+                                    <tr>
+                                        <th>이력번호</th>
+                                        <th>변동 포인트</th>
+                                        <th>변동 사유</th>
+                                        <th>남은 포인트</th>
+                                        <th>변동 일시</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty userPointList}">
+                                            <c:forEach var="ph" items="${userPointList}">
+                                                <tr>
+                                                    <td>#${ph.historyId}</td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${ph.amount > 0}">
+                                                                <span style="color:#28a745; font-weight:bold;">+<fmt:formatNumber value="${ph.amount}" pattern="#,###"/> P</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span style="color:#e50914; font-weight:bold;"><fmt:formatNumber value="${ph.amount}" pattern="#,###"/> P</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td style="text-align:left; padding-left:15px;">${ph.reason}</td>
+                                                    <td><strong><fmt:formatNumber value="${ph.accumulatedPoints}" pattern="#,###"/> P</strong></td>
+                                                    <td><fmt:formatDate value="${ph.createdAt}" pattern="yyyy-MM-dd HH:mm"/></td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="5" style="text-align:center; padding:20px; color:#888;">포인트 이력이 없습니다.</td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 💥 사고 접수 내역 탭 -->
+                <div id="tab-user-accident" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <h3 style="font-family:'Outfit';">💥 내 사고 접수 및 처리 내역</h3>
+                            <p style="color:#aaa; font-size:0.85rem; margin-top:5px;">대여 중 발생한 사고에 대한 현황 및 보험 처리 상태를 조회합니다.</p>
+                        </div>
+                        <button onclick="openAccidentReportModal()" class="btn" style="background:#e50914; color:#fff; font-weight:bold; padding:10px 20px; border:none; border-radius:6px; cursor:pointer;">🚨 사고 접수 신고하기</button>
+                    </div>
+
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <div class="table-wrapper">
+                            <table class="mypage-table">
+                                <thead>
+                                    <tr>
+                                        <th>접수번호</th>
+                                        <th>예약번호</th>
+                                        <th>사고일시</th>
+                                        <th>사고장소</th>
+                                        <th>현장사진</th>
+                                        <th>보험접수번호</th>
+                                        <th>과실비율</th>
+                                        <th>처리상태</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty userAccidentList}">
+                                            <c:forEach var="acc" items="${userAccidentList}">
+                                                <tr>
+                                                    <td><strong>#${acc.reportId}</strong></td>
+                                                    <td>#${acc.reservationId}</td>
+                                                    <td><fmt:formatDate value="${acc.accidentDate}" pattern="yyyy-MM-dd HH:mm"/></td>
+                                                    <td>${acc.accidentLocation}</td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty acc.photoPath}">
+                                                                <a href="${pageContext.request.contextPath}/${acc.photoPath}" target="_blank" style="color:var(--primary-color); text-decoration:underline;">[사진보기]</a>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span style="color:#666;">없음</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty acc.insuranceClaimNum}">
+                                                                <strong>${acc.insuranceClaimNum}</strong>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span style="color:#888; font-size:0.85rem;">접수 검토 중</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${acc.status eq '접수'}">
+                                                                <span style="color:#888; font-size:0.85rem;">확정 전</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <strong>${acc.faultRatio}%</strong>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${acc.status eq '접수'}">
+                                                                <span style="background:#444; color:#fff; padding:3px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">접수</span>
+                                                            </c:when>
+                                                            <c:when test="${acc.status eq '손해사정중'}">
+                                                                <span style="background:#e0a82e; color:#000; padding:3px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">손해사정중</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span style="background:#28a745; color:#fff; padding:3px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">종결</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                </tr>
+                                                <tr style="background:#151515;">
+                                                    <td colspan="8" style="padding:10px 15px; border-top:none; text-align:left;">
+                                                        <div style="font-size:0.85rem; color:#ccc; line-height:1.5;">
+                                                            <strong>💬 사고경위:</strong> ${acc.accidentDescription}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="8" style="text-align:center; padding:20px; color:#888;">접수 내역이 없습니다.</td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- 💸 내 환불 내역 탭 -->
+                <div id="tab-user-refund" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">💸 내 환불 내역</h3>
+                        <div class="table-wrapper">
+                            <table class="mypage-table">
+                                <thead>
+                                    <tr>
+                                        <th>환불번호</th>
+                                        <th>결제번호</th>
+                                        <th>예약번호</th>
+                                        <th>결제 금액</th>
+                                        <th>적용 위약금율</th>
+                                        <th>최종 환불금액</th>
+                                        <th>환불 수단</th>
+                                        <th>취소 요청일시</th>
+                                        <th>처리 상태</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${not empty userRefundList}">
+                                            <c:forEach var="ref" items="${userRefundList}">
+                                                <tr>
+                                                    <td><strong>#${ref.refundId}</strong></td>
+                                                    <td>#${ref.paymentId}</td>
+                                                    <td>#${ref.reservationId}</td>
+                                                    <td>₩<fmt:formatNumber value="${ref.paymentAmount}" pattern="#,###"/></td>
+                                                    <td style="color:#ef4444; font-weight:bold;">${ref.penaltyRate}%</td>
+                                                    <td style="color:#10b981; font-weight:bold;">₩<fmt:formatNumber value="${ref.refundAmount}" pattern="#,###"/></td>
+                                                    <td><span style="padding:2px 6px; background:#222; border-radius:4px; font-weight:bold;">${ref.refundMethod}</span></td>
+                                                    <td><span style="font-size:0.8rem;"><fmt:formatDate value="${ref.cancelRequestDate}" pattern="yyyy-MM-dd HH:mm"/></span></td>
+                                                    <td>
+                                                        <span style="background:#10b981; color:#fff; padding:3px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">${ref.status}</span>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td colspan="9" style="text-align:center; padding:30px; color:#888;">환불 내역이 없습니다.</td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </c:otherwise>
         </c:choose>
     </div>
@@ -1497,6 +2275,122 @@
             </div>
             
             <button type="submit" class="btn btn-action-main" style="width:100%; padding:12px; font-weight:bold;">리뷰 등록하기</button>
+        </form>
+    </div>
+</div>
+
+<!-- 관리자 결제 취소/환불 모달 -->
+<div id="refund-modal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="modal-content" style="background:#121212; border:1px solid #333; padding:30px; border-radius:10px; max-width:500px; width:90%; color:#fff; position:relative;">
+        <span class="close-btn" onclick="closeRefundModal()" style="position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #aaa;">&times;</span>
+        <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">💳 결제 취소 및 환불 처리</h2>
+        <p style="color:#aaa; margin-bottom:20px;">결제 건에 대해 부분 또는 전체 취소/환불 처리를 기록합니다.</p>
+        
+        <form action="${pageContext.request.contextPath}/paymentCancelAction.do" method="post" onsubmit="return validateRefundForm()">
+            <input type="hidden" name="paymentId" id="refund-payment-id">
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>취소 방식 선택</label>
+                <select name="cancelType" id="refund-cancel-type" onchange="adjustRefundLimit()" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                    <option value="FULL">전체 취소 (예약도 자동 취소 처리됨)</option>
+                    <option value="PARTIAL">부분 취소 (일부 금액만 차감 환불)</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>결제 원금</label>
+                <input type="text" id="refund-amount-orig-display" disabled style="width:100%; padding:10px; border-radius:6px; background:#1c1c1c; border:1px solid #333; color:#888;"/>
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>기존 취소/환불 완료 누적액</label>
+                <input type="text" id="refund-amount-prev-display" disabled style="width:100%; padding:10px; border-radius:6px; background:#1c1c1c; border:1px solid #333; color:#888;"/>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:20px;">
+                <label>금회 취소/환불 처리 금액 (₩)</label>
+                <input type="number" name="cancelAmount" id="refund-cancel-amount" required placeholder="취소할 금액 입력" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;"/>
+                <p style="font-size:0.75rem; color:#888; margin-top:4px;" id="refund-limit-text"></p>
+            </div>
+            
+            <button type="submit" class="btn btn-action-main" style="width:100%; padding:12px; font-weight:bold; background:#ef4444;">환불/취소 승인</button>
+        </form>
+    </div>
+</div>
+
+<!-- 사용자 사고 접수 모달 -->
+<div id="user-accident-modal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="modal-content" style="background:#121212; border:1px solid #333; padding:30px; border-radius:10px; max-width:500px; width:90%; color:#fff; position:relative;">
+        <span class="close-btn" onclick="closeAccidentReportModal()" style="position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #aaa;">&times;</span>
+        <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">🚨 사고 접수 및 대여 신고</h2>
+        <p style="color:#aaa; margin-bottom:20px;">사고 발생 현황 및 피해 내용을 작성해 주세요.</p>
+        
+        <form action="${pageContext.request.contextPath}/userAccidentReportAction.do" method="post" enctype="multipart/form-data">
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">사고 관련 예약 선택</label>
+                <select name="reservationId" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                    <option value="">-- 사고 대상 예약 건 선택 --</option>
+                    <c:forEach var="res" items="${bookingList}">
+                        <option value="${res.bookingId}">예약 #${res.bookingId} (${res.bikeName} | 대여일: <fmt:formatDate value="${res.startDate}" pattern="yyyy-MM-dd"/>)</option>
+                    </c:forEach>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">사고 발생 일시</label>
+                <input type="datetime-local" name="accidentDate" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">사고 장소</label>
+                <input type="text" name="accidentLocation" placeholder="예: 대구 중구 반월당네거리 인근" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">사고 경위</label>
+                <textarea name="accidentDescription" placeholder="사고가 발생한 구체적인 정황과 바이크 손상 정도를 상세하게 기재해 주세요." required style="width:100%; height:100px; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff; resize:none;"></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">현장 사진 첨부</label>
+                <input type="file" name="photo" accept="image/*" style="width:100%; padding:8px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+            </div>
+            
+            <button type="submit" class="btn btn-action-main" style="width:100%; padding:12px; font-weight:bold; background:#e50914; color:#fff; border:none; border-radius:6px; cursor:pointer;">사고 접수 신청하기</button>
+        </form>
+    </div>
+</div>
+
+<!-- 관리자 사고 처리 변경 모달 -->
+<div id="admin-accident-modal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="modal-content" style="background:#121212; border:1px solid #333; padding:30px; border-radius:10px; max-width:500px; width:90%; color:#fff; position:relative;">
+        <span class="close-btn" onclick="closeAccidentModal()" style="position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #aaa;">&times;</span>
+        <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">🛠️ 사고 처리 및 보험 등록</h2>
+        <p style="color:#aaa; margin-bottom:20px;" id="admin-accident-info-text">사고 건에 대한 손해사정 정보 및 상태를 업데이트합니다.</p>
+        
+        <form action="${pageContext.request.contextPath}/adminAccidentReportUpdateAction.do" method="post">
+            <input type="hidden" name="reportId" id="admin-accident-report-id">
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">처리 상태</label>
+                <select name="status" id="admin-accident-status" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                    <option value="접수">접수</option>
+                    <option value="손해사정중">손해사정중</option>
+                    <option value="종결">종결</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">보험 접수 번호</label>
+                <input type="text" name="insuranceClaimNum" id="admin-accident-claim-num" placeholder="예: INS-2026-987654" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">고객 과실 비율 (%)</label>
+                <input type="number" name="faultRatio" id="admin-accident-fault-ratio" min="0" max="100" value="0" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+            </div>
+            
+            <button type="submit" class="btn btn-action-main" style="width:100%; padding:12px; font-weight:bold; background:#e50914; color:#fff; border:none; border-radius:6px; cursor:pointer;">상태 변경 및 등록</button>
         </form>
     </div>
 </div>
@@ -1636,6 +2530,88 @@
         } else {
             display.innerText = "₩0 (패널티 없음)";
             calcBox.style.display = "block";
+        }
+    }
+
+    // 결제 취소 환불 모달 함수
+    let maxRefundable = 0;
+    function openRefundModal(paymentId, origAmount, prevRefund) {
+        document.getElementById("refund-payment-id").value = paymentId;
+        document.getElementById("refund-amount-orig-display").value = "₩" + origAmount.toLocaleString();
+        document.getElementById("refund-amount-prev-display").value = "₩" + prevRefund.toLocaleString();
+        
+        maxRefundable = origAmount - prevRefund;
+        document.getElementById("refund-cancel-amount").value = maxRefundable;
+        document.getElementById("refund-limit-text").innerText = "* 환불 가능 한도: ₩" + maxRefundable.toLocaleString();
+        
+        document.getElementById("refund-cancel-type").value = "FULL";
+        document.getElementById("refund-cancel-amount").readOnly = true;
+        
+        document.getElementById("refund-modal").style.display = "flex";
+    }
+    
+    function adjustRefundLimit() {
+        const type = document.getElementById("refund-cancel-type").value;
+        const amtInput = document.getElementById("refund-cancel-amount");
+        if (type === "FULL") {
+            amtInput.value = maxRefundable;
+            amtInput.readOnly = true;
+        } else {
+            amtInput.readOnly = false;
+            amtInput.value = "";
+            amtInput.focus();
+        }
+    }
+    
+    function closeRefundModal() {
+        document.getElementById("refund-modal").style.display = "none";
+    }
+    
+    function validateRefundForm() {
+        const amt = parseInt(document.getElementById("refund-cancel-amount").value);
+        if (isNaN(amt) || amt <= 0) {
+            alert("환불 취소 금액은 0보다 큰 숫자로 입력해야 합니다.");
+            return false;
+        }
+        if (amt > maxRefundable) {
+            alert("취소 환불 요청 금액(₩" + amt.toLocaleString() + ")이 남은 환불 한도(₩" + maxRefundable.toLocaleString() + ")를 초과했습니다.");
+            return false;
+        }
+        return confirm("정말로 취소/환불 처리를 완료하시겠습니까?");
+    }
+
+    // 사용자 사고 접수 모달 열기/닫기
+    function openAccidentReportModal() {
+        document.getElementById("user-accident-modal").style.display = "flex";
+    }
+    function closeAccidentReportModal() {
+        document.getElementById("user-accident-modal").style.display = "none";
+    }
+
+    // 관리자 사고 처리 모달 열기/닫기
+    function openAccidentModal(reportId, status, claimNum, faultRatio) {
+        document.getElementById("admin-accident-report-id").value = reportId;
+        document.getElementById("admin-accident-status").value = status;
+        document.getElementById("admin-accident-claim-num").value = (claimNum === 'null' || claimNum === 'undefined') ? '' : claimNum;
+        document.getElementById("admin-accident-fault-ratio").value = faultRatio || 0;
+        document.getElementById("admin-accident-info-text").innerText = "사고 건 #" + reportId + "번의 처리 정보 및 보험 심사 결과를 입력합니다.";
+        document.getElementById("admin-accident-modal").style.display = "flex";
+    }
+    function closeAccidentModal() {
+        document.getElementById("admin-accident-modal").style.display = "none";
+    }
+
+    // 블랙리스트 차단 기간 설정에 따른 만료일 표시 여부 토글
+    function toggleBanDate() {
+        let type = document.getElementById("ban-type-selector").value;
+        let dateGroup = document.getElementById("ban-date-group");
+        if (type === "기간차단") {
+            dateGroup.style.display = "block";
+            dateGroup.querySelector('input[type="date"]').required = true;
+        } else {
+            dateGroup.style.display = "none";
+            dateGroup.querySelector('input[type="date"]').required = false;
+            dateGroup.querySelector('input[type="date"]').value = "";
         }
     }
 </script>

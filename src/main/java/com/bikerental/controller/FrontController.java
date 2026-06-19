@@ -64,10 +64,17 @@ public class FrontController extends HttpServlet {
                 
                 MemberDto member = MemberDao.getInstance().getMemberByEmailAndPassword(email, password);
                 if (member != null) {
-                    HttpSession session = request.getSession();
-                    session.setAttribute("loginUser", member);
-                    isRedirect = true;
-                    viewPage = "index.do";
+                    // 블랙리스트 차단 여부 확인
+                    if (BlacklistDao.getInstance().isUserBanned(member.getMemberId())) {
+                        String banReason = BlacklistDao.getInstance().getBanReason(member.getMemberId());
+                        request.setAttribute("errorMessage", "해당 계정은 서비스 이용이 차단되었습니다. (사유: " + banReason + ")");
+                        viewPage = "/WEB-INF/views/login.jsp";
+                    } else {
+                        HttpSession session = request.getSession();
+                        session.setAttribute("loginUser", member);
+                        isRedirect = true;
+                        viewPage = "index.do";
+                    }
                 } else {
                     request.setAttribute("errorMessage", "이메일 또는 비밀번호가 올바르지 않습니다.");
                     viewPage = "/WEB-INF/views/login.jsp";
@@ -141,6 +148,11 @@ public class FrontController extends HttpServlet {
                         List<LicenseAuditDto> adminLicenseAuditList = LicenseAuditDao.getInstance().getAuditsAll();
                         List<BikeMaintenanceDto> adminMaintenanceList = BikeMaintenanceDao.getInstance().getMaintenanceList();
                         List<FuelLogDto> adminFuelLogList = FuelLogDao.getInstance().getFuelLogList();
+                        List<PaymentDto> adminPaymentList = PaymentDao.getInstance().getPaymentsAll();
+                        List<NotificationDto> adminNotificationList = NotificationDao.getInstance().getNotificationsAll();
+                        List<AccidentReportDto> adminAccidentList = AccidentReportDao.getInstance().getReportsAll();
+                        List<BlacklistDto> adminBlacklist = BlacklistDao.getInstance().getBlacklistAll();
+                        List<RefundLogDto> adminRefundList = RefundLogDao.getInstance().getRefundsAll();
                         
                         request.setAttribute("bookingList", bookingList);
                         request.setAttribute("memberList", memberList);
@@ -153,6 +165,11 @@ public class FrontController extends HttpServlet {
                         request.setAttribute("adminLicenseAuditList", adminLicenseAuditList);
                         request.setAttribute("adminMaintenanceList", adminMaintenanceList);
                         request.setAttribute("adminFuelLogList", adminFuelLogList);
+                        request.setAttribute("adminPaymentList", adminPaymentList);
+                        request.setAttribute("adminNotificationList", adminNotificationList);
+                        request.setAttribute("adminAccidentList", adminAccidentList);
+                        request.setAttribute("adminBlacklist", adminBlacklist);
+                        request.setAttribute("adminRefundList", adminRefundList);
                     } else {
                         // 일반 회원이면 본인 예약 목록 조회
                         List<BookingDto> bookingList = BookingDao.getInstance().getBookingListByUser(loginUser.getMemberId());
@@ -162,12 +179,22 @@ public class FrontController extends HttpServlet {
                         
                         // 신규 추가: 본인 면허 심사 이력 조회
                         List<LicenseAuditDto> userLicenseAuditList = LicenseAuditDao.getInstance().getAuditsByUser(loginUser.getMemberId());
+                        List<PaymentDto> userPaymentList = PaymentDao.getInstance().getPaymentsByUser(loginUser.getMemberId());
+                        List<NotificationDto> userNotificationList = NotificationDao.getInstance().getNotificationsByUser(loginUser.getMemberId());
+                        List<AccidentReportDto> userAccidentList = AccidentReportDao.getInstance().getReportsByUser(loginUser.getMemberId());
+                        List<PointHistoryDto> userPointList = PointHistoryDao.getInstance().getPointHistoriesByUser(loginUser.getMemberId());
+                        List<RefundLogDto> userRefundList = RefundLogDao.getInstance().getRefundsByUser(loginUser.getMemberId());
                         
                         request.setAttribute("bookingList", bookingList);
                         request.setAttribute("couponList", couponList);
                         request.setAttribute("inquiryList", inquiryList);
                         request.setAttribute("penaltyList", penaltyList);
                         request.setAttribute("userLicenseAuditList", userLicenseAuditList);
+                        request.setAttribute("userPaymentList", userPaymentList);
+                        request.setAttribute("userNotificationList", userNotificationList);
+                        request.setAttribute("userAccidentList", userAccidentList);
+                        request.setAttribute("userPointList", userPointList);
+                        request.setAttribute("userRefundList", userRefundList);
                     }
                     viewPage = "/WEB-INF/views/member/mypage.jsp";
                 }
@@ -300,11 +327,10 @@ public class FrontController extends HttpServlet {
                     List<OptionItemDto> optionList = OptionItemDao.getInstance().getOptionList();
                     request.setAttribute("optionList", optionList);
                     
-                    viewPage = "/WEB-INF/views/bike/bike_detail.jsp";
-                } else {
-                    isRedirect = true;
-                    viewPage = "bikeList.do";
+                    List<InsurancePlanDto> insuranceList = InsurancePlanDao.getInstance().getInsurancePlansAll();
+                    request.setAttribute("insuranceList", insuranceList);
                 }
+                viewPage = "/WEB-INF/views/bike/bike_detail.jsp";
                 
             } else if (command.equals("/bookingAction.do")) {
                 HttpSession session = request.getSession(false);
@@ -313,6 +339,10 @@ public class FrontController extends HttpServlet {
                 if (loginUser == null) {
                     isRedirect = true;
                     viewPage = "login.do";
+                } else if (BlacklistDao.getInstance().isUserBanned(loginUser.getMemberId())) {
+                    request.setAttribute("errorMessage", "차단된 회원은 대여를 예약할 수 없습니다.");
+                    isRedirect = true;
+                    viewPage = "mypage.do";
                 } else {
                     int bikeId = Integer.parseInt(request.getParameter("bikeId"));
                     String startDateStr = request.getParameter("start_date");
@@ -323,6 +353,16 @@ public class FrontController extends HttpServlet {
                     String couponIdStr = request.getParameter("couponId");
                     String pickupShopIdStr = request.getParameter("pickupShopId");
                     String dropoffShopIdStr = request.getParameter("dropoffShopId");
+                    
+                    int insuranceId = 0;
+                    try {
+                        insuranceId = Integer.parseInt(request.getParameter("insuranceId"));
+                    } catch(Exception e) {}
+                    
+                    int usePoints = 0;
+                    try {
+                        usePoints = Integer.parseInt(request.getParameter("usePoints"));
+                    } catch(Exception e) {}
                     
                     // 면허 상태 검증
                     MemberDto currentMember = MemberDao.getInstance().getMember(loginUser.getMemberId());
@@ -339,12 +379,14 @@ public class FrontController extends HttpServlet {
                         List<java.util.Map<String, Object>> shopList = BikeDao.getInstance().getShopList();
                         List<CouponDto> couponList = CouponDao.getInstance().getCouponsByUser(loginUser.getMemberId());
                         List<OptionItemDto> optionList = OptionItemDao.getInstance().getOptionList();
+                        List<InsurancePlanDto> insuranceList = InsurancePlanDao.getInstance().getInsurancePlansAll();
                         
                         request.setAttribute("bike", bike);
                         request.setAttribute("reviewList", reviewList);
                         request.setAttribute("shopList", shopList);
                         request.setAttribute("couponList", couponList);
                         request.setAttribute("optionList", optionList);
+                        request.setAttribute("insuranceList", insuranceList);
                         
                         isRedirect = false;
                         viewPage = "/WEB-INF/views/bike/bike_detail.jsp";
@@ -367,7 +409,9 @@ public class FrontController extends HttpServlet {
                         dto.setRentalDays(rentalDays);
                         dto.setPrice(totalPrice);
                         dto.setPaymentMethod(paymentMethod);
-
+                        dto.setInsuranceId(insuranceId);
+                        dto.setUsePoints(usePoints);
+ 
                         // 대여 옵션 장비 수신
                         String[] optionIds = request.getParameterValues("optionId");
                         List<BookingOptionDto> bOptions = new java.util.ArrayList<>();
@@ -394,6 +438,10 @@ public class FrontController extends HttpServlet {
                                     e.printStackTrace();
                                 }
                             }
+                            // 세션 로그인 유저 정보 리프레시 (포인트 차감/적립 상태 반영)
+                            loginUser = MemberDao.getInstance().getMember(loginUser.getMemberId());
+                            session.setAttribute("loginUser", loginUser);
+                            
                             isRedirect = true;
                             viewPage = "mypage.do";
                         } else {
@@ -402,7 +450,6 @@ public class FrontController extends HttpServlet {
                         }
                     }
                 }
-                
             } else if (command.equals("/bookingStatusAction.do")) {
                 // 예약 상태 승인/반려 (관리자 기능)
                 HttpSession session = request.getSession(false);
@@ -571,6 +618,109 @@ public class FrontController extends HttpServlet {
                     dto.setPenaltyAmount(penaltyAmount);
                     
                     FuelLogDao.getInstance().insertFuelLogAndUpdateBooking(dto);
+                    
+                    try {
+                        BookingDto booking = BookingDao.getInstance().getBooking(reservationId);
+                        if (booking != null) {
+                            String notiText = "🏍️ 바이크 반납 처리가 완료되었습니다. (반납 시 주유량: " + fuelLevel + "%)";
+                            if (penaltyAmount > 0) {
+                                notiText += " 주유량 미달 패널티 ₩" + String.format("%,d", penaltyAmount) + "원이 고지되었습니다. 마이페이지에서 상세 내역을 확인해 주세요.";
+                            } else {
+                                notiText += " 주유 상태 정상 확인되었습니다. 이용해 주셔서 감사합니다!";
+                            }
+                            NotificationDao.send(booking.getMemberId(), "알림톡", notiText);
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
+                
+            } else if (command.equals("/paymentCancelAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                
+                if (loginUser != null) {
+                    int paymentId = Integer.parseInt(request.getParameter("paymentId"));
+                    String cancelType = request.getParameter("cancelType"); // FULL, PARTIAL
+                    int cancelAmt = Integer.parseInt(request.getParameter("cancelAmount"));
+                    
+                    PaymentDto pay = PaymentDao.getInstance().getPayment(paymentId);
+                    if (pay != null) {
+                        boolean isAuthorized = "ADMIN".equals(loginUser.getMemberStatus());
+                        if (!isAuthorized) {
+                            BookingDto booking = BookingDao.getInstance().getBooking(pay.getReservationId());
+                            if (booking != null && booking.getMemberId() == loginUser.getMemberId()) {
+                                isAuthorized = true;
+                            }
+                        }
+                        
+                        if (isAuthorized) {
+                            String newStatus = "전체취소";
+                            if ("PARTIAL".equals(cancelType)) {
+                                newStatus = "부분취소";
+                            }
+                            
+                            int newRefundAmt = pay.getRefundAmount() + cancelAmt;
+                            if (newRefundAmt > pay.getAmount()) {
+                                newRefundAmt = pay.getAmount();
+                            }
+                            PaymentDao.getInstance().updatePaymentStatus(paymentId, newStatus, newRefundAmt);
+                            
+                            if ("전체취소".equals(newStatus)) {
+                                BookingDao.getInstance().updateBookingStatus(pay.getReservationId(), "CANCELLED");
+                            }
+
+                            // Log refund in refund_log
+                            int penaltyRate = (int) Math.round((1.0 - (double)cancelAmt / pay.getAmount()) * 100.0);
+                            if (penaltyRate < 0) penaltyRate = 0;
+                            if (penaltyRate > 100) penaltyRate = 100;
+                            
+                            RefundLogDto rlog = new RefundLogDto();
+                            rlog.setPaymentId(paymentId);
+                            rlog.setPenaltyRate(penaltyRate);
+                            rlog.setRefundAmount(cancelAmt);
+                            rlog.setRefundMethod(pay.getPaymentMethod());
+                            rlog.setStatus("완료");
+                            RefundLogDao.getInstance().insertRefund(rlog);
+                            
+                            try {
+                                BookingDto booking = BookingDao.getInstance().getBooking(pay.getReservationId());
+                                if (booking != null) {
+                                    String notiContent = "💳 결제 취소 안내: [" + newStatus + "] 처리 완료 (취소 및 환불금액: ₩" + String.format("%,d", cancelAmt) + "원)";
+                                    NotificationDao.send(booking.getMemberId(), "알림톡", notiContent);
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
+                
+            } else if (command.equals("/adminNotificationAddAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                
+                if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
+                    int targetUserId = Integer.parseInt(request.getParameter("userId"));
+                    String notiType = request.getParameter("notificationType");
+                    String notiContent = request.getParameter("content");
+                    
+                    NotificationDao.send(targetUserId, notiType, notiContent);
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
+                
+            } else if (command.equals("/userNotificationReadAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                
+                if (loginUser != null) {
+                    int notiId = Integer.parseInt(request.getParameter("notificationId"));
+                    NotificationDao.getInstance().markAsRead(notiId);
                 }
                 isRedirect = true;
                 viewPage = "mypage.do";
@@ -586,6 +736,38 @@ public class FrontController extends HttpServlet {
                     
                     if (booking != null && (booking.getMemberId() == loginUser.getMemberId() || "ADMIN".equals(loginUser.getMemberStatus()))) {
                         BookingDao.getInstance().updateBookingStatus(bookingId, "CANCELLED");
+
+                        // Refund policy calculation and log logging
+                        PaymentDto payment = PaymentDao.getInstance().getPaymentByReservation(bookingId);
+                        if (payment != null) {
+                            java.sql.Timestamp startDate = booking.getStartDate();
+                            java.time.LocalDate startLocalDate = startDate.toLocalDateTime().toLocalDate();
+                            java.time.LocalDate currentLocalDate = java.time.LocalDate.now();
+                            long diffDays = java.time.temporal.ChronoUnit.DAYS.between(currentLocalDate, startLocalDate);
+
+                            int penaltyRate = 0;
+                            if (diffDays >= 3) {
+                                penaltyRate = 0;
+                            } else if (diffDays >= 1) {
+                                penaltyRate = 50;
+                            } else {
+                                penaltyRate = 100;
+                            }
+
+                            int refundAmt = (int) (payment.getAmount() * (100 - penaltyRate) / 100.0);
+                            PaymentDao.getInstance().updatePaymentStatus(payment.getPaymentId(), "전체취소", refundAmt);
+
+                            RefundLogDto rlog = new RefundLogDto();
+                            rlog.setPaymentId(payment.getPaymentId());
+                            rlog.setPenaltyRate(penaltyRate);
+                            rlog.setRefundAmount(refundAmt);
+                            rlog.setRefundMethod(payment.getPaymentMethod());
+                            rlog.setStatus("완료");
+                            RefundLogDao.getInstance().insertRefund(rlog);
+
+                            String notiContent = "💳 결제 취소 및 환불 안내: 예약 #" + bookingId + "이 취소되었습니다. (위약금 " + penaltyRate + "%, 환불금액: ₩" + String.format("%,d", refundAmt) + "원)";
+                            NotificationDao.send(booking.getMemberId(), "알림톡", notiContent);
+                        }
                     }
                 }
                 isRedirect = true;
@@ -1247,6 +1429,173 @@ public class FrontController extends HttpServlet {
                 viewPage = "/WEB-INF/views/notice.jsp";
             } else if (command.equals("/setupData.do")) {
                 viewPage = "/WEB-INF/views/setup_data.jsp";
+            } else if (command.equals("/userAccidentReportAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                if (loginUser != null) {
+                    int reservationId = Integer.parseInt(request.getParameter("reservationId"));
+                    String accidentDateStr = request.getParameter("accidentDate");
+                    String accidentLocation = request.getParameter("accidentLocation");
+                    String accidentDescription = request.getParameter("accidentDescription");
+                    
+                    java.sql.Timestamp accidentDate = null;
+                    if (accidentDateStr != null && !accidentDateStr.trim().isEmpty()) {
+                        try {
+                            String formattedDate = accidentDateStr.replace("T", " ") + ":00";
+                            accidentDate = java.sql.Timestamp.valueOf(formattedDate);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (accidentDate == null) {
+                        accidentDate = new java.sql.Timestamp(System.currentTimeMillis());
+                    }
+
+                    String imageFilename = null;
+                    try {
+                        jakarta.servlet.http.Part filePart = request.getPart("photo");
+                        if (filePart != null && filePart.getSize() > 0) {
+                            String originalName = filePart.getSubmittedFileName();
+                            String extension = "";
+                            int dotIndex = originalName.lastIndexOf('.');
+                            if (dotIndex > 0) {
+                                extension = originalName.substring(dotIndex);
+                            }
+                            imageFilename = "accident_" + System.currentTimeMillis() + extension;
+                            
+                            String deployDir = request.getServletContext().getRealPath("/resources/images/accidents");
+                            java.io.File uploadDir = new java.io.File(deployDir);
+                            if (!uploadDir.exists()) {
+                                uploadDir.mkdirs();
+                            }
+                            String deployFilePath = deployDir + java.io.File.separator + imageFilename;
+                            filePart.write(deployFilePath);
+                            
+                            String srcDir = "c:\\2_eclipse\\hp\\bikerental\\src\\main\\webapp\\resources\\images\\accidents";
+                            java.io.File srcUploadDir = new java.io.File(srcDir);
+                            if (!srcUploadDir.exists()) {
+                                srcUploadDir.mkdirs();
+                            }
+                            try {
+                                java.nio.file.Files.copy(
+                                    java.nio.file.Paths.get(deployFilePath),
+                                    java.nio.file.Paths.get(srcDir + java.io.File.separator + imageFilename),
+                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                                );
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    AccidentReportDto dto = new AccidentReportDto();
+                    dto.setReservationId(reservationId);
+                    dto.setUserId(loginUser.getMemberId());
+                    dto.setAccidentDate(accidentDate);
+                    dto.setAccidentLocation(accidentLocation);
+                    dto.setAccidentDescription(accidentDescription);
+                    if (imageFilename != null) {
+                        dto.setPhotoPath("resources/images/accidents/" + imageFilename);
+                    }
+                    
+                    AccidentReportDao.getInstance().insertReport(dto);
+                    
+                    try {
+                        NotificationDao.send(loginUser.getMemberId(), "앱푸시", "🚨 사고 접수가 완료되었습니다. 담당자가 신속히 확인하여 보험 처리를 도와드리겠습니다.");
+                    } catch(Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
+
+            } else if (command.equals("/adminAccidentReportUpdateAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
+                    int reportId = Integer.parseInt(request.getParameter("reportId"));
+                    String status = request.getParameter("status"); // 접수, 손해사정중, 종결
+                    String claimNum = request.getParameter("insuranceClaimNum");
+                    int faultRatio = 0;
+                    try {
+                        faultRatio = Integer.parseInt(request.getParameter("faultRatio"));
+                    } catch(Exception e) {}
+                    
+                    AccidentReportDao.getInstance().updateReportStatus(reportId, status, claimNum, faultRatio);
+                    
+                    try {
+                        AccidentReportDto report = AccidentReportDao.getInstance().getReport(reportId);
+                        if (report != null) {
+                            String notiText = "🚨 사고 접수 #" + reportId + "번의 처리 상태가 [" + status + "]으로 변경되었습니다.";
+                            if ("손해사정중".equals(status)) {
+                                notiText += " (보험접수번호: " + claimNum + ", 과실비율: " + faultRatio + "%)";
+                            } else if ("종결".equals(status)) {
+                                notiText += " 보험 처리가 최종 종결되었습니다. 마이페이지에서 상세 내역을 확인하세요.";
+                            }
+                            NotificationDao.send(report.getUserId(), "알림톡", notiText);
+                        }
+                    } catch(Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
+
+            } else if (command.equals("/adminBlacklistAddAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
+                    int targetUserId = Integer.parseInt(request.getParameter("userId"));
+                    String banType = request.getParameter("banType"); // 영구차단, 기간차단
+                    String reason = request.getParameter("reason");
+                    String endDateStr = request.getParameter("endDate");
+                    
+                    java.sql.Date endDate = null;
+                    if (endDateStr != null && !endDateStr.trim().isEmpty() && "기간차단".equals(banType)) {
+                        try {
+                            endDate = java.sql.Date.valueOf(endDateStr);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    
+                    BlacklistDto dto = new BlacklistDto();
+                    dto.setUserId(targetUserId);
+                    dto.setBanType(banType);
+                    dto.setReason(reason);
+                    dto.setEndDate(endDate);
+                    dto.setAdminId(loginUser.getMemberId());
+                    
+                    BlacklistDao.getInstance().insertBlacklist(dto);
+                    
+                    try {
+                        NotificationDao.send(targetUserId, "SMS", "🚫 회원님의 계정이 정책 위반으로 인해 서비스 이용 차단(" + banType + ") 조치되었습니다. (사유: " + reason + ")");
+                    } catch(Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
+
+            } else if (command.equals("/adminBlacklistReleaseAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
+                    int blacklistId = Integer.parseInt(request.getParameter("blacklistId"));
+                    int targetUserId = Integer.parseInt(request.getParameter("userId"));
+                    
+                    BlacklistDao.getInstance().deleteBlacklist(blacklistId);
+                    
+                    try {
+                        NotificationDao.send(targetUserId, "SMS", "🔓 회원님의 계정 차단 조치가 해제되었습니다. 정상적으로 서비스 이용이 가능합니다.");
+                    } catch(Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                isRedirect = true;
+                viewPage = "mypage.do";
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;

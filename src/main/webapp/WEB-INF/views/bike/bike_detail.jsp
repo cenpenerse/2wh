@@ -157,8 +157,35 @@
 </section>
 
 <!-- 예약 신청 모달 -->
+<style>
+    /* Force booking modal to be wide (1000px) */
+    #booking-modal .modal-content {
+        max-width: 1000px !important;
+        width: 95% !important;
+    }
+
+    /* Prevent checkbox and radio buttons from stretching inside form groups */
+    #booking-form input[type="checkbox"], 
+    #booking-form input[type="radio"] {
+        width: 18px !important;
+        height: 18px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        flex-shrink: 0 !important;
+        cursor: pointer;
+    }
+    
+    @media (min-width: 768px) {
+        .booking-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 24px !important;
+        }
+    }
+</style>
+
 <div id="booking-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
-    <div class="modal-content" style="background: #1a1a1a; border: 1px solid #333; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; color: #fff; position: relative;">
+    <div class="modal-content" style="background: #1a1a1a; border: 1px solid #333; padding: 30px; border-radius: 12px; max-width: 1000px; width: 95%; max-height: 90vh; overflow-y: auto; color: #fff; position: relative;">
         <span class="close-btn" onclick="closeBookingModal()" style="position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #aaa;">&times;</span>
         <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family: 'Outfit';">바이크 대여 예약 신청</h2>
         <p class="modal-intro" style="color: #bbb; margin-bottom: 20px;"><strong>${bike.brandName} - ${bike.bikeName}</strong> 예약을 진행합니다.</p>
@@ -171,98 +198,153 @@
             <input type="hidden" id="rental-days" name="rental_days" required>
             <input type="hidden" id="total-price" name="total_price" required>
             
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px; color: #ccc;">대여 기간 선택</label>
-                <input type="text" id="rental-date-range" placeholder="시작일과 종료일을 선택하세요" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff;" required>
-            </div>
+            <div class="booking-grid" style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 20px;">
+                <!-- Left Column -->
+                <div class="booking-col-left" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: block; margin-bottom: 5px; color: #ccc;">대여 기간 선택</label>
+                        <input type="text" id="rental-date-range" placeholder="시작일과 종료일을 선택하세요" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff;" required>
+                    </div>
 
-            <!-- 인수 및 반납 지점 선택 -->
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <div style="flex: 1;">
-                    <label style="display: block; margin-bottom: 5px; color: #ccc;">인수 지점 선택</label>
-                    <select name="pickupShopId" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff;" required>
-                        <c:forEach var="shop" items="${shopList}">
-                            <option value="${shop.shopId}" ${shop.shopId == selectedShopId or (empty selectedShopId and shop.shopId == bike.shopId) ? 'selected' : ''}>${shop.shopName}</option>
-                        </c:forEach>
-                    </select>
-                </div>
-                <div style="flex: 1;">
-                    <label style="display: block; margin-bottom: 5px; color: #ccc;">반납 지점 선택</label>
-                    <select name="dropoffShopId" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff;" required>
-                        <c:forEach var="shop" items="${shopList}">
-                            <option value="${shop.shopId}" ${shop.shopId == selectedShopId or (empty selectedShopId and shop.shopId == bike.shopId) ? 'selected' : ''}>${shop.shopName}</option>
-                        </c:forEach>
-                    </select>
-                </div>
-            </div>
-
-            <!-- 추가 옵션 장비 선택 -->
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 8px; color: #ccc;">추가 옵션 장비 (다중 선택 가능)</label>
-                <div style="display: flex; flex-direction: column; gap: 8px; background: #222; padding: 12px; border-radius: 6px;">
-                    <c:forEach var="opt" items="${optionList}">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #ddd;">
-                                <input type="checkbox" name="optionId" value="${opt.optionId}" data-price="${opt.dailyPrice}" onchange="updateCalculations()" style="cursor: pointer; width:16px; height:16px; accent-color: var(--primary-color);">
-                                <span>${opt.optionName} <span style="font-size:0.8rem; color:#aaa;">(+₩<fmt:formatNumber value="${opt.dailyPrice}" pattern="#,###"/>/일)</span></span>
-                            </label>
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <span style="font-size:0.8rem; color:#888;">수량:</span>
-                                <input type="number" name="quantity_${opt.optionId}" value="1" min="1" max="5" onchange="updateCalculations()" style="width: 50px; padding: 4px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; text-align: center;">
-                             </div>
+                    <!-- 인수 및 반납 지점 선택 -->
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; color: #ccc;">인수 지점 선택</label>
+                            <select name="pickupShopId" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff;" required>
+                                <c:forEach var="shop" items="${shopList}">
+                                    <option value="${shop.shopId}" ${shop.shopId == selectedShopId or (empty selectedShopId and shop.shopId == bike.shopId) ? 'selected' : ''}>${shop.shopName}</option>
+                                </c:forEach>
+                            </select>
                         </div>
-                    </c:forEach>
-                </div>
-            </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; color: #ccc;">반납 지점 선택</label>
+                            <select name="dropoffShopId" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff;" required>
+                                <c:forEach var="shop" items="${shopList}">
+                                    <option value="${shop.shopId}" ${shop.shopId == selectedShopId or (empty selectedShopId and shop.shopId == bike.shopId) ? 'selected' : ''}>${shop.shopName}</option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                    </div>
 
-            <!-- 결제 수단 선택 -->
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 8px; color: #ccc;">결제 수단</label>
-                <div class="payment-options-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                    <label class="pay-method-card">
-                        <input type="radio" name="payment_method" value="CARD" checked>
-                        <span class="pay-box">💳 신용카드</span>
-                    </label>
-                    <label class="pay-method-card">
-                        <input type="radio" name="payment_method" value="KAKAO">
-                        <span class="pay-box">💬 카카오페이</span>
-                    </label>
-                    <label class="pay-method-card">
-                        <input type="radio" name="payment_method" value="NAVER">
-                        <span class="pay-box">💚 네이버페이</span>
-                    </label>
-                </div>
-            </div>
+                    <!-- 할인 쿠폰 선택 -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: block; margin-bottom: 5px; color: #ccc;">적용 가능 쿠폰</label>
+                        <select id="coupon-selector" name="couponId" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff;" onchange="updateCalculations()">
+                            <option value="none" data-discount="0">--- 적용할 쿠폰 선택 (할인 없음) ---</option>
+                            <c:forEach var="cp" items="${couponList}">
+                                <option value="${cp.couponId}" data-discount="${cp.discountAmount}">${cp.couponName} (-₩<fmt:formatNumber value="${cp.discountAmount}" pattern="#,###"/>)</option>
+                            </c:forEach>
+                        </select>
+                    </div>
 
-            <!-- 할인 쿠폰 선택 -->
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 5px; color: #ccc;">적용 가능 쿠폰</label>
-                <select id="coupon-selector" name="couponId" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff;" onchange="updateCalculations()">
-                    <option value="none" data-discount="0">--- 적용할 쿠폰 선택 (할인 없음) ---</option>
-                    <c:forEach var="cp" items="${couponList}">
-                        <option value="${cp.couponId}" data-discount="${cp.discountAmount}">${cp.couponName} (-₩<fmt:formatNumber value="${cp.discountAmount}" pattern="#,###"/>)</option>
-                    </c:forEach>
-                </select>
-            </div>
+                    <!-- 포인트 사용 -->
+                    <c:if test="${not empty sessionScope.loginUser}">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="display: block; margin-bottom: 5px; color: #ccc;">🪙 포인트 사용 (보유: <fmt:formatNumber value="${sessionScope.loginUser.point}" pattern="#,###"/> P)</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="number" id="use-points-input" name="usePoints" min="0" max="${sessionScope.loginUser.point}" value="0" style="flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff;" oninput="updateCalculations()">
+                                <button type="button" onclick="useAllPoints()" style="padding: 0 15px; background: #333; border: 1px solid #444; border-radius: 6px; color: #fff; cursor: pointer;">전액 사용</button>
+                            </div>
+                        </div>
+                    </c:if>
 
-            <!-- 금액 확인 요약 -->
-            <div class="price-summary-box" style="background: #252525; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <div class="summary-row" style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #aaa;">
-                    <span>일 대여 요금</span>
-                    <span>₩<fmt:formatNumber value="${bike.dailyPrice}" pattern="#,###"/></span>
+                    <!-- 결제 수단 선택 -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: block; margin-bottom: 8px; color: #ccc;">결제 수단</label>
+                        <div class="payment-options-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                            <label class="pay-method-card">
+                                <input type="radio" name="payment_method" value="CARD" checked>
+                                <span class="pay-box">💳 신용카드</span>
+                            </label>
+                            <label class="pay-method-card">
+                                <input type="radio" name="payment_method" value="KAKAO">
+                                <span class="pay-box">💬 카카오페이</span>
+                            </label>
+                            <label class="pay-method-card">
+                                <input type="radio" name="payment_method" value="NAVER">
+                                <span class="pay-box">💚 네이버페이</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="summary-row" style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #aaa;">
-                    <span>총 대여 기간</span>
-                    <span id="display-days">0 일</span>
-                </div>
-                <div class="summary-row" id="summary-discount-row" style="display: none; justify-content: space-between; margin-bottom: 8px; color: #E50914;">
-                    <span>쿠폰 할인 혜택</span>
-                    <span id="display-discount-price">-₩0</span>
-                </div>
-                <hr style="border: 0; border-top: 1px solid #444; margin: 10px 0;">
-                <div class="summary-row total-row" style="display: flex; justify-content: space-between; font-weight: bold; color: var(--primary-color); font-size: 1.2rem;">
-                    <span>최종 결제 금액</span>
-                    <span id="display-total-price">₩0</span>
+
+                <!-- Right Column -->
+                <div class="booking-col-right" style="display: flex; flex-direction: column; gap: 15px;">
+                    <!-- 추가 옵션 장비 선택 -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: block; margin-bottom: 8px; color: #ccc;">추가 옵션 장비 (다중 선택 가능)</label>
+                        <div style="display: flex; flex-direction: column; gap: 8px; background: #222; padding: 12px; border-radius: 6px; max-height: 200px; overflow-y: auto;">
+                            <c:forEach var="opt" items="${optionList}">
+                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 2px 0;">
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #ddd; width: 100%;">
+                                        <input type="checkbox" name="optionId" value="${opt.optionId}" data-price="${opt.dailyPrice}" onchange="updateCalculations()" style="width: 18px !important; height: 18px !important; padding: 0 !important; margin: 0 !important; accent-color: var(--primary-color); flex-shrink: 0; cursor: pointer;">
+                                        <span style="font-size:0.9rem;">${opt.optionName} <span style="font-size:0.8rem; color:#aaa;">(+₩<fmt:formatNumber value="${opt.dailyPrice}" pattern="#,###"/>/일)</span></span>
+                                    </label>
+                                    <div style="display: flex; align-items: center; gap: 5px; flex-shrink: 0;">
+                                        <span style="font-size:0.8rem; color:#888;">수량:</span>
+                                        <input type="number" name="quantity_${opt.optionId}" value="1" min="1" max="5" onchange="updateCalculations()" style="width: 50px; padding: 4px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; text-align: center;">
+                                     </div>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </div>
+
+                    <!-- 보험 상품 선택 -->
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: block; margin-bottom: 8px; color: #ccc;">🛡️ 보험 상품 선택 (필수)</label>
+                        <div style="display: flex; flex-direction: column; gap: 8px; background: #222; padding: 12px; border-radius: 6px;">
+                            <c:forEach var="ins" items="${insuranceList}" varStatus="status">
+                                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ddd; padding: 6px 0; border-bottom: 1px solid #333;">
+                                     <input type="radio" name="insuranceId" value="${ins.planId}" data-fee="${ins.dailyFee}" onchange="updateCalculations()" style="width: 18px !important; height: 18px !important; padding: 0 !important; margin: 0 !important; margin-top: 4px; cursor: pointer; accent-color: var(--primary-color); flex-shrink: 0;" ${status.first ? 'checked' : ''} required>
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; font-weight: bold; color: #fff;">
+                                            <span>${ins.planName}</span>
+                                            <span style="color: var(--primary-color);">+₩<fmt:formatNumber value="${ins.dailyFee}" pattern="#,###"/>/일</span>
+                                        </div>
+                                        <div style="font-size: 0.8rem; color: #aaa; margin-top: 4px;">
+                                            면책금 한도: ₩<fmt:formatNumber value="${ins.deductibleLimit}" pattern="#,###"/> | 보상 한도액: ₩<fmt:formatNumber value="${ins.coverageLimit}" pattern="#,###"/>
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">
+                                            ${ins.termsContent}
+                                        </div>
+                                    </div>
+                                </label>
+                            </c:forEach>
+                        </div>
+                    </div>
+
+                    <!-- 금액 확인 요약 -->
+                    <div class="price-summary-box" style="background: #252525; padding: 15px; border-radius: 8px; margin-bottom: 0;">
+                        <div class="summary-row" style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #aaa;">
+                            <span>일 대여 요금</span>
+                            <span>₩<fmt:formatNumber value="${bike.dailyPrice}" pattern="#,###"/></span>
+                        </div>
+                        <div class="summary-row" style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #aaa;">
+                            <span>총 대여 기간</span>
+                            <span id="display-days">0 일</span>
+                        </div>
+                        <div class="summary-row" id="summary-insurance-row" style="display: none; justify-content: space-between; margin-bottom: 8px; color: #aaa;">
+                            <span>보험료 합계</span>
+                            <span id="display-insurance-price">₩0</span>
+                        </div>
+                        <div class="summary-row" id="summary-grade-row" style="display: none; justify-content: space-between; margin-bottom: 8px; color: #e0a82e;">
+                            <span>등급 할인 혜택 (${not empty sessionScope.loginUser ? sessionScope.loginUser.userGrade : ''})</span>
+                            <span id="display-grade-discount">-₩0</span>
+                        </div>
+                        <div class="summary-row" id="summary-discount-row" style="display: none; justify-content: space-between; margin-bottom: 8px; color: #E50914;">
+                            <span>쿠폰 할인 혜택</span>
+                            <span id="display-discount-price">-₩0</span>
+                        </div>
+                        <div class="summary-row" id="summary-points-row" style="display: none; justify-content: space-between; margin-bottom: 8px; color: #5bc0de;">
+                            <span>포인트 사용</span>
+                            <span id="display-points-discount">-₩0</span>
+                        </div>
+                        <hr style="border: 0; border-top: 1px solid #444; margin: 10px 0;">
+                        <div class="summary-row total-row" style="display: flex; justify-content: space-between; font-weight: bold; color: var(--primary-color); font-size: 1.2rem;">
+                            <span>최종 결제 금액</span>
+                            <span id="display-total-price">₩0</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -295,6 +377,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         let dailyPrice = parseInt(document.getElementById('daily-price').value);
         let diffDaysGlobal = 0;
+        let userGrade = "${not empty sessionScope.loginUser ? sessionScope.loginUser.userGrade : ''}";
+        let maxUserPoints = parseInt("${not empty sessionScope.loginUser ? sessionScope.loginUser.point : 0}");
 
         window.updateCalculations = function() {
             if (diffDaysGlobal <= 0) return;
@@ -302,7 +386,15 @@
             // 1. 기본 대여 비용 계산
             let baseSubtotal = diffDaysGlobal * dailyPrice;
             
-            // 2. 추가 옵션 장비 비용 합산
+            // 2. 보험 비용 계산
+            let insuranceSubtotal = 0;
+            let checkedInsurance = document.querySelector('input[name="insuranceId"]:checked');
+            if (checkedInsurance) {
+                let insFee = parseInt(checkedInsurance.getAttribute('data-fee')) || 0;
+                insuranceSubtotal = insFee * diffDaysGlobal;
+            }
+            
+            // 3. 추가 옵션 장비 비용 합산
             let optionsSubtotal = 0;
             let checkedOptions = document.querySelectorAll('input[name="optionId"]:checked');
             checkedOptions.forEach(function(cb) {
@@ -313,20 +405,67 @@
                 optionsSubtotal += (optPrice * qty) * diffDaysGlobal;
             });
             
-            let subtotal = baseSubtotal + optionsSubtotal;
+            let subtotal = baseSubtotal + insuranceSubtotal + optionsSubtotal;
             
-            // 3. 쿠폰 할인 적용
+            // 4. 등급 할인 계산 (대여료 기준)
+            let gradeDiscountRate = 0.0;
+            if (userGrade === 'GOLD') gradeDiscountRate = 0.05;
+            else if (userGrade === 'VIP') gradeDiscountRate = 0.10;
+            let gradeDiscount = Math.floor(baseSubtotal * gradeDiscountRate);
+            
+            // 5. 쿠폰 할인 적용
             let couponSelector = document.getElementById('coupon-selector');
             let discount = 0;
             if (couponSelector) {
                 let selectedOption = couponSelector.options[couponSelector.selectedIndex];
                 discount = parseInt(selectedOption.getAttribute('data-discount')) || 0;
             }
-            let totalPrice = subtotal - discount;
+            
+            // 6. 포인트 할인 적용
+            let usePointsInput = document.getElementById('use-points-input');
+            let usePoints = 0;
+            if (usePointsInput) {
+                usePoints = parseInt(usePointsInput.value) || 0;
+                if (usePoints < 0) usePoints = 0;
+                if (usePoints > maxUserPoints) {
+                    usePoints = maxUserPoints;
+                    usePointsInput.value = usePoints;
+                }
+                
+                let currentSub = subtotal - gradeDiscount - discount;
+                if (currentSub < 0) currentSub = 0;
+                if (usePoints > currentSub) {
+                    usePoints = currentSub;
+                    usePointsInput.value = usePoints;
+                }
+            }
+            
+            let totalPrice = subtotal - gradeDiscount - discount - usePoints;
             if (totalPrice < 0) totalPrice = 0;
 
             document.getElementById('total-price').value = totalPrice;
             document.getElementById('display-total-price').innerText = "₩" + totalPrice.toLocaleString();
+
+            // UI 표시 업데이트
+            let insRow = document.getElementById('summary-insurance-row');
+            if (insRow) {
+                if (insuranceSubtotal > 0) {
+                    insRow.style.display = 'flex';
+                    document.getElementById('display-insurance-price').innerText = "₩" + insuranceSubtotal.toLocaleString();
+                } else {
+                    insRow.style.display = 'none';
+                }
+            }
+            
+            let gradeRow = document.getElementById('summary-grade-row');
+            if (gradeRow) {
+                if (gradeDiscount > 0) {
+                    gradeRow.style.display = 'flex';
+                    document.getElementById('display-grade-discount').innerText = "-₩" + gradeDiscount.toLocaleString();
+                } else {
+                    gradeRow.style.display = 'none';
+                }
+            }
 
             let discountRow = document.getElementById('summary-discount-row');
             if (discountRow) {
@@ -336,6 +475,61 @@
                 } else {
                     discountRow.style.display = 'none';
                 }
+            }
+            
+            let pointsRow = document.getElementById('summary-points-row');
+            if (pointsRow) {
+                if (usePoints > 0) {
+                    pointsRow.style.display = 'flex';
+                    document.getElementById('display-points-discount').innerText = "-₩" + usePoints.toLocaleString();
+                } else {
+                    pointsRow.style.display = 'none';
+                }
+            }
+        };
+
+        window.useAllPoints = function() {
+            if (diffDaysGlobal <= 0) {
+                alert("대여 기간을 먼저 선택해 주세요.");
+                return;
+            }
+            let baseSubtotal = diffDaysGlobal * dailyPrice;
+            let insuranceSubtotal = 0;
+            let checkedInsurance = document.querySelector('input[name="insuranceId"]:checked');
+            if (checkedInsurance) {
+                let insFee = parseInt(checkedInsurance.getAttribute('data-fee')) || 0;
+                insuranceSubtotal = insFee * diffDaysGlobal;
+            }
+            let optionsSubtotal = 0;
+            let checkedOptions = document.querySelectorAll('input[name="optionId"]:checked');
+            checkedOptions.forEach(function(cb) {
+                let optId = cb.value;
+                let optPrice = parseInt(cb.getAttribute('data-price')) || 0;
+                let qtyInput = document.querySelector('input[name="quantity_' + optId + '"]');
+                let qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+                optionsSubtotal += (optPrice * qty) * diffDaysGlobal;
+            });
+            let subtotal = baseSubtotal + insuranceSubtotal + optionsSubtotal;
+            let gradeDiscountRate = 0.0;
+            if (userGrade === 'GOLD') gradeDiscountRate = 0.05;
+            else if (userGrade === 'VIP') gradeDiscountRate = 0.10;
+            let gradeDiscount = Math.floor(baseSubtotal * gradeDiscountRate);
+            
+            let couponSelector = document.getElementById('coupon-selector');
+            let discount = 0;
+            if (couponSelector) {
+                let selectedOption = couponSelector.options[couponSelector.selectedIndex];
+                discount = parseInt(selectedOption.getAttribute('data-discount')) || 0;
+            }
+            
+            let currentSub = subtotal - gradeDiscount - discount;
+            if (currentSub < 0) currentSub = 0;
+            
+            let usePointsInput = document.getElementById('use-points-input');
+            if (usePointsInput) {
+                let pointsToUse = Math.min(maxUserPoints, currentSub);
+                usePointsInput.value = pointsToUse;
+                updateCalculations();
             }
         };
         

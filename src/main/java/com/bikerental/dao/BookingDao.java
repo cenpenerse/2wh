@@ -29,11 +29,11 @@ public class BookingDao {
         PreparedStatement pstmtOptIns = null;
         ResultSet rsOptPrice = null;
         
-        String sqlRes = "INSERT INTO reservations (reservation_id, user_id, bike_id, pickup_shop_id, dropoff_shop_id, start_date, end_date, rental_days, total_price, status, created_at) "
-                      + "VALUES (seq_reservations.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, 'PENDING', SYSDATE)";
+        String sqlRes = "INSERT INTO reservations (reservation_id, user_id, bike_id, pickup_shop_id, dropoff_shop_id, start_date, end_date, rental_days, total_price, status, created_at, insurance_id) "
+                      + "VALUES (seq_reservations.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', SYSDATE, ?)";
                       
-        String sqlPay = "INSERT INTO payments (payment_id, reservation_id, amount, payment_method, payment_status, paid_at, refund_amount) "
-                      + "VALUES (seq_payments.NEXTVAL, seq_reservations.CURRVAL, ?, ?, 'PAID', SYSDATE, 0)";
+        String sqlPay = "INSERT INTO payments (payment_id, reservation_id, amount, payment_method, pg_approval_num, payment_status, paid_at, refund_amount) "
+                      + "VALUES (seq_payments.NEXTVAL, seq_reservations.CURRVAL, ?, ?, ?, '결제완료', SYSDATE, 0)";
 
         String sqlOptPrice = "SELECT daily_price FROM option_items WHERE option_id = ?";
         String sqlOptIns = "INSERT INTO booking_options (booking_option_id, reservation_id, option_id, quantity, daily_price) "
@@ -62,6 +62,11 @@ public class BookingDao {
             pstmt1.setTimestamp(6, dto.getEndDate());
             pstmt1.setInt(7, dto.getRentalDays());
             pstmt1.setInt(8, dto.getPrice());
+            if (dto.getInsuranceId() > 0) {
+                pstmt1.setInt(9, dto.getInsuranceId());
+            } else {
+                pstmt1.setNull(9, java.sql.Types.NUMERIC);
+            }
             result = pstmt1.executeUpdate();
             
             if (result > 0) {
@@ -69,6 +74,8 @@ public class BookingDao {
                 pstmt2 = conn.prepareStatement(sqlPay);
                 pstmt2.setInt(1, dto.getPrice());
                 pstmt2.setString(2, dto.getPaymentMethod());
+                String mockPgNum = "TOSS_APP_" + (int)(Math.random() * 900000 + 100000);
+                pstmt2.setString(3, mockPgNum);
                 pstmt2.executeUpdate();
 
                 // 3. 대여 옵션 인서트
@@ -91,9 +98,39 @@ public class BookingDao {
                         pstmtOptIns.executeUpdate();
                     }
                 }
+
+                // 4. 포인트 차감 및 적립 처리
+                if (dto.getUsePoints() > 0) {
+                    PointHistoryDao.getInstance().insertPointHistory(conn, dto.getMemberId(), -dto.getUsePoints(), "대여 예약 시 포인트 사용");
+                }
+                
+                String sqlUserGrade = "SELECT user_grade FROM users WHERE user_id = ?";
+                String grade = "SILVER";
+                try (PreparedStatement pstmtUG = conn.prepareStatement(sqlUserGrade)) {
+                    pstmtUG.setInt(1, dto.getMemberId());
+                    try (ResultSet rsUG = pstmtUG.executeQuery()) {
+                        if (rsUG.next()) {
+                            grade = rsUG.getString("user_grade");
+                        }
+                    }
+                }
+                
+                double rate = 0.05;
+                if ("GOLD".equals(grade)) rate = 0.07;
+                else if ("VIP".equals(grade)) rate = 0.10;
+                int earnPoints = (int)(dto.getPrice() * rate);
+                
+                if (earnPoints > 0) {
+                    PointHistoryDao.getInstance().insertPointHistory(conn, dto.getMemberId(), earnPoints, "대여 예약 완료 적립");
+                }
             }
             
             conn.commit(); // 커밋
+            try {
+                NotificationDao.send(dto.getMemberId(), "알림톡", "🏍️ 대여 예약 및 결제가 정상적으로 완료되었습니다. 마이페이지에서 대여 현황을 확인하세요.");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         } catch (Exception e) {
             e.printStackTrace();
             if (conn != null) {
@@ -123,12 +160,14 @@ public class BookingDao {
         ResultSet rs = null;
         String sql = "SELECT r.*, m.model_name, m.cc, p.payment_method, p.payment_status, "
                    + "       ps.shop_name AS pickup_shop_name, ds.shop_name AS dropoff_shop_name, "
-                   + "       (SELECT image_url FROM bike_images WHERE bike_id = m.bike_id AND is_thumbnail = 'Y' AND ROWNUM = 1) AS bike_image_url "
+                   + "       (SELECT image_url FROM bike_images WHERE bike_id = m.bike_id AND is_thumbnail = 'Y' AND ROWNUM = 1) AS bike_image_url, "
+                   + "       ip.plan_name AS insurance_plan_name, ip.daily_fee AS insurance_daily_fee "
                    + "FROM reservations r "
                    + "JOIN motorcycles m ON r.bike_id = m.bike_id "
                    + "LEFT JOIN rental_shops ps ON r.pickup_shop_id = ps.shop_id "
                    + "LEFT JOIN rental_shops ds ON r.dropoff_shop_id = ds.shop_id "
                    + "LEFT JOIN payments p ON r.reservation_id = p.reservation_id "
+                   + "LEFT JOIN insurance_plans ip ON r.insurance_id = ip.plan_id "
                    + "WHERE r.user_id = ? "
                    + "ORDER BY r.reservation_id DESC";
         List<BookingDto> list = new ArrayList<>();
@@ -158,6 +197,9 @@ public class BookingDao {
                 dto.setPickupShopName(rs.getString("pickup_shop_name"));
                 dto.setDropoffShopId(rs.getInt("dropoff_shop_id"));
                 dto.setDropoffShopName(rs.getString("dropoff_shop_name"));
+                dto.setInsuranceId(rs.getInt("insurance_id"));
+                dto.setInsuranceName(rs.getString("insurance_plan_name"));
+                dto.setInsuranceFee(rs.getInt("insurance_daily_fee"));
                 
                 // 대여 옵션 로드
                 dto.setBookingOptions(getBookingOptions(conn, dto.getBookingId()));
@@ -177,13 +219,15 @@ public class BookingDao {
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         String sql = "SELECT r.*, u.name AS user_nickname, u.email AS user_email, m.model_name, p.payment_method, "
-                   + "       ps.shop_name AS pickup_shop_name, ds.shop_name AS dropoff_shop_name "
+                   + "       ps.shop_name AS pickup_shop_name, ds.shop_name AS dropoff_shop_name, "
+                   + "       ip.plan_name AS insurance_plan_name, ip.daily_fee AS insurance_daily_fee "
                    + "FROM reservations r "
                    + "JOIN users u ON r.user_id = u.user_id "
                    + "JOIN motorcycles m ON r.bike_id = m.bike_id "
                    + "LEFT JOIN rental_shops ps ON r.pickup_shop_id = ps.shop_id "
                    + "LEFT JOIN rental_shops ds ON r.dropoff_shop_id = ds.shop_id "
                    + "LEFT JOIN payments p ON r.reservation_id = p.reservation_id "
+                   + "LEFT JOIN insurance_plans ip ON r.insurance_id = ip.plan_id "
                    + "ORDER BY r.reservation_id DESC";
         List<BookingDto> list = new ArrayList<>();
         try {
@@ -210,6 +254,9 @@ public class BookingDao {
                 dto.setPickupShopName(rs.getString("pickup_shop_name"));
                 dto.setDropoffShopId(rs.getInt("dropoff_shop_id"));
                 dto.setDropoffShopName(rs.getString("dropoff_shop_name"));
+                dto.setInsuranceId(rs.getInt("insurance_id"));
+                dto.setInsuranceName(rs.getString("insurance_plan_name"));
+                dto.setInsuranceFee(rs.getInt("insurance_daily_fee"));
                 
                 // 대여 옵션 로드
                 dto.setBookingOptions(getBookingOptions(conn, dto.getBookingId()));
@@ -288,12 +335,14 @@ public class BookingDao {
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         String sql = "SELECT r.*, m.model_name, p.payment_method, "
-                   + "       ps.shop_name AS pickup_shop_name, ds.shop_name AS dropoff_shop_name "
+                   + "       ps.shop_name AS pickup_shop_name, ds.shop_name AS dropoff_shop_name, "
+                   + "       ip.plan_name AS insurance_plan_name, ip.daily_fee AS insurance_daily_fee "
                    + "FROM reservations r "
                    + "JOIN motorcycles m ON r.bike_id = m.bike_id "
                    + "LEFT JOIN rental_shops ps ON r.pickup_shop_id = ps.shop_id "
                    + "LEFT JOIN rental_shops ds ON r.dropoff_shop_id = ds.shop_id "
                    + "LEFT JOIN payments p ON r.reservation_id = p.reservation_id "
+                   + "LEFT JOIN insurance_plans ip ON r.insurance_id = ip.plan_id "
                    + "WHERE r.reservation_id = ?";
         BookingDto dto = null;
         try {
@@ -318,6 +367,9 @@ public class BookingDao {
                 dto.setPickupShopName(rs.getString("pickup_shop_name"));
                 dto.setDropoffShopId(rs.getInt("dropoff_shop_id"));
                 dto.setDropoffShopName(rs.getString("dropoff_shop_name"));
+                dto.setInsuranceId(rs.getInt("insurance_id"));
+                dto.setInsuranceName(rs.getString("insurance_plan_name"));
+                dto.setInsuranceFee(rs.getInt("insurance_daily_fee"));
                 
                 // 대여 옵션 로드
                 dto.setBookingOptions(getBookingOptions(conn, dto.getBookingId()));

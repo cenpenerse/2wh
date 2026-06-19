@@ -86,7 +86,7 @@
                         <div class="no-results" style="grid-column: 1 / -1; padding: 60px 20px; text-align: center; background: rgba(30, 30, 48, 0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-top: 20px;">
                             <span class="no-results-icon" style="font-size: 4rem; display: block; margin-bottom: 15px;">🏍️</span>
                             <p style="color: #cbd5e1; font-size: 1.1rem; margin-bottom: 20px;">선택하신 조건에 해당하는 바이크가 존재하지 않습니다.</p>
-                            <a href="${pageContext.request.contextPath}/bikeSelect.do?shopId=${selectedShopId}" class="btn" style="background: #2563eb; color: #fff; border-radius: 6px; padding: 10px 24px; font-weight: 600; text-decoration: none;">지점 전체 바이크 보기</a>
+                            <a href="${pageContext.request.contextPath}/bikeSelect.do?shopId=${selectedShopId}" class="btn" style="background: #e50914; color: #fff; border-radius: 6px; padding: 10px 24px; font-weight: 600; text-decoration: none; transition: background 0.3s ease;" onmouseover="this.style.background='#b20710'" onmouseout="this.style.background='#e50914'">지점 전체 바이크 보기</a>
                         </div>
                     </c:otherwise>
                 </c:choose>

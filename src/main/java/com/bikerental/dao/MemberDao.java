@@ -21,8 +21,8 @@ public class MemberDao {
     public int insertMember(MemberDto dto) throws Exception {
         Connection conn = null;
         PreparedStatement pstmt = null;
-        String sql = "INSERT INTO users (user_id, email, password, name, phone, birth_date, license_number, role, point, join_date) "
-                   + "VALUES (seq_users.NEXTVAL, ?, ?, ?, ?, ?, ?, 'USER', 0, SYSDATE)";
+        String sql = "INSERT INTO users (user_id, email, password, name, phone, birth_date, license_number, role, point, user_grade, join_date) "
+                   + "VALUES (seq_users.NEXTVAL, ?, ?, ?, ?, ?, ?, 'USER', 0, 'SILVER', SYSDATE)";
         int result = -1;
         try {
             conn = DBConnection.getConnection();
@@ -67,6 +67,7 @@ public class MemberDao {
                 dto.setLicenseStatus(rs.getString("license_status"));
                 dto.setMemberStatus(rs.getString("role"));
                 dto.setPoint(rs.getInt("point"));
+                dto.setUserGrade(rs.getString("user_grade"));
                 dto.setCreatedAt(rs.getTimestamp("join_date"));
             }
         } catch (Exception e) {
@@ -102,6 +103,7 @@ public class MemberDao {
                 dto.setLicenseStatus(rs.getString("license_status"));
                 dto.setMemberStatus(rs.getString("role"));
                 dto.setPoint(rs.getInt("point"));
+                dto.setUserGrade(rs.getString("user_grade"));
                 dto.setCreatedAt(rs.getTimestamp("join_date"));
             }
         } catch (Exception e) {
@@ -175,6 +177,7 @@ public class MemberDao {
                 dto.setLicenseStatus(rs.getString("license_status"));
                 dto.setMemberStatus(rs.getString("role"));
                 dto.setPoint(rs.getInt("point"));
+                dto.setUserGrade(rs.getString("user_grade"));
                 dto.setCreatedAt(rs.getTimestamp("join_date"));
                 list.add(dto);
             }

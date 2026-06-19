@@ -50,7 +50,7 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="${pageContext.request.contextPath}/bikeSelect.do?shopId=${shop.shopId}" class="card-btn" style="text-align: center; border-radius: 0 0 12px 12px; background: linear-gradient(90deg, #2563eb, #1d4ed8); font-weight: 700; padding: 14px 0; color: #fff; display: block; text-decoration: none; transition: background 0.3s;">지점 선택 및 바이크 예약</a>
+                        <a href="${pageContext.request.contextPath}/bikeSelect.do?shopId=${shop.shopId}" class="card-btn" style="text-align: center; border-radius: 0 0 12px 12px; background: linear-gradient(90deg, #e50914, #b20710); font-weight: 700; padding: 14px 0; color: #fff; display: block; text-decoration: none; transition: all 0.3s ease;">지점 선택 및 바이크 예약</a>
                     </div>
                 </c:forEach>
             </div>
@@ -61,10 +61,13 @@
     .bike-card:hover {
         transform: translateY(-8px);
         box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-        border-color: rgba(96, 165, 250, 0.3) !important;
+        border-color: rgba(229, 9, 20, 0.4) !important;
     }
     .bike-card:hover .bike-image-wrapper img {
         transform: scale(1.1);
+    }
+    .bike-card:hover .card-btn {
+        background: linear-gradient(90deg, #ff1f29, #e50914) !important;
     }
 </style>
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />
