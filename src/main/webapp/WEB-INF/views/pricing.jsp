@@ -6,10 +6,10 @@
             <h2>이용 요금 안내</h2>
             <p style="text-align: center; margin-bottom: 2.5rem; color: var(--light-text-color);">Baren은 모든 라이더들의 즐거운 라이딩을 위해 합리적이고 투명한 요금제를 운영합니다.</p>
             
-            <div style="display: flex; gap: 30px; flex-wrap: wrap; align-items: flex-start;">
-                <!-- 왼쪽 박스: 바이크 이용 요금 안내 -->
-                <div style="flex: 1; min-width: 450px; background: rgba(30, 30, 48, 0.2); border: 1px solid rgba(255,255,255,0.05); padding: 25px; border-radius: 12px;">
-                    <h3 style="margin-bottom: 20px; font-family: 'Outfit'; color: #fff; display: flex; align-items: center; gap: 8px;">🏍️ 바이크 대여 요금</h3>
+            <div style="display: flex; flex-direction: column; gap: 35px;">
+                <!-- 첫 번째 박스: 바이크 이용 요금 안내 -->
+                <div style="background: var(--light-gray-bg); border: 1px solid var(--border-color); padding: 30px; border-radius: 12px;">
+                    <h3 style="margin-bottom: 20px; font-family: 'Outfit'; color: #fff; display: flex; align-items: center; gap: 8px;">바이크 대여 요금</h3>
                     <table class="mypage-table" style="margin-bottom: 0;">
                         <thead>
                             <tr>
@@ -43,9 +43,9 @@
                     </table>
                 </div>
 
-                <!-- 오른쪽 박스: 프리미엄 추가 대여 장비 -->
-                <div style="flex: 1; min-width: 450px; background: rgba(30, 30, 48, 0.2); border: 1px solid rgba(255,255,255,0.05); padding: 25px; border-radius: 12px;">
-                    <h3 id="premium-options" style="margin-bottom: 20px; font-family: 'Outfit'; color: #fff; display: flex; align-items: center; gap: 8px;">🔌 프리미엄 추가 대여 장비</h3>
+                <!-- 두 번째 박스: 프리미엄 추가 대여 장비 -->
+                <div style="background: var(--light-gray-bg); border: 1px solid var(--border-color); padding: 30px; border-radius: 12px;">
+                    <h3 id="premium-options" style="margin-bottom: 20px; font-family: 'Outfit'; color: #fff; display: flex; align-items: center; gap: 8px;">프리미엄 추가 대여 장비</h3>
                     <table class="mypage-table" style="margin-bottom: 0;">
                         <thead>
                             <tr>

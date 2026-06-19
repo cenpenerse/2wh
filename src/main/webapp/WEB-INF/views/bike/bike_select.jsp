@@ -14,7 +14,7 @@
                     ${selectedShop.shopName} - 대여 가능한 바이크
                 </h2>
                 <p style="color: var(--light-text-color); font-size: 1rem;">
-                    📍 ${selectedShop.address} &nbsp;|&nbsp; 📞 ${selectedShop.tel} &nbsp;|&nbsp; ⏰ 영업시간: ${selectedShop.openTime} ~ ${selectedShop.closeTime}
+                    ${selectedShop.address} &nbsp;|&nbsp; ${selectedShop.tel} &nbsp;|&nbsp; 영업시간: ${selectedShop.openTime} ~ ${selectedShop.closeTime}
                 </p>
             </div>
             
@@ -65,14 +65,14 @@
                                 <div class="bike-info">
                                     <span class="bike-category">${bike.brandName}</span>
                                     <h3>${bike.bikeName}</h3>
-                                    <p class="location" style="margin-bottom: 12px;"><i class="icon-loc">📍</i> ${bike.shopName}</p>
+                                    <p class="location" style="margin-bottom: 12px;"><i class="icon-loc"></i> ${bike.shopName}</p>
                                     <div class="price">
                                         <span>₩<fmt:formatNumber value="${bike.dailyPrice}" pattern="#,###"/></span> / 일
                                     </div>
                                     <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; border-top: 1px solid #222; padding-top: 12px;">
-                                        <span style="font-size: 0.85rem; color: #aaa; display: flex; align-items: center; gap: 6px;">🛡️ 종합 책임 보험 가입 완료</span>
-                                        <span style="font-size: 0.85rem; color: #aaa; display: flex; align-items: center; gap: 6px;">⛑️ 프리미엄 헬멧 무상 대여</span>
-                                        <span style="font-size: 0.85rem; color: #aaa; display: flex; align-items: center; gap: 6px;">🛠️ 반납 즉시 정밀 정비 진단</span>
+                                        <span style="font-size: 0.85rem; color: #aaa; display: flex; align-items: center; gap: 6px;">종합 책임 보험 가입 완료</span>
+                                        <span style="font-size: 0.85rem; color: #aaa; display: flex; align-items: center; gap: 6px;">프리미엄 헬멧 무상 대여</span>
+                                        <span style="font-size: 0.85rem; color: #aaa; display: flex; align-items: center; gap: 6px;">반납 즉시 정밀 정비 진단</span>
                                     </div>
                                     <div class="rating">
                                         <span class="stars">★</span> <strong>${bike.ratingAvg}</strong> (${bike.reviewCount} 리뷰)
@@ -84,7 +84,7 @@
                     </c:when>
                     <c:otherwise>
                         <div class="no-results" style="grid-column: 1 / -1; padding: 60px 20px; text-align: center; background: rgba(30, 30, 48, 0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-top: 20px;">
-                            <span class="no-results-icon" style="font-size: 4rem; display: block; margin-bottom: 15px;">🏍️</span>
+                            <span class="no-results-icon" style="font-size: 4rem; display: block; margin-bottom: 15px;"></span>
                             <p style="color: #cbd5e1; font-size: 1.1rem; margin-bottom: 20px;">선택하신 조건에 해당하는 바이크가 존재하지 않습니다.</p>
                             <a href="${pageContext.request.contextPath}/bikeSelect.do?shopId=${selectedShopId}" class="btn" style="background: #e50914; color: #fff; border-radius: 6px; padding: 10px 24px; font-weight: 600; text-decoration: none; transition: background 0.3s ease;" onmouseover="this.style.background='#b20710'" onmouseout="this.style.background='#e50914'">지점 전체 바이크 보기</a>
                         </div>

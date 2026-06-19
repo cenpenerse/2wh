@@ -3,58 +3,127 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp" />
-
 <style>
-    /* 마이페이지 탭 레이아웃 스타일 */
-    .mypage-tabs {
-        display: flex;
-        gap: 8px;
-        border-bottom: 2px solid #222;
-        margin-bottom: 30px;
-        flex-wrap: wrap;
-        margin-top: 20px;
+    /* 마이페이지 레이아웃 및 탭 스타일 */
+    .mypage-container.max-width {
+        max-width: 1600px !important;
     }
+    
+    .mypage-layout-wrapper {
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+        margin-top: 30px;
+        width: 100%;
+    }
+
+    .mypage-tabs {
+        width: 260px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    
     .tab-btn {
         background: transparent;
         border: none;
         color: #9CA3AF;
-        padding: 12px 20px;
-        font-size: 0.95rem;
+        padding: 12px 18px;
+        font-size: 0.92rem;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
-        border-bottom: 3px solid transparent;
+        transition: all 0.2s ease;
+        text-align: left;
+        border-radius: 8px;
         font-family: 'Outfit', sans-serif;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        border-left: 3px solid transparent;
     }
+    
     .tab-btn:hover {
         color: #fff;
+        background: rgba(255, 255, 255, 0.04);
     }
+    
     .tab-btn.active {
-        color: var(--primary-color);
-        border-bottom-color: var(--primary-color);
+        color: #fff;
+        background: rgba(229, 9, 20, 0.1);
+        border-left-color: var(--primary-color);
     }
+    
+    .mypage-content-box {
+        flex: 1;
+        min-width: 0;
+        border: none !important;
+        padding: 0 !important;
+        background: transparent !important;
+    }
+    
     .tab-content {
         display: none;
         animation: fadeIn 0.3s ease-in-out;
     }
+    
     .tab-content.active {
         display: block;
     }
+    
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(5px); }
         to { opacity: 1; transform: translateY(0); }
     }
     
+    @media (max-width: 992px) {
+        .mypage-layout-wrapper {
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .mypage-tabs {
+            width: 100% !important;
+            flex-direction: row;
+            flex-wrap: wrap;
+            padding: 15px;
+            gap: 6px;
+        }
+        
+        .tab-btn {
+            width: auto;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            text-align: center;
+            border-left: none;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab-btn.active {
+            border-left-color: transparent;
+            border-bottom-color: var(--primary-color);
+        }
+    }
+    
     .crud-section-grid {
-        display: grid;
-        grid-template-columns: 1.2fr 0.8fr;
+        display: flex;
+        flex-wrap: wrap;
         gap: 30px;
         margin-top: 15px;
+        width: 100%;
     }
-    @media (max-width: 992px) {
-        .crud-section-grid {
-            grid-template-columns: 1fr;
-        }
+    .crud-section-grid > div:first-child {
+        flex: 1 1 650px;
+        min-width: 0;
+    }
+    .crud-section-grid > div:last-child {
+        flex: 1 1 320px;
+        min-width: 0;
     }
     
     /* 1:1 문의 아코디언 스타일 */
@@ -111,7 +180,7 @@
 <div class="mypage-container max-width">
     <!-- 1. 상단 마이페이지 헤더 정보 -->
     <div class="mypage-profile-card">
-        <div class="user-avatar">👤</div>
+        <div class="user-avatar"></div>
         <div class="user-details">
             <span class="user-role-badge ${loginUser.memberStatus eq 'ADMIN' ? 'badge-admin' : 'badge-user'}">
                 ${loginUser.memberStatus eq 'ADMIN' ? '관리자 계정' : '일반 회원'}
@@ -139,41 +208,43 @@
         </div>
     </div>
 
-    <div class="mypage-tabs">
+    <div class="mypage-layout-wrapper">
+        <div class="mypage-tabs">
         <c:choose>
             <c:when test="${loginUser.memberStatus eq 'ADMIN'}">
-                <button class="tab-btn active" onclick="openTab(event, 'tab-admin-bookings')">📋 전체 예약 관리</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-members')">👥 가입 회원 목록</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-crud')">🛠️ 바이크/지점/브랜드 관리</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-inquiries')">💬 1:1 문의 답변 관리</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-coupons')">🎫 쿠폰 발급</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-penalties')">💸 패널티 및 벌금 관리</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-license')">🪪 면허 검증 심사</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-maintenance')">🔧 차량 정비 관리</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-fuel')">⛽ 반납/주유 기록</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-payment')">💳 결제 관리</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-notification')">🔔 알림 발송 이력</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-accident')">💥 사고 처리 관리</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-blacklist')">🚫 블랙리스트 관리</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-admin-refund')">💸 환불 내역 관리</button>
+                <button class="tab-btn active" onclick="openTab(event, 'tab-admin-bookings')">전체 예약 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-members')">가입 회원 목록</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-crud')">바이크/지점/브랜드 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-inquiries')">1:1 문의 답변 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-coupons')">쿠폰 발급</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-penalties')">패널티 및 벌금 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-license')">면허 검증 심사</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-maintenance')">차량 정비 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-fuel')">반납/주유 기록</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-payment')">결제 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-notification')">알림 발송 이력</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-accident')">사고 처리 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-blacklist')">블랙리스트 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-refund')">환불 내역 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-admin-gears')">대여장비 관리</button>
             </c:when>
             <c:otherwise>
-                <button class="tab-btn active" onclick="openTab(event, 'tab-user-bookings')">🏍️ 내 예약 내역</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-user-coupons')">🎫 쿠폰 보관함</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-user-license')">🪪 면허증 관리</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-user-inquiries')">💬 1:1 문의 내역</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-user-edit')">👤 내 정보 수정</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-user-payment')">💳 내 결제 이력</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-user-notification')">🔔 내 알림함</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-user-point')">🪙 내 포인트/등급</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-user-accident')">💥 사고 접수 내역</button>
-                <button class="tab-btn" onclick="openTab(event, 'tab-user-refund')">💸 내 환불 내역</button>
+                <button class="tab-btn active" onclick="openTab(event, 'tab-user-bookings')">내 예약 내역</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-coupons')">쿠폰 보관함</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-license')">면허증 관리</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-inquiries')">1:1 문의 내역</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-edit')">내 정보 수정</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-payment')">내 결제 이력</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-notification')">내 알림함</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-point')">내 포인트/등급</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-accident')">사고 접수 내역</button>
+                <button class="tab-btn" onclick="openTab(event, 'tab-user-refund')">내 환불 내역</button>
             </c:otherwise>
         </c:choose>
     </div>
 
     <!-- 3. 각 탭 상세 콘텐츠 -->
-    <div class="mypage-content-box" style="border:none; padding:0; background:transparent;">
+    <div class="mypage-content-box">
         <c:choose>
             <c:when test="${loginUser.memberStatus eq 'ADMIN'}">
                 <!-- ================= [관리자] 탭 1: 전체 예약 관리 ================= -->
@@ -213,7 +284,7 @@
                                                         <strong>${book.bikeName}</strong>
                                                         <c:if test="${not empty book.bookingOptions}">
                                                             <div style="font-size:0.8rem; color:#aaa; margin-top:4px; line-height:1.4;">
-                                                                🛠️ 옵션: 
+                                                                옵션: 
                                                                 <c:forEach var="opt" items="${book.bookingOptions}" varStatus="status">
                                                                     ${opt.optionName} (${opt.quantity}개)${!status.last ? ', ' : ''}
                                                                 </c:forEach>
@@ -564,6 +635,86 @@
                     </div>
                 </div>
 
+                <!-- ================= [관리자] 탭: 대여장비 관리 ================= -->
+                <div id="tab-admin-gears" class="tab-content">
+                    <div class="panel-form" style="border:1px solid #222;">
+                        <h4 style="color:var(--primary-color); border-bottom:1px solid #222; padding-bottom:10px; margin-bottom:15px; font-family:'Outfit'; font-size:1.2rem;">대여장비(옵션) 관리</h4>
+                        <div class="crud-section-grid">
+                            <!-- 왼쪽: 장비 리스트 -->
+                            <div>
+                                <h5 style="margin-bottom:10px; font-size: 1.05rem;">장비 리스트</h5>
+                                <div class="table-wrapper">
+                                    <table class="mypage-table" style="font-size: 0.85rem;">
+                                        <thead>
+                                            <tr>
+                                                <th>썸네일</th>
+                                                <th>ID</th>
+                                                <th>장비명</th>
+                                                <th>재고</th>
+                                                <th>1일 대여료</th>
+                                                <th>상태</th>
+                                                <th>동작</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <c:forEach var="opt" items="${adminOptionList}">
+                                                <tr>
+                                                    <td>
+                                                        <img src="${pageContext.request.contextPath}/resources/images/gears/${opt.imageFilename}" alt="${opt.optionName}" style="width: 50px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
+                                                    </td>
+                                                    <td>${opt.optionId}</td>
+                                                    <td><strong>${opt.optionName}</strong></td>
+                                                    <td>${opt.stockQuantity}개</td>
+                                                    <td>₩<fmt:formatNumber value="${opt.dailyPrice}" pattern="#,###"/></td>
+                                                    <td>
+                                                        <span class="status-badge ${opt.status eq 'AVAILABLE' ? 'status-approved' : 'status-cancelled'}" style="font-size: 0.75rem; padding: 2px 6px;">
+                                                            ${opt.status eq 'AVAILABLE' ? '대여가능' : '비활성'}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn-sm btn-approve" style="padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; border: none; cursor: pointer;" onclick="openEditGearModal(${opt.optionId}, '${opt.optionName}', ${opt.stockQuantity}, ${opt.dailyPrice}, '${opt.status}')">수정</button>
+                                                        <a href="${pageContext.request.contextPath}/adminOptionDeleteAction.do?optionId=${opt.optionId}" class="btn-sm btn-reject" style="padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;" onclick="return confirm('정말 이 장비를 삭제하시겠습니까?');">삭제</a>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <!-- 오른쪽: 신규 장비 추가 -->
+                            <div>
+                                <h5 style="margin-bottom:10px; font-size: 1.05rem;">신규 대여장비 추가</h5>
+                                <form action="${pageContext.request.contextPath}/adminOptionAddAction.do" method="post" enctype="multipart/form-data">
+                                    <div class="form-group" style="margin-bottom:10px;">
+                                        <label style="font-size:0.85rem; color:#aaa;">장비명</label>
+                                        <input type="text" name="optionName" required placeholder="예: HJC 오픈페이스 헬멧" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom:10px;">
+                                        <label style="font-size:0.85rem; color:#aaa;">재고 수량</label>
+                                        <input type="number" name="stockQuantity" required min="0" value="10" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom:10px;">
+                                        <label style="font-size:0.85rem; color:#aaa;">1일 대여료 (원)</label>
+                                        <input type="number" name="dailyPrice" required min="0" value="5000" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom:10px;">
+                                        <label style="font-size:0.85rem; color:#aaa;">기본 상태</label>
+                                        <select name="status" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                            <option value="AVAILABLE">대여 가능 (AVAILABLE)</option>
+                                            <option value="UNAVAILABLE">대여 불가 (UNAVAILABLE)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom:15px;">
+                                        <label style="font-size:0.85rem; color:#aaa;">장비 대표 이미지 파일 첨부</label>
+                                        <input type="file" name="gearImage" accept="image/*" required style="width:100%; padding:8px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                                    </div>
+                                    <button type="submit" class="btn btn-action-main" style="width:100%; padding:10px;">대여장비 등록</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- ================= [관리자] 탭 4: 1:1 문의 답변 관리 ================= -->
                 <div id="tab-admin-inquiries" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222;">
@@ -759,7 +910,7 @@
                 <!-- ================= [관리자] 탭 7: 면허 검증 심사 ================= -->
                 <div id="tab-admin-license" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🪪 면허 검증 심사 관리</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">면허 검증 심사 관리</h3>
                         <div class="table-wrapper">
                             <table class="mypage-table">
                                 <thead>
@@ -840,7 +991,7 @@
                 <!-- ================= [관리자] 탭 8: 차량 정비 관리 ================= -->
                 <div id="tab-admin-maintenance" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🔧 차량 정비 이력 관리</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">차량 정비 이력 관리</h3>
                         
                         <div class="crud-section-grid">
                             <!-- 정비 이력 테이블 -->
@@ -889,7 +1040,7 @@
                             
                             <!-- 신규 정비 등록 폼 -->
                             <div>
-                                <h4 style="margin-bottom: 10px; color:#fff;">🔧 신규 정비 등록</h4>
+                                <h4 style="margin-bottom: 10px; color:#fff;">신규 정비 등록</h4>
                                 <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px;">
                                     <form action="${pageContext.request.contextPath}/adminMaintenanceAddAction.do" method="post">
                                         <div class="form-group" style="margin-bottom: 12px;">
@@ -948,7 +1099,7 @@
                 <!-- ================= [관리자] 탭 9: 반납/주유 기록 ================= -->
                 <div id="tab-admin-fuel" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">⛽ 반납 및 주유/배터리 충전 기록</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">반납 및 주유/배터리 충전 기록</h3>
                         
                         <div class="crud-section-grid">
                             <!-- 반납 및 주유 로그 -->
@@ -1009,7 +1160,7 @@
                             
                             <!-- 차량 반납 처리 폼 -->
                             <div>
-                                <h4 style="margin-bottom: 10px; color:#fff;">🏍️ 차량 반납 및 주유 검사</h4>
+                                <h4 style="margin-bottom: 10px; color:#fff;">차량 반납 및 주유 검사</h4>
                                 <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px;">
                                     <form action="${pageContext.request.contextPath}/adminFuelLogAddAction.do" method="post">
                                         <div class="form-group" style="margin-bottom: 12px;">
@@ -1047,7 +1198,7 @@
                 <!-- ================= [관리자] 탭 10: 결제 관리 ================= -->
                 <div id="tab-admin-payment" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">💳 전체 회원 결제 내역 관리</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">전체 회원 결제 내역 관리</h3>
                         <div class="table-wrapper">
                             <table class="mypage-table">
                                 <thead>
@@ -1114,7 +1265,7 @@
                 <!-- ================= [관리자] 탭 11: 알림 발송 이력 ================= -->
                 <div id="tab-admin-notification" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🔔 전체 회원 알림 발송 현황</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">전체 회원 알림 발송 현황</h3>
                         
                         <div class="crud-section-grid">
                             <!-- 알림 이력 목록 -->
@@ -1166,7 +1317,7 @@
                             
                             <!-- 알림 직접 발송 폼 -->
                             <div>
-                                <h4 style="margin-bottom: 10px; color:#fff;">🔔 개별 알림 직접 발송</h4>
+                                <h4 style="margin-bottom: 10px; color:#fff;">개별 알림 직접 발송</h4>
                                 <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px;">
                                     <form action="${pageContext.request.contextPath}/adminNotificationAddAction.do" method="post">
                                         <div class="form-group" style="margin-bottom: 12px;">
@@ -1203,10 +1354,10 @@
                     </div>
                 </div>
 
-                <!-- 💥 사고 처리 관리 탭 -->
+                <!-- 사고 처리 관리 탭 -->
                 <div id="tab-admin-accident" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">💥 사고 접수 및 처리 관리</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">사고 접수 및 처리 관리</h3>
                         <div class="table-wrapper">
                             <table class="mypage-table">
                                 <thead>
@@ -1239,7 +1390,7 @@
                                                     <td>
                                                         <c:choose>
                                                             <c:when test="${not empty acc.photoPath}">
-                                                                <a href="${pageContext.request.contextPath}/${acc.photoPath}" target="_blank" class="btn" style="padding:4px 8px; font-size:0.8rem; background:#333; border:1px solid #555; color:#fff;">👁️ 사진보기</a>
+                                                                <a href="${pageContext.request.contextPath}/${acc.photoPath}" target="_blank" class="btn" style="padding:4px 8px; font-size:0.8rem; background:#333; border:1px solid #555; color:#fff;">사진보기</a>
                                                             </c:when>
                                                             <c:otherwise>
                                                                 <span style="color:#666;">사진 없음</span>
@@ -1280,13 +1431,13 @@
                                                         </c:choose>
                                                     </td>
                                                     <td>
-                                                        <button onclick="openAccidentModal('${acc.reportId}', '${acc.status}', '${acc.insuranceClaimNum}', '${acc.faultRatio}')" class="btn" style="padding:5px 10px; font-size:0.8rem; background:#333; border:1px solid #555; color:#fff; cursor:pointer;">🛠️ 변경</button>
+                                                        <button onclick="openAccidentModal('${acc.reportId}', '${acc.status}', '${acc.insuranceClaimNum}', '${acc.faultRatio}')" class="btn" style="padding:5px 10px; font-size:0.8rem; background:#333; border:1px solid #555; color:#fff; cursor:pointer;">변경</button>
                                                     </td>
                                                 </tr>
                                                 <tr style="background:#151515;">
                                                     <td colspan="10" style="padding:10px 15px; border-top:none; text-align:left;">
                                                         <div style="font-size:0.85rem; color:#ccc; line-height:1.5;">
-                                                            <strong>💬 사고경위:</strong> ${acc.accidentDescription}
+                                                            <strong>사고경위:</strong> ${acc.accidentDescription}
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -1304,10 +1455,10 @@
                     </div>
                 </div>
 
-                <!-- 🚫 블랙리스트 관리 탭 -->
+                <!-- 블랙리스트 관리 탭 -->
                 <div id="tab-admin-blacklist" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222; margin-bottom: 25px;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🚫 악성 회원 블랙리스트 등록</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">악성 회원 블랙리스트 등록</h3>
                         <form action="${pageContext.request.contextPath}/adminBlacklistAddAction.do" method="post" style="display:flex; flex-direction:column; gap:15px;">
                             <div style="display:flex; gap:15px;">
                                 <div style="flex:1;">
@@ -1342,7 +1493,7 @@
                     </div>
 
                     <div class="panel-form" style="border:1px solid #222;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">📋 블랙리스트 차단 목록</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">블랙리스트 차단 목록</h3>
                         <div class="table-wrapper">
                             <table class="mypage-table">
                                 <thead>
@@ -1394,7 +1545,7 @@
                                                         <form action="${pageContext.request.contextPath}/adminBlacklistReleaseAction.do" method="post" onsubmit="return confirm('해당 회원의 차단 조치를 해제하시겠습니까?');" style="display:inline;">
                                                             <input type="hidden" name="blacklistId" value="${bl.blacklistId}">
                                                             <input type="hidden" name="userId" value="${bl.userId}">
-                                                            <button type="submit" class="btn" style="padding:5px 10px; font-size:0.8rem; background:#333; color:#fff; border:1px solid #555; cursor:pointer;">🔓 해제</button>
+                                                            <button type="submit" class="btn" style="padding:5px 10px; font-size:0.8rem; background:#333; color:#fff; border:1px solid #555; cursor:pointer;">해제</button>
                                                         </form>
                                                     </td>
                                                 </tr>
@@ -1411,10 +1562,10 @@
                         </div>
                     </div>
                 </div>
-                <!-- 💸 환불 내역 관리 탭 -->
+                <!-- 환불 내역 관리 탭 -->
                 <div id="tab-admin-refund" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">💸 전체 회원 환불 내역 관리</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">전체 회원 환불 내역 관리</h3>
                         <div class="table-wrapper">
                             <table class="mypage-table">
                                 <thead>
@@ -1487,7 +1638,7 @@
                             <c:if test="${unpaidCount > 0}">
                                 <div style="background: rgba(229, 9, 20, 0.1); border: 1px solid #E50914; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
                                     <h4 style="color: #ff3838; margin-bottom: 8px; font-family: 'Outfit'; display: flex; align-items: center; gap: 8px;">
-                                        ⚠️ 미납 패널티 및 벌금 고지 (${unpaidCount}건)
+                                        미납 패널티 및 벌금 고지 (${unpaidCount}건)
                                     </h4>
                                     <p style="font-size: 0.9rem; color: #ccc; margin-bottom: 15px;">
                                         오토바이 반납 지연, 차량 손상 또는 도로 교통 법규 위반(속도위반/신호위반 등)으로 인하여 패널티가 부과되었습니다. 아래 미납 건의 결제를 완료해 주세요.
@@ -1542,12 +1693,12 @@
                                                                 <span class="sub-text">${book.bikeType}</span>
                                                                  <c:if test="${not empty book.insuranceName}">
                                                                      <div style="font-size:0.8rem; color:#e0a82e; margin-top:2px;">
-                                                                         🛡️ 보험: <strong>${book.insuranceName}</strong> (+₩<fmt:formatNumber value="${book.insuranceFee * book.rentalDays}" pattern="#,###"/>)
+                                                                         보험: <strong>${book.insuranceName}</strong> (+₩<fmt:formatNumber value="${book.insuranceFee * book.rentalDays}" pattern="#,###"/>)
                                                                      </div>
                                                                  </c:if>
                                                                 <c:if test="${not empty book.bookingOptions}">
                                                                     <div style="font-size:0.8rem; color:#aaa; margin-top:4px; line-height:1.4;">
-                                                                        🛠️ 옵션: 
+                                                                        옵션: 
                                                                         <c:forEach var="opt" items="${book.bookingOptions}" varStatus="status">
                                                                             ${opt.optionName} (${opt.quantity}개)${!status.last ? ', ' : ''}
                                                                         </c:forEach>
@@ -1598,7 +1749,7 @@
                         <!-- 패널티 납부 히스토리 -->
                         <c:if test="${not empty penaltyList}">
                             <div style="margin-top: 30px; border-top: 1px dashed #333; padding-top: 20px;">
-                                <h4 style="font-family:'Outfit'; color:#ccc; margin-bottom:12px;">💸 패널티 납부 내역 히스토리</h4>
+                                <h4 style="font-family:'Outfit'; color:#ccc; margin-bottom:12px;">패널티 납부 내역 히스토리</h4>
                                 <div class="table-wrapper">
                                     <table class="mypage-table" style="font-size: 0.85rem;">
                                         <thead>
@@ -1734,11 +1885,11 @@
                 <!-- ================= [사용자] 탭: 면허증 관리 ================= -->
                 <div id="tab-user-license" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222; max-width:800px;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🪪 내 운전면허증 관리</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">내 운전면허증 관리</h3>
                         
                         <!-- 현재 면허 상태 카드 -->
                         <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px; margin-bottom:20px; display:flex; align-items:center; gap:20px;">
-                            <div style="font-size:3rem;">🪪</div>
+                            
                             <div>
                                 <h4 style="margin:0 0 5px 0; color:#fff;">면허 상태: 
                                     <span style="color: ${loginUser.licenseStatus eq 'APPROVED' ? '#10b981' : (loginUser.licenseStatus eq 'REJECTED' ? '#ef4444' : '#f59e0b')}; font-weight:bold;">
@@ -1762,14 +1913,14 @@
                                 </c:if>
                             </c:forEach>
                             <div style="background: rgba(229, 9, 20, 0.1); border: 1px solid #E50914; padding:15px; border-radius:6px; margin-bottom:20px; color:#ff3838; font-size:0.9rem;">
-                                <strong>⚠️ 면허 반려 사유:</strong> ${latestRejectReason}<br/>
+                                <strong>면허 반려 사유:</strong> ${latestRejectReason}<br/>
                                 <span style="font-size:0.8rem; color:#ccc; margin-top:5px; display:block;">아래 폼을 이용하여 유효한 운전면허증 사진과 정보를 다시 제출해 주세요.</span>
                             </div>
                         </c:if>
 
                         <c:if test="${loginUser.licenseStatus eq 'PENDING'}">
                             <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding:15px; border-radius:6px; margin-bottom:20px; color:#f59e0b; font-size:0.9rem;">
-                                <strong>⏳ 심사가 대기 중입니다.</strong><br/>
+                                <strong>심사가 대기 중입니다.</strong><br/>
                                 <span style="font-size:0.8rem; color:#ccc; margin-top:5px; display:block;">관리자가 업로드된 면허증을 확인하고 있습니다. 영업일 기준 보통 1~2시간 이내에 처리가 완료됩니다.</span>
                             </div>
                         </c:if>
@@ -1899,7 +2050,7 @@
                 <!-- ================= [사용자] 탭 6: 내 결제 이력 ================= -->
                 <div id="tab-user-payment" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">💳 내 결제 및 취소 내역</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">내 결제 및 취소 내역</h3>
                         <div class="table-wrapper">
                             <table class="mypage-table">
                                 <thead>
@@ -1966,7 +2117,7 @@
                 <!-- ================= [사용자] 탭 7: 내 알림함 ================= -->
                 <div id="tab-user-notification" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🔔 내 알림함</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">내 알림함</h3>
                         <div class="table-wrapper">
                             <table class="mypage-table">
                                 <thead>
@@ -2013,16 +2164,16 @@
                     </div>
                 </div>
 
-                <!-- 🪙 내 포인트/등급 탭 -->
+                <!-- 내 포인트/등급 탭 -->
                 <div id="tab-user-point" class="tab-content">
                     <div style="display:flex; gap:20px; margin-bottom:25px;">
                         <div class="panel-form" style="flex:1; border:1px solid #222; text-align:center; padding:30px;">
                             <h4 style="color:#aaa; margin-bottom:10px;">현재 회원 등급</h4>
                             <h2 style="font-family:'Outfit'; color:#e0a82e; font-size:2.5rem; margin-bottom:10px;">
                                 <c:choose>
-                                    <c:when test="${loginUser.userGrade eq 'VIP'}">👑 VIP 등급</c:when>
-                                    <c:when test="${loginUser.userGrade eq 'GOLD'}">✨ GOLD 등급</c:when>
-                                    <c:otherwise>🚲 SILVER 등급</c:otherwise>
+                                    <c:when test="${loginUser.userGrade eq 'VIP'}">VIP 등급</c:when>
+                                    <c:when test="${loginUser.userGrade eq 'GOLD'}">GOLD 등급</c:when>
+                                    <c:otherwise>SILVER 등급</c:otherwise>
                                 </c:choose>
                             </h2>
                             <p style="color:#ccc; font-size:0.95rem;">
@@ -2043,7 +2194,7 @@
                     </div>
 
                     <div class="panel-form" style="border:1px solid #222;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">🪙 포인트 적립 및 사용 이력</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">포인트 적립 및 사용 이력</h3>
                         <div class="table-wrapper">
                             <table class="mypage-table">
                                 <thead>
@@ -2089,14 +2240,14 @@
                     </div>
                 </div>
 
-                <!-- 💥 사고 접수 내역 탭 -->
+                <!-- 사고 접수 내역 탭 -->
                 <div id="tab-user-accident" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
                         <div>
-                            <h3 style="font-family:'Outfit';">💥 내 사고 접수 및 처리 내역</h3>
+                            <h3 style="font-family:'Outfit';">내 사고 접수 및 처리 내역</h3>
                             <p style="color:#aaa; font-size:0.85rem; margin-top:5px;">대여 중 발생한 사고에 대한 현황 및 보험 처리 상태를 조회합니다.</p>
                         </div>
-                        <button onclick="openAccidentReportModal()" class="btn" style="background:#e50914; color:#fff; font-weight:bold; padding:10px 20px; border:none; border-radius:6px; cursor:pointer;">🚨 사고 접수 신고하기</button>
+                        <button onclick="openAccidentReportModal()" class="btn" style="background:#e50914; color:#fff; font-weight:bold; padding:10px 20px; border:none; border-radius:6px; cursor:pointer;">사고 접수 신고하기</button>
                     </div>
 
                     <div class="panel-form" style="border:1px solid #222;">
@@ -2170,7 +2321,7 @@
                                                 <tr style="background:#151515;">
                                                     <td colspan="8" style="padding:10px 15px; border-top:none; text-align:left;">
                                                         <div style="font-size:0.85rem; color:#ccc; line-height:1.5;">
-                                                            <strong>💬 사고경위:</strong> ${acc.accidentDescription}
+                                                            <strong>사고경위:</strong> ${acc.accidentDescription}
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -2187,10 +2338,10 @@
                         </div>
                     </div>
                 </div>
-                <!-- 💸 내 환불 내역 탭 -->
+                <!-- 내 환불 내역 탭 -->
                 <div id="tab-user-refund" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222;">
-                        <h3 style="margin-bottom:15px; font-family:'Outfit';">💸 내 환불 내역</h3>
+                        <h3 style="margin-bottom:15px; font-family:'Outfit';">내 환불 내역</h3>
                         <div class="table-wrapper">
                             <table class="mypage-table">
                                 <thead>
@@ -2239,7 +2390,8 @@
             </c:otherwise>
         </c:choose>
     </div>
-</div>
+    </div> <!-- mypage-layout-wrapper -->
+</div> <!-- mypage-container -->
 
 <!-- 사용자 리뷰 작성 모달 -->
 <div id="review-modal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center;">
@@ -2283,7 +2435,7 @@
 <div id="refund-modal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center;">
     <div class="modal-content" style="background:#121212; border:1px solid #333; padding:30px; border-radius:10px; max-width:500px; width:90%; color:#fff; position:relative;">
         <span class="close-btn" onclick="closeRefundModal()" style="position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #aaa;">&times;</span>
-        <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">💳 결제 취소 및 환불 처리</h2>
+        <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">결제 취소 및 환불 처리</h2>
         <p style="color:#aaa; margin-bottom:20px;">결제 건에 대해 부분 또는 전체 취소/환불 처리를 기록합니다.</p>
         
         <form action="${pageContext.request.contextPath}/paymentCancelAction.do" method="post" onsubmit="return validateRefundForm()">
@@ -2322,7 +2474,7 @@
 <div id="user-accident-modal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center;">
     <div class="modal-content" style="background:#121212; border:1px solid #333; padding:30px; border-radius:10px; max-width:500px; width:90%; color:#fff; position:relative;">
         <span class="close-btn" onclick="closeAccidentReportModal()" style="position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #aaa;">&times;</span>
-        <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">🚨 사고 접수 및 대여 신고</h2>
+        <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">사고 접수 및 대여 신고</h2>
         <p style="color:#aaa; margin-bottom:20px;">사고 발생 현황 및 피해 내용을 작성해 주세요.</p>
         
         <form action="${pageContext.request.contextPath}/userAccidentReportAction.do" method="post" enctype="multipart/form-data">
@@ -2365,7 +2517,7 @@
 <div id="admin-accident-modal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center;">
     <div class="modal-content" style="background:#121212; border:1px solid #333; padding:30px; border-radius:10px; max-width:500px; width:90%; color:#fff; position:relative;">
         <span class="close-btn" onclick="closeAccidentModal()" style="position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #aaa;">&times;</span>
-        <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">🛠️ 사고 처리 및 보험 등록</h2>
+        <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">사고 처리 및 보험 등록</h2>
         <p style="color:#aaa; margin-bottom:20px;" id="admin-accident-info-text">사고 건에 대한 손해사정 정보 및 상태를 업데이트합니다.</p>
         
         <form action="${pageContext.request.contextPath}/adminAccidentReportUpdateAction.do" method="post">
@@ -2391,6 +2543,47 @@
             </div>
             
             <button type="submit" class="btn btn-action-main" style="width:100%; padding:12px; font-weight:bold; background:#e50914; color:#fff; border:none; border-radius:6px; cursor:pointer;">상태 변경 및 등록</button>
+        </form>
+    </div>
+</div>
+
+<!-- 대여장비 수정 모달 [NEW] -->
+<div id="admin-edit-gear-modal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center;">
+    <div class="modal-content" style="background:#121212; border:1px solid #333; padding:30px; border-radius:10px; max-width:500px; width:90%; color:#fff; position:relative;">
+        <span class="close-btn" onclick="closeEditGearModal()" style="position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #aaa;">&times;</span>
+        <h3 style="margin-bottom:20px; font-family:'Outfit'; text-align:center;">대여장비 정보 수정</h3>
+        <form action="${pageContext.request.contextPath}/adminOptionUpdateAction.do" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="optionId" id="edit-gear-id">
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label style="font-size:0.85rem; color:#aaa; display:block; margin-bottom:5px;">장비명</label>
+                <input type="text" name="optionName" id="edit-gear-name" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label style="font-size:0.85rem; color:#aaa; display:block; margin-bottom:5px;">재고 수량</label>
+                <input type="number" name="stockQuantity" id="edit-gear-stock" min="0" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label style="font-size:0.85rem; color:#aaa; display:block; margin-bottom:5px;">1일 대여료 (원)</label>
+                <input type="number" name="dailyPrice" id="edit-gear-price" min="0" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom:15px;">
+                <label style="font-size:0.85rem; color:#aaa; display:block; margin-bottom:5px;">대여 가능 여부</label>
+                <select name="status" id="edit-gear-status" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+                    <option value="AVAILABLE">대여 가능 (AVAILABLE)</option>
+                    <option value="UNAVAILABLE">대여 불가 (UNAVAILABLE)</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:20px;">
+                <label style="font-size:0.85rem; color:#aaa; display:block; margin-bottom:5px;">장비 대표 이미지 변경 (미첨부 시 기존 이미지 유지)</label>
+                <input type="file" name="gearImage" accept="image/*" style="width:100%; padding:8px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
+            </div>
+            
+            <button type="submit" class="btn btn-action-main" style="width:100%; padding:12px; font-weight:bold; background:#e50914; color:#fff; border:none; border-radius:6px; cursor:pointer;">정보 수정 완료</button>
         </form>
     </div>
 </div>
@@ -2614,4 +2807,51 @@
             dateGroup.querySelector('input[type="date"]').value = "";
         }
     }
+
+    // 대여장비 수정 모달 열기/닫기 [NEW]
+    function openEditGearModal(optionId, optionName, stockQuantity, dailyPrice, status) {
+        document.getElementById("edit-gear-id").value = optionId;
+        document.getElementById("edit-gear-name").value = optionName;
+        document.getElementById("edit-gear-stock").value = stockQuantity;
+        document.getElementById("edit-gear-price").value = dailyPrice;
+        document.getElementById("edit-gear-status").value = status;
+        document.getElementById("admin-edit-gear-modal").style.display = "flex";
+    }
+    
+    function closeEditGearModal() {
+        document.getElementById("admin-edit-gear-modal").style.display = "none";
+    }
+
+    // 페이지 로드 시 URL 파라미터에 지정된 탭이 있으면 활성화 [NEW]
+    window.addEventListener('DOMContentLoaded', (event) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab');
+        if (activeTab) {
+            // 모든 탭 비활성화
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            
+            // 지정된 탭 활성화
+            const targetContent = document.getElementById(activeTab);
+            if (targetContent) {
+                targetContent.classList.add("active");
+            }
+            
+            // 지정된 탭 버튼 활성화
+            const targetButton = Array.from(tablinks).find(btn => {
+                const onclickAttr = btn.getAttribute('onclick');
+                return onclickAttr && onclickAttr.includes("'" + activeTab + "'");
+            });
+            if (targetButton) {
+                targetButton.classList.add("active");
+            }
+        }
+    });
 </script>

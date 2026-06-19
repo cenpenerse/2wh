@@ -153,6 +153,7 @@ public class FrontController extends HttpServlet {
                         List<AccidentReportDto> adminAccidentList = AccidentReportDao.getInstance().getReportsAll();
                         List<BlacklistDto> adminBlacklist = BlacklistDao.getInstance().getBlacklistAll();
                         List<RefundLogDto> adminRefundList = RefundLogDao.getInstance().getRefundsAll();
+                        List<OptionItemDto> adminOptionList = OptionItemDao.getInstance().getOptionListAll();
                         
                         request.setAttribute("bookingList", bookingList);
                         request.setAttribute("memberList", memberList);
@@ -170,6 +171,7 @@ public class FrontController extends HttpServlet {
                         request.setAttribute("adminAccidentList", adminAccidentList);
                         request.setAttribute("adminBlacklist", adminBlacklist);
                         request.setAttribute("adminRefundList", adminRefundList);
+                        request.setAttribute("adminOptionList", adminOptionList);
                     } else {
                         // 일반 회원이면 본인 예약 목록 조회
                         List<BookingDto> bookingList = BookingDao.getInstance().getBookingListByUser(loginUser.getMemberId());
@@ -1179,6 +1181,135 @@ public class FrontController extends HttpServlet {
                 }
                 isRedirect = true;
                 viewPage = "mypage.do";
+                
+            } else if (command.equals("/adminOptionAddAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
+                    String optionName = request.getParameter("optionName");
+                    int stockQuantity = Integer.parseInt(request.getParameter("stockQuantity"));
+                    int dailyPrice = Integer.parseInt(request.getParameter("dailyPrice"));
+                    String status = request.getParameter("status");
+                    
+                    String imageFilename = "gear_default.png";
+                    try {
+                        jakarta.servlet.http.Part filePart = request.getPart("gearImage");
+                        if (filePart != null && filePart.getSize() > 0) {
+                            String originalName = filePart.getSubmittedFileName();
+                            String extension = "";
+                            int dotIndex = originalName.lastIndexOf('.');
+                            if (dotIndex > 0) {
+                                extension = originalName.substring(dotIndex);
+                            }
+                            imageFilename = "gear_" + System.currentTimeMillis() + extension;
+                            
+                            String deployDir = request.getServletContext().getRealPath("/resources/images/gears");
+                            java.io.File uploadDir = new java.io.File(deployDir);
+                            if (!uploadDir.exists()) {
+                                uploadDir.mkdirs();
+                            }
+                            String deployFilePath = deployDir + java.io.File.separator + imageFilename;
+                            filePart.write(deployFilePath);
+                            
+                            String srcDir = "c:\\2_eclipse\\hp\\bikerental\\src\\main\\webapp\\resources\\images\\gears";
+                            java.io.File srcUploadDir = new java.io.File(srcDir);
+                            if (srcUploadDir.exists()) {
+                                try {
+                                    java.nio.file.Files.copy(
+                                        java.nio.file.Paths.get(deployFilePath),
+                                        java.nio.file.Paths.get(srcDir + java.io.File.separator + imageFilename),
+                                        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                                    );
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    
+                    OptionItemDto dto = new OptionItemDto();
+                    dto.setOptionName(optionName);
+                    dto.setStockQuantity(stockQuantity);
+                    dto.setDailyPrice(dailyPrice);
+                    dto.setImageFilename(imageFilename);
+                    dto.setStatus(status);
+                    
+                    OptionItemDao.getInstance().insertOption(dto);
+                }
+                isRedirect = true;
+                viewPage = "mypage.do?tab=tab-admin-gears";
+                
+            } else if (command.equals("/adminOptionUpdateAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
+                    int optionId = Integer.parseInt(request.getParameter("optionId"));
+                    String optionName = request.getParameter("optionName");
+                    int stockQuantity = Integer.parseInt(request.getParameter("stockQuantity"));
+                    int dailyPrice = Integer.parseInt(request.getParameter("dailyPrice"));
+                    String status = request.getParameter("status");
+                    
+                    OptionItemDto dto = OptionItemDao.getInstance().getOption(optionId);
+                    if (dto != null) {
+                        dto.setOptionName(optionName);
+                        dto.setStockQuantity(stockQuantity);
+                        dto.setDailyPrice(dailyPrice);
+                        dto.setStatus(status);
+                        
+                        try {
+                            jakarta.servlet.http.Part filePart = request.getPart("gearImage");
+                            if (filePart != null && filePart.getSize() > 0) {
+                                String originalName = filePart.getSubmittedFileName();
+                                String extension = "";
+                                int dotIndex = originalName.lastIndexOf('.');
+                                if (dotIndex > 0) {
+                                    extension = originalName.substring(dotIndex);
+                                }
+                                String imageFilename = "gear_" + System.currentTimeMillis() + extension;
+                                
+                                String deployDir = request.getServletContext().getRealPath("/resources/images/gears");
+                                java.io.File uploadDir = new java.io.File(deployDir);
+                                if (!uploadDir.exists()) {
+                                    uploadDir.mkdirs();
+                                }
+                                String deployFilePath = deployDir + java.io.File.separator + imageFilename;
+                                filePart.write(deployFilePath);
+                                
+                                String srcDir = "c:\\2_eclipse\\hp\\bikerental\\src\\main\\webapp\\resources\\images\\gears";
+                                java.io.File srcUploadDir = new java.io.File(srcDir);
+                                if (srcUploadDir.exists()) {
+                                    try {
+                                        java.nio.file.Files.copy(
+                                            java.nio.file.Paths.get(deployFilePath),
+                                            java.nio.file.Paths.get(srcDir + java.io.File.separator + imageFilename),
+                                            java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                                        );
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                dto.setImageFilename(imageFilename);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        OptionItemDao.getInstance().updateOption(dto);
+                    }
+                }
+                isRedirect = true;
+                viewPage = "mypage.do?tab=tab-admin-gears";
+                
+            } else if (command.equals("/adminOptionDeleteAction.do")) {
+                HttpSession session = request.getSession(false);
+                MemberDto loginUser = (session != null) ? (MemberDto) session.getAttribute("loginUser") : null;
+                if (loginUser != null && "ADMIN".equals(loginUser.getMemberStatus())) {
+                    int optionId = Integer.parseInt(request.getParameter("optionId"));
+                    OptionItemDao.getInstance().deleteOption(optionId);
+                }
+                isRedirect = true;
+                viewPage = "mypage.do?tab=tab-admin-gears";
                 
             } else if (command.equals("/adminBrandAddAction.do")) {
                 HttpSession session = request.getSession(false);

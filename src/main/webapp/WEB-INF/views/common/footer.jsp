@@ -26,7 +26,7 @@
 
     <!-- 플로팅 알림 및 이동 버튼 -->
     <div class="floating-buttons">
-        <a href="${pageContext.request.contextPath}/pricing.do" class="float-btn pricing">⚡ 이용요금 안내</a>
+        <a href="${pageContext.request.contextPath}/pricing.do" class="float-btn pricing">이용요금 안내</a>
         <a href="${pageContext.request.contextPath}/support.do#contact" class="float-btn">1:1 문의하기</a>
     </div>
 
