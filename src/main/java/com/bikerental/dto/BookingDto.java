@@ -216,4 +216,20 @@ public class BookingDto {
     public void setBookingOptions(java.util.List<BookingOptionDto> bookingOptions) {
         this.bookingOptions = bookingOptions;
     }
+
+    private int insuranceId;
+    private String insuranceName;
+    private int insuranceFee;
+
+    public int getInsuranceId() { return insuranceId; }
+    public void setInsuranceId(int insuranceId) { this.insuranceId = insuranceId; }
+    public String getInsuranceName() { return insuranceName; }
+    public void setInsuranceName(String insuranceName) { this.insuranceName = insuranceName; }
+    public int getInsuranceFee() { return insuranceFee; }
+    public void setInsuranceFee(int insuranceFee) { this.insuranceFee = insuranceFee; }
+
+    private int usePoints;
+
+    public int getUsePoints() { return usePoints; }
+    public void setUsePoints(int usePoints) { this.usePoints = usePoints; }
 }

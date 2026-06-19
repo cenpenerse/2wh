@@ -114,6 +114,9 @@ public class LicenseAuditDao {
             pstmt.setString(2, dto.getLicenseType());
             pstmt.setString(3, dto.getLicenseImage());
             result = pstmt.executeUpdate();
+            if (result > 0) {
+                NotificationDao.send(dto.getUserId(), "알림톡", "🪪 면허증 검증 심사 신청이 정상적으로 접수되었습니다. 영업일 기준 1~2일 내에 심사가 완료됩니다.");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -162,6 +165,15 @@ public class LicenseAuditDao {
                     pstmt2.setString(1, status);
                     pstmt2.setInt(2, targetUserId);
                     pstmt2.executeUpdate();
+                    try {
+                        String notiContent = "🪪 면허증 검증 심사 결과: [" + (status.equals("APPROVED") ? "승인 완료" : "반려됨") + "]";
+                        if (status.equals("REJECTED") && rejectReason != null) {
+                            notiContent += " (반려 사유: " + rejectReason + ")";
+                        }
+                        NotificationDao.send(targetUserId, "알림톡", notiContent);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
 

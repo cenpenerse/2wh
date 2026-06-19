@@ -104,4 +104,14 @@ public class MemberDto {
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
+
+    private String userGrade; // users.user_grade 필드에 대응
+
+    public String getUserGrade() {
+        return userGrade;
+    }
+
+    public void setUserGrade(String userGrade) {
+        this.userGrade = userGrade;
+    }
 }

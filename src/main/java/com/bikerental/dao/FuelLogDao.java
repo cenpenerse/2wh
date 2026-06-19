@@ -70,16 +70,18 @@ public class FuelLogDao {
             conn = DBConnection.getConnection();
             conn.setAutoCommit(false);
 
-            // 0. 예약을 조회하여 user_id와 bike_id 정보 조회
+            // 0. 예약을 조회하여 user_id, bike_id, 반납 지점(dropoff_shop_id) 정보 조회
             int userId = -1;
             int bikeId = -1;
-            String sqlGetRes = "SELECT user_id, bike_id FROM reservations WHERE reservation_id = ?";
+            int dropoffShopId = -1;
+            String sqlGetRes = "SELECT user_id, bike_id, dropoff_shop_id FROM reservations WHERE reservation_id = ?";
             pstmtGetRes = conn.prepareStatement(sqlGetRes);
             pstmtGetRes.setInt(1, dto.getReservationId());
             rsRes = pstmtGetRes.executeQuery();
             if (rsRes.next()) {
                 userId = rsRes.getInt("user_id");
                 bikeId = rsRes.getInt("bike_id");
+                dropoffShopId = rsRes.getInt("dropoff_shop_id");
             }
             rsRes.close();
             pstmtGetRes.close();
@@ -119,10 +121,18 @@ public class FuelLogDao {
                 pstmtRes.setInt(1, dto.getReservationId());
                 pstmtRes.executeUpdate();
 
-                // 4. 오토바이 상태를 'AVAILABLE'로 변경
-                String sqlBike = "UPDATE motorcycles SET status = 'AVAILABLE' WHERE bike_id = ?";
-                pstmtBike = conn.prepareStatement(sqlBike);
-                pstmtBike.setInt(1, bikeId);
+                // 4. 오토바이 상태를 'AVAILABLE'로 변경하고 위치(shop_id)를 반납 지점(dropoff_shop_id)으로 변경
+                String sqlBike;
+                if (dropoffShopId > 0) {
+                    sqlBike = "UPDATE motorcycles SET status = 'AVAILABLE', shop_id = ? WHERE bike_id = ?";
+                    pstmtBike = conn.prepareStatement(sqlBike);
+                    pstmtBike.setInt(1, dropoffShopId);
+                    pstmtBike.setInt(2, bikeId);
+                } else {
+                    sqlBike = "UPDATE motorcycles SET status = 'AVAILABLE' WHERE bike_id = ?";
+                    pstmtBike = conn.prepareStatement(sqlBike);
+                    pstmtBike.setInt(1, bikeId);
+                }
                 pstmtBike.executeUpdate();
             }
 

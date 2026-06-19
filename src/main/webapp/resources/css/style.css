@@ -397,8 +397,8 @@ main {
 /* Featured / Search Bikes List */
 .bike-list-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
 }
 
 .bike-card {
@@ -419,7 +419,7 @@ main {
 
 .bike-image-wrapper {
     position: relative;
-    height: 220px;
+    height: 180px;
     background: #1C1E26;
     overflow: hidden;
 }
@@ -428,6 +428,7 @@ main {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    background-color: #1C1E26;
     transition: transform 0.5s;
 }
 
@@ -459,7 +460,7 @@ main {
 }
 
 .bike-info {
-    padding: 25px;
+    padding: 20px;
     flex-grow: 1;
 }
 
@@ -474,7 +475,7 @@ main {
 }
 
 .bike-info h3 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     margin-bottom: 12px;
 }
@@ -1104,8 +1105,9 @@ main {
 }
 
 .mypage-table th, .mypage-table td {
-    padding: 16px 20px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
 }
 
 .mypage-table th {
@@ -1449,6 +1451,7 @@ main {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    background-color: #1C1E26;
 }
 
 .profile-summary {

@@ -28,6 +28,9 @@
                         <li><a href="${pageContext.request.contextPath}/gearInfo.do#topbox">탑박스</a></li>
                         <li><a href="${pageContext.request.contextPath}/gearInfo.do#holder">거치대</a></li>
                         <li><a href="${pageContext.request.contextPath}/gearInfo.do#protector">보호대</a></li>
+                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#gloves">장갑</a></li>
+                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#jacket">상의</a></li>
+                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#pants">하의</a></li>
                     </ul>
                 </li>
                 <li><a href="${pageContext.request.contextPath}/pricing.do">요금 안내</a></li>
