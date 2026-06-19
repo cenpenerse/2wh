@@ -26,7 +26,7 @@
             <div class="profile-summary">
                 <span class="bike-category">${bike.brandName} | ${bike.cc}cc</span>
                 <h1>${bike.bikeName}</h1>
-                <p class="location">📍 ${bike.shopName}</p>
+                <p class="location">${bike.shopName}</p>
                 <p class="price">
                     <strong>₩<fmt:formatNumber value="${bike.dailyPrice}" pattern="#,###"/></strong> / 일
                 </p>
@@ -91,10 +91,10 @@
                 <div class="profile-section">
                     <h2>이용 안전 가이드</h2>
                     <ul class="guide-list" style="line-height: 2.0; padding-left: 20px; color: #ccc;">
-                        <li>🏍️ <strong>보호 장구 필수 착용</strong>: 대여 지점에서 인증 헬멧을 수령하여 반드시 착용해 주세요.</li>
-                        <li>🪪 <strong>운전면허 확인</strong>: 오토바이 배기량에 맞는 유효한 원동기장치자전거면허 또는 2종소형면허가 필요합니다.</li>
-                        <li>🛑 <strong>신호 및 속도 준수</strong>: 도로교통법을 철저히 준수하여 과속 및 신호위반을 삼가세요.</li>
-                        <li>📅 <strong>대여 시간 엄수</strong>: 연장을 원할 경우 반납 시간 1시간 전 고객센터 또는 지점에 사전 연락이 필요합니다.</li>
+                        <li><strong>보호 장구 필수 착용</strong>: 대여 지점에서 인증 헬멧을 수령하여 반드시 착용해 주세요.</li>
+                        <li><strong>운전면허 확인</strong>: 오토바이 배기량에 맞는 유효한 원동기장치자전거면허 또는 2종소형면허가 필요합니다.</li>
+                        <li><strong>신호 및 속도 준수</strong>: 도로교통법을 철저히 준수하여 과속 및 신호위반을 삼가세요.</li>
+                        <li><strong>대여 시간 엄수</strong>: 연장을 원할 경우 반납 시간 1시간 전 고객센터 또는 지점에 사전 연락이 필요합니다.</li>
                     </ul>
                 </div>
             </div>
@@ -103,15 +103,15 @@
                 <div class="profile-section spec-card" style="background: #1e1e1e; border: 1px solid #333; padding: 20px; border-radius: 8px;">
                     <h3>Baren 서비스 보장</h3>
                     <div class="spec-item" style="margin: 15px 0; display: flex; justify-content: space-between;">
-                        <span class="label" style="color: #aaa;">🛠️ 정비 점검</span>
+                        <span class="label" style="color: #aaa;">정비 점검</span>
                         <span class="val" style="color: #fff; font-weight: bold;">정비사 전담 안전 진단</span>
                     </div>
                     <div class="spec-item" style="margin: 15px 0; display: flex; justify-content: space-between;">
-                        <span class="label" style="color: #aaa;">⛑️ 안전 장비</span>
+                        <span class="label" style="color: #aaa;">안전 장비</span>
                         <span class="val" style="color: #fff; font-weight: bold;">프리미엄 헬멧 제공</span>
                     </div>
                     <div class="spec-item" style="margin: 15px 0; display: flex; justify-content: space-between;">
-                        <span class="label" style="color: #aaa;">📞 비상 긴급케어</span>
+                        <span class="label" style="color: #aaa;">비상 긴급케어</span>
                         <span class="val" style="color: #fff; font-weight: bold;">24시간 사고 출동 접수</span>
                     </div>
                 </div>
@@ -121,7 +121,7 @@
         <!-- 리뷰 목록 섹션 (reviews 테이블 연동) -->
         <div class="profile-main" style="margin-top: 50px; border-top: 1px solid #222; padding-top: 40px; display: block; width: 100%;">
             <h2 style="font-family: 'Outfit'; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
-                <span>💬 실제 이용 고객 리뷰 (${bike.reviewCount}개)</span>
+                <span>실제 이용 고객 리뷰 (${bike.reviewCount}개)</span>
                 <span style="font-size: 1.1rem; color: #aaa;">평점 평균: <span style="color: var(--accent-color);">★</span> ${bike.ratingAvg} / 5.0</span>
             </h2>
             
@@ -240,7 +240,7 @@
                     <!-- 포인트 사용 -->
                     <c:if test="${not empty sessionScope.loginUser}">
                         <div class="form-group" style="margin-bottom: 0;">
-                            <label style="display: block; margin-bottom: 5px; color: #ccc;">🪙 포인트 사용 (보유: <fmt:formatNumber value="${sessionScope.loginUser.point}" pattern="#,###"/> P)</label>
+                            <label style="display: block; margin-bottom: 5px; color: #ccc;">포인트 사용 (보유: <fmt:formatNumber value="${sessionScope.loginUser.point}" pattern="#,###"/> P)</label>
                             <div style="display: flex; gap: 10px;">
                                 <input type="number" id="use-points-input" name="usePoints" min="0" max="${sessionScope.loginUser.point}" value="0" style="flex: 1; padding: 12px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: #fff;" oninput="updateCalculations()">
                                 <button type="button" onclick="useAllPoints()" style="padding: 0 15px; background: #333; border: 1px solid #444; border-radius: 6px; color: #fff; cursor: pointer;">전액 사용</button>
@@ -254,15 +254,15 @@
                         <div class="payment-options-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
                             <label class="pay-method-card">
                                 <input type="radio" name="payment_method" value="CARD" checked>
-                                <span class="pay-box">💳 신용카드</span>
+                                <span class="pay-box">신용카드</span>
                             </label>
                             <label class="pay-method-card">
                                 <input type="radio" name="payment_method" value="KAKAO">
-                                <span class="pay-box">💬 카카오페이</span>
+                                <span class="pay-box">카카오페이</span>
                             </label>
                             <label class="pay-method-card">
                                 <input type="radio" name="payment_method" value="NAVER">
-                                <span class="pay-box">💚 네이버페이</span>
+                                <span class="pay-box">네이버페이</span>
                             </label>
                         </div>
                     </div>
@@ -291,7 +291,7 @@
 
                     <!-- 보험 상품 선택 -->
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label style="display: block; margin-bottom: 8px; color: #ccc;">🛡️ 보험 상품 선택 (필수)</label>
+                        <label style="display: block; margin-bottom: 8px; color: #ccc;">보험 상품 선택 (필수)</label>
                         <div style="display: flex; flex-direction: column; gap: 8px; background: #222; padding: 12px; border-radius: 6px;">
                             <c:forEach var="ins" items="${insuranceList}" varStatus="status">
                                 <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: #ddd; padding: 6px 0; border-bottom: 1px solid #333;">
