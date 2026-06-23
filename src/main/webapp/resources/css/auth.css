@@ -1,0 +1,110 @@
+/* ==========================================================================
+   BAREN Premium Bike Rental - 로그인 및 회원가입 전용 스타일 (auth.css)
+   ========================================================================== */
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+}
+
+.auth-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    max-width: 450px;
+    width: 100%;
+    padding: 40px;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.auth-card h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.auth-subtitle {
+    font-size: 14px;
+    color: var(--light-text-color);
+    margin-bottom: 30px;
+}
+
+.auth-form {
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--light-text-color);
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    background: var(--light-gray-bg);
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--primary-color);
+}
+
+.btn-auth {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+}
+
+.auth-footer {
+    margin-top: 30px;
+    font-size: 13px;
+    color: var(--light-text-color);
+}
+
+.auth-footer a {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-left: 5px;
+}
+
+/* Agreement Box inside signup */
+.agreement-box {
+    background: var(--light-gray-bg);
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    font-size: 13px;
+}
+
+.agreement-all {
+    display: flex;
+    align-items: center;
+}
+
+.agreement-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+}
+
+.agreement-item a {
+    color: var(--primary-color);
+    font-weight: 500;
+}

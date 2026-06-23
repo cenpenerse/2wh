@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baren - 프리미엄 바이크 렌탈 서비스</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/style.css?v=3.0">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/common.css">
     <!-- Google Fonts Inter, Outfit -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 </head>

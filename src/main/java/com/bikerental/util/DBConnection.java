@@ -22,9 +22,9 @@ public class DBConnection {
     }
 
     public static Connection getConnection() {
-    	System.out.println("================================디버깅===========================================");
-    	System.out.println("[DEBUG] 현재 읽어온 URL: " + props.getProperty("db.url"));
-    	System.out.println("===========================================================================");
+//    	System.out.println("================================디버깅===========================================");
+//    	System.out.println("[DEBUG] 현재 읽어온 URL: " + props.getProperty("db.url"));
+//    	System.out.println("===========================================================================");
         Connection conn = null;
         
         // 1. JNDI 커넥션 시도 (Tomcat 환경)
