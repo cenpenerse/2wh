@@ -1,0 +1,61 @@
+/* ==========================================================================
+   BAREN Premium Bike Rental - 고객센터 FAQ 및 안내 전용 스타일 (support.css)
+   ========================================================================== */
+
+/* FAQ Accordion Styles */
+.faq-container {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.faq-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.faq-question {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: left;
+    padding: 18px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s ease;
+}
+
+.faq-question:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.faq-question::after {
+    content: "▼";
+    font-size: 10px;
+    color: var(--light-text-color);
+    transition: transform 0.2s ease;
+}
+
+.faq-question.active::after {
+    transform: rotate(180deg);
+    color: var(--primary-color);
+}
+
+.faq-answer {
+    padding: 0 20px 20px;
+    display: none;
+    color: var(--light-text-color);
+    line-height: 1.7;
+    border-top: 1px solid #1c1f2e;
+    padding-top: 15px;
+    font-size: 14px;
+}

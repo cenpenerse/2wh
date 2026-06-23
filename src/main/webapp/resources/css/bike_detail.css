@@ -1,0 +1,260 @@
+/* ==========================================================================
+   BAREN Premium Bike Rental - 바이크 상세 정보 및 예약 신청 모달 스타일 (bike_detail.css)
+   ========================================================================== */
+
+/* Detail Profile specific elements */
+.profile-container {
+    padding: 60px 20px;
+}
+
+.profile-header {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 40px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.profile-image {
+    max-width: 320px;
+    width: 100%;
+    height: 220px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--light-gray-bg);
+    border: 1px solid var(--border-color);
+}
+
+.profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: #1C1E26;
+}
+
+.profile-summary {
+    flex-grow: 1;
+}
+
+.profile-summary h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    margin: 8px 0;
+}
+
+.profile-summary .location {
+    color: var(--light-text-color);
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.profile-summary .price {
+    font-size: 16px;
+    color: var(--light-text-color);
+    margin-bottom: 25px;
+}
+
+.profile-summary .price strong {
+    font-size: 32px;
+    color: white;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+}
+
+.profile-summary .rating {
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-action-main {
+    padding: 14px 40px;
+    font-size: 15px;
+}
+
+.profile-main {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.profile-left {
+    flex: 2;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.profile-right {
+    flex: 1;
+    min-width: 250px;
+}
+
+.profile-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 30px;
+    border-radius: 16px;
+}
+
+.profile-section h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+}
+
+.guide-list {
+    padding-left: 20px;
+}
+
+.guide-list li {
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #e5e7eb;
+}
+
+.spec-card h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
+
+.spec-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 0;
+}
+
+.spec-item:last-child {
+    border-bottom: none;
+}
+
+.spec-item .label {
+    color: var(--light-text-color);
+}
+
+.spec-item .val {
+    font-weight: 600;
+    color: white;
+}
+
+/* Floating buttons */
+.floating-buttons {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 998;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.float-btn {
+    background: var(--card-bg);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s;
+}
+
+.float-btn:hover {
+    transform: translateY(-2px);
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Payment Grid inside Booking Modal */
+.payment-options-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.pay-method-card {
+    cursor: pointer;
+}
+
+.pay-method-card input {
+    display: none;
+}
+
+.pay-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--light-gray-bg);
+    border: 1px solid var(--border-color);
+    padding: 15px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.pay-method-card input:checked + .pay-box {
+    border-color: var(--primary-color);
+    background: rgba(255, 107, 0, 0.08);
+    color: var(--primary-color);
+}
+
+.pay-icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+}
+
+/* Price Summary Box */
+.price-summary-box {
+    background: var(--light-gray-bg);
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    border-radius: 8px;
+    margin: 25px 0;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: var(--light-text-color);
+    margin-bottom: 8px;
+}
+
+.total-row {
+    font-size: 16px;
+    color: white;
+    font-weight: 700;
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
+    margin-top: 12px;
+    margin-bottom: 0;
+}
+
+.total-row span:last-child {
+    font-size: 20px;
+    color: var(--primary-color);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+}
+
+.btn-booking-submit {
+    width: 100%;
+    padding: 14px;
+}
