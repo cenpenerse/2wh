@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <jsp:include page="/WEB-INF/views/common/header.jsp" />
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/support.css">
 
     <section class="content-section">
         <div class="form-container">
@@ -8,7 +9,7 @@
             <div class="form-section" id="contact">
                 <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--primary-color); margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px;">1:1 문의하기</h3>
                 
-                <form action="${pageContext.request.contextPath}/inquiryAction.do" method="post">
+                <form action="${pageContext.request.contextPath}/board/inquiryAction.do" method="post">
                     <c:choose>
                         <c:when test="${not empty sessionScope.loginUser}">
                             <div class="form-group">
@@ -32,7 +33,7 @@
                         <c:otherwise>
                             <div style="text-align:center; padding: 40px 0;">
                                 <p style="color:#aaa; margin-bottom:15px; font-size: 1.05rem;">1:1 문의를 등록하시려면 로그인이 필요합니다.</p>
-                                <a href="${pageContext.request.contextPath}/login.do" class="btn" style="display:inline-block; padding: 12px 30px; font-weight: bold;">로그인하러 가기</a>
+                                <a href="${pageContext.request.contextPath}/member/login.do" class="btn" style="display:inline-block; padding: 12px 30px; font-weight: bold;">로그인하러 가기</a>
                             </div>
                         </c:otherwise>
                     </c:choose>

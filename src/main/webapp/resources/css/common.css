@@ -1,0 +1,559 @@
+/* ==========================================================================
+   BAREN Premium Bike Rental - 공통 스타일 (common.css)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap');
+
+:root {
+    --primary-color: #E50914;      /* 시그니처 레드 */
+    --primary-hover: #B20710;
+    --accent-color: #FFD600;       /* 볼드 옐로우 */
+    --background-color: #22242a;   /* 한 단계 더 밝아진 슬레이트 그레이 메인 배경 */
+    --card-bg: #2c2f37;            /* 메인 카드 배경 */
+    --text-color: #F3F4F6;         /* 밝은 그레이 텍스트 */
+    --light-text-color: #B2B8C6;   /* 차분하고 밝은 서브 텍스트 */
+    --border-color: #3e424f;       /* 보더 라인 */
+    --light-gray-bg: #343842;      /* 카드 내부 조각 영역 및 인풋 */
+    
+    --success-color: #10B981;
+    --danger-color: #EF4444;
+    --warning-color: #F59E0B;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+html {
+    scroll-behavior: smooth;
+    background-color: var(--background-color);
+}
+
+body {
+    background: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+}
+
+/* Scrollbar Style */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+::-webkit-scrollbar-thumb {
+    background: #222;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* Navbar */
+.navbar {
+    position: fixed;
+    width: 100%;
+    z-index: 999;
+    padding: 15px 0;
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.3s ease;
+    background: rgba(34, 36, 42, 0.72); /* Translucent dark background */
+    backdrop-filter: blur(12px);     /* Modern glassmorphism blur */
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.navbar .max-width {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 95%;
+    margin: auto;
+    padding: 0 10px;
+    position: relative; /* Reference point for centering menu */
+}
+
+.navbar .logo a {
+    color: #FFFFFF; /* 흰색 텍스트 */
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.navbar .logo a span {
+    color: var(--primary-color); /* Signature Red Point */
+}
+
+.navbar .menu {
+    list-style: none;
+    display: flex;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%); /* Lock menu at exact center */
+}
+
+.navbar .menu li {
+    margin: 0 14px;
+}
+
+.navbar .menu li a {
+    color: #FFFFFF; /* 흰색 메뉴 글씨 */
+    font-size: 13.5px;
+    font-weight: 600;
+    transition: color 0.2s ease;
+    letter-spacing: 0.5px;
+}
+
+.navbar .menu li a:hover {
+    color: var(--primary-color); /* Signature Red Hover */
+}
+
+.user-links {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: auto; /* Push user-links to right end */
+}
+
+.user-links a {
+    color: #FFFFFF; /* 흰색 */
+    font-size: 13px;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.user-links a:hover {
+    color: var(--primary-color); /* Signature Red Hover */
+}
+
+.user-links .user-welcome {
+    font-size: 13px;
+    color: #E2E8F0;
+}
+
+.user-links .user-welcome strong {
+    color: #FFFFFF;
+}
+
+.signup-link-btn {
+    background: var(--primary-color); /* Signature Red Button */
+    color: white !important;
+    padding: 6px 16px;
+    border-radius: 20px;
+    transition: background 0.3s !important;
+}
+
+.signup-link-btn:hover {
+    background: var(--primary-hover);
+}
+
+/* Dropdown Menu */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--card-bg);
+    min-width: 160px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    z-index: 1000;
+    padding: 8px 0;
+    margin-top: 10px;
+    list-style: none;
+}
+
+/* Invisible bridge to prevent mouse leaving hover area */
+.dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 0;
+    width: 100%;
+    height: 12px;
+    background: transparent;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu li a {
+    display: block;
+    padding: 10px 15px;
+    color: var(--light-text-color) !important;
+    font-size: 14px !important;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.dropdown-menu li a:hover {
+    color: var(--primary-color) !important;
+    background-color: rgba(255, 107, 0, 0.08);
+}
+
+/* Main Content Wrapper */
+main {
+    padding-top: 75px; /* Navbar height compensation */
+    padding-bottom: 60px; /* Safe spacing from footer */
+    min-height: 80vh;
+}
+
+/* Button UI */
+.btn {
+    background: var(--primary-color);
+    color: white;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-secondary-outline {
+    background: transparent;
+    color: var(--light-text-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary-outline:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-danger-outline {
+    background: transparent;
+    color: var(--danger-color);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger-outline:hover {
+    color: white;
+    background: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.btn-disabled {
+    background: #2a2c35 !important;
+    color: #6b7280 !important;
+    cursor: not-allowed;
+}
+
+/* Section Common */
+.section {
+    padding: 80px 20px;
+}
+
+.max-width {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.section-subtitle {
+    font-size: 16px;
+    color: var(--light-text-color);
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.divider {
+    border: 0;
+    height: 1px;
+    background: var(--border-color);
+    margin: 15px 0;
+}
+
+/* Modal UI */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 40px;
+    border-radius: 16px;
+    max-width: 480px;
+    width: 100%;
+    position: relative;
+    animation: modal-fade-in 0.3s ease-out;
+}
+
+@keyframes modal-fade-in {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--light-text-color);
+    transition: color 0.3s;
+}
+
+.close-btn:hover {
+    color: var(--primary-color);
+}
+
+.modal-content h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.modal-intro {
+    text-align: center;
+    font-size: 14px;
+    color: var(--light-text-color);
+    margin-bottom: 25px;
+}
+
+.form-container {
+    max-width: 800px;
+    margin: 120px auto 60px; /* Centered with navbar height compensation */
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 40px;
+    border-radius: 16px;
+    min-height: 60vh;
+}
+
+/* Alert UI */
+.alert {
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.alert-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger-color);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* Floating buttons */
+.floating-buttons {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 998;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.float-btn {
+    background: var(--card-bg);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s;
+}
+
+.float-btn:hover {
+    transform: translateY(-2px);
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Footer */
+footer {
+    background: #1d1e23;
+    border-top: 1px solid var(--border-color);
+    padding: 60px 20px 20px;
+    font-size: 14px;
+    color: var(--light-text-color);
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr repeat(3, 1fr);
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.footer-col h4 {
+    color: white;
+    font-size: 15px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.footer-col ul {
+    list-style: none;
+}
+
+.footer-col ul li {
+    margin-bottom: 10px;
+}
+
+.footer-col ul li a {
+    color: var(--light-text-color);
+    transition: color 0.3s;
+}
+
+.footer-col ul li a:hover {
+    color: var(--primary-color);
+}
+
+.footer-col.about .logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 15px;
+}
+
+.footer-col.about .logo span {
+    color: var(--primary-color);
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+    text-align: center;
+    font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .navbar .menu {
+        display: none;
+    }
+    .footer-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Table Styles (Used in Mypage, Pricing, Board list, etc.) */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.mypage-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    text-align: center;
+}
+
+.mypage-table th, .mypage-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.mypage-table th {
+    background: var(--light-gray-bg);
+    color: var(--light-text-color);
+    font-weight: 600;
+}
+
+.mypage-table td {
+    color: var(--text-color);
+}
+
+/* Form Group Styles (Used in Login, Join, Support contact, Board write, etc.) */
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--light-text-color);
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    background: var(--light-gray-bg);
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--primary-color);
+}
+
+/* Board & Content Layout Containers */
+.board-container {
+    padding: 120px 20px 100px; /* navbar height compensation & enhanced spacing above footer */
+    min-height: 80vh;
+}
+
+.board-header {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.board-header h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.board-header p {
+    color: var(--light-text-color);
+}

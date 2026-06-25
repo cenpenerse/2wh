@@ -1,0 +1,196 @@
+/* ==========================================================================
+   BAREN Premium Bike Rental - 바이크 목록 및 필터 검색 전용 스타일 (bike.css)
+   ========================================================================== */
+
+/* Featured / Search Bikes List */
+.bike-list-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+}
+
+.bike-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.bike-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255, 107, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.bike-image-wrapper {
+    position: relative;
+    height: 180px;
+    background: #1C1E26;
+    overflow: hidden;
+}
+
+.bike-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: #1C1E26;
+    transition: transform 0.5s;
+}
+
+.bike-card:hover .bike-image-wrapper img {
+    transform: scale(1.05);
+}
+
+.bike-image-wrapper .badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 2;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-avail {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success-color);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-rented {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger-color);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.bike-info {
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.bike-category {
+    font-size: 12px;
+    color: var(--primary-color);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+
+.bike-info h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.bike-info .location {
+    color: var(--light-text-color);
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.bike-info .price {
+    font-size: 14px;
+    color: var(--light-text-color);
+    margin-bottom: 15px;
+}
+
+.bike-info .price span {
+    font-size: 24px;
+    color: white;
+    font-weight: 800;
+    font-family: 'Outfit', sans-serif;
+}
+
+.bike-info .rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+}
+
+.bike-info .rating .stars {
+    color: var(--accent-color);
+}
+
+.card-btn {
+    background: var(--light-gray-bg);
+    color: white;
+    text-align: center;
+    padding: 16px;
+    font-weight: 600;
+    font-size: 14px;
+    border-top: 1px solid var(--border-color);
+    transition: all 0.3s;
+}
+
+.bike-card:hover .card-btn {
+    background: var(--primary-color);
+}
+
+/* Filter Form */
+.filter-form {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 50px;
+}
+
+.filter-group-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-item {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-item label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--light-text-color);
+}
+
+.filter-item select, .filter-item input {
+    background: var(--light-gray-bg);
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+}
+
+.btn-filter {
+    padding: 13px 30px;
+    height: 48px;
+}
+
+.no-results {
+    text-align: center;
+    grid-column: 1 / -1;
+    padding: 60px 0;
+}
+
+.no-results-icon {
+    font-size: 64px;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.no-results p {
+    color: var(--light-text-color);
+    margin-bottom: 30px;
+}

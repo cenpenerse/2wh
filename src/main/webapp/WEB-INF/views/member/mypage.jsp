@@ -3,179 +3,10 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp" />
-<style>
-    /* 마이페이지 레이아웃 및 탭 스타일 */
-    .mypage-container.max-width {
-        max-width: 1600px !important;
-    }
-    
-    .mypage-layout-wrapper {
-        display: flex;
-        gap: 30px;
-        align-items: flex-start;
-        margin-top: 30px;
-        width: 100%;
-    }
-
-    .mypage-tabs {
-        width: 260px;
-        flex-shrink: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-    
-    .tab-btn {
-        background: transparent;
-        border: none;
-        color: #9CA3AF;
-        padding: 12px 18px;
-        font-size: 0.92rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-align: left;
-        border-radius: 8px;
-        font-family: 'Outfit', sans-serif;
-        display: flex;
-        align-items: center;
-        width: 100%;
-        border-left: 3px solid transparent;
-    }
-    
-    .tab-btn:hover {
-        color: #fff;
-        background: rgba(255, 255, 255, 0.04);
-    }
-    
-    .tab-btn.active {
-        color: #fff;
-        background: rgba(229, 9, 20, 0.1);
-        border-left-color: var(--primary-color);
-    }
-    
-    .mypage-content-box {
-        flex: 1;
-        min-width: 0;
-        border: none !important;
-        padding: 0 !important;
-        background: transparent !important;
-    }
-    
-    .tab-content {
-        display: none;
-        animation: fadeIn 0.3s ease-in-out;
-    }
-    
-    .tab-content.active {
-        display: block;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(5px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    @media (max-width: 992px) {
-        .mypage-layout-wrapper {
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .mypage-tabs {
-            width: 100% !important;
-            flex-direction: row;
-            flex-wrap: wrap;
-            padding: 15px;
-            gap: 6px;
-        }
-        
-        .tab-btn {
-            width: auto;
-            padding: 8px 14px;
-            font-size: 0.85rem;
-            text-align: center;
-            border-left: none;
-            border-bottom: 3px solid transparent;
-        }
-        
-        .tab-btn.active {
-            border-left-color: transparent;
-            border-bottom-color: var(--primary-color);
-        }
-    }
-    
-    .crud-section-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 30px;
-        margin-top: 15px;
-        width: 100%;
-    }
-    .crud-section-grid > div:first-child {
-        flex: 1 1 650px;
-        min-width: 0;
-    }
-    .crud-section-grid > div:last-child {
-        flex: 1 1 320px;
-        min-width: 0;
-    }
-    
-    /* 1:1 문의 아코디언 스타일 */
-    .accordion-inquiry {
-        background: #121212;
-        border: 1px solid #222;
-        border-radius: 6px;
-        margin-bottom: 12px;
-        overflow: hidden;
-    }
-    .accordion-header {
-        padding: 15px 20px;
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #181818;
-        font-weight: 600;
-        transition: background 0.2s ease;
-    }
-    .accordion-header:hover {
-        background: #222;
-    }
-    .accordion-content {
-        padding: 20px;
-        border-top: 1px solid #222;
-        background: #0d0d0d;
-        display: none;
-    }
-    .inquiry-status {
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: bold;
-    }
-    .inquiry-pending {
-        background: var(--primary-color);
-        color: #fff;
-    }
-    .inquiry-answered {
-        background: #10b981;
-        color: #fff;
-    }
-    
-    .panel-form {
-        background: #121212;
-        border: 1px solid #222;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 30px;
-    }
-</style>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/mypage.css">
+<script>
+    const contextPath = "${pageContext.request.contextPath}";
+</script>
 
 <div class="mypage-container max-width">
     <!-- 1. 상단 마이페이지 헤더 정보 -->
@@ -306,8 +137,8 @@
                                                     </td>
                                                     <td>
                                                         <c:if test="${book.bookingStatus eq 'PENDING'}">
-                                                            <a href="${pageContext.request.contextPath}/bookingStatusAction.do?bookingId=${book.bookingId}&status=APPROVED" class="btn-sm btn-approve" style="margin-right:5px;">승인</a>
-                                                            <a href="${pageContext.request.contextPath}/bookingStatusAction.do?bookingId=${book.bookingId}&status=CANCELLED" class="btn-sm btn-reject">거절</a>
+                                                            <a href="${pageContext.request.contextPath}/booking/bookingStatusAction.do?bookingId=${book.bookingId}&status=APPROVED" class="btn-sm btn-approve" style="margin-right:5px;">승인</a>
+                                                            <a href="${pageContext.request.contextPath}/booking/bookingStatusAction.do?bookingId=${book.bookingId}&status=CANCELLED" class="btn-sm btn-reject">거절</a>
                                                         </c:if>
                                                         <c:if test="${book.bookingStatus ne 'PENDING'}">
                                                             <span class="done-text">-</span>
@@ -372,10 +203,10 @@
                                             <td>
                                                 <c:if test="${mem.memberStatus ne 'ADMIN' and not empty mem.licenseNumber}">
                                                     <c:if test="${mem.licenseStatus ne 'APPROVED'}">
-                                                        <a href="${pageContext.request.contextPath}/adminLicenseAction.do?memberId=${mem.memberId}&status=APPROVED" class="btn-sm btn-approve" style="margin-right:5px; padding: 4px 8px; border-radius: 4px; background: #10b981; color: #fff;">승인</a>
+                                                        <a href="${pageContext.request.contextPath}/member/adminLicenseAction.do?memberId=${mem.memberId}&status=APPROVED" class="btn-sm btn-approve" style="margin-right:5px; padding: 4px 8px; border-radius: 4px; background: #10b981; color: #fff;">승인</a>
                                                     </c:if>
                                                     <c:if test="${mem.licenseStatus ne 'REJECTED'}">
-                                                        <a href="${pageContext.request.contextPath}/adminLicenseAction.do?memberId=${mem.memberId}&status=REJECTED" class="btn-sm btn-reject" style="padding: 4px 8px; border-radius: 4px; background: #ef4444; color: #fff;">반려</a>
+                                                        <a href="${pageContext.request.contextPath}/member/adminLicenseAction.do?memberId=${mem.memberId}&status=REJECTED" class="btn-sm btn-reject" style="padding: 4px 8px; border-radius: 4px; background: #ef4444; color: #fff;">반려</a>
                                                     </c:if>
                                                 </c:if>
                                                 <c:if test="${mem.memberStatus eq 'ADMIN' or empty mem.licenseNumber}">
@@ -415,7 +246,7 @@
                                                     <td><strong>${brd.brandName}</strong></td>
                                                     <td>${brd.country}</td>
                                                     <td>
-                                                        <a href="${pageContext.request.contextPath}/adminBrandDeleteAction.do?brandId=${brd.brandId}" class="btn-sm btn-reject" onclick="return confirm('정말 삭제하시겠습니까? 관련 바이크들의 브랜드 정보가 초기화됩니다.');">삭제</a>
+                                                        <a href="${pageContext.request.contextPath}/bike/adminBrandDeleteAction.do?brandId=${brd.brandId}" class="btn-sm btn-reject" onclick="return confirm('정말 삭제하시겠습니까? 관련 바이크들의 브랜드 정보가 초기화됩니다.');">삭제</a>
                                                     </td>
                                                 </tr>
                                             </c:forEach>
@@ -425,7 +256,7 @@
                             </div>
                             <div>
                                 <h5 style="margin-bottom:10px;">신규 브랜드 추가</h5>
-                                <form action="${pageContext.request.contextPath}/adminBrandAddAction.do" method="post">
+                                <form action="${pageContext.request.contextPath}/bike/adminBrandAddAction.do" method="post">
                                     <div class="form-group" style="margin-bottom:10px;">
                                         <label style="font-size:0.85rem; color:#aaa;">브랜드명</label>
                                         <input type="text" name="brandName" required placeholder="예: Ducati, Honda" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
@@ -471,10 +302,10 @@
                                                                 <div style="position: relative; width: 80px; height: 50px; overflow: hidden; border-radius: 4px; border: 1px solid #333; margin-bottom: 5px;">
                                                                     <img src="${pageContext.request.contextPath}/resources/images/shops/${sh.imageFilename}" style="width: 100%; height: 100%; object-fit: cover;">
                                                                 </div>
-                                                                <a href="${pageContext.request.contextPath}/adminShopImageDeleteAction.do?shopId=${sh.shopId}" class="btn-sm btn-reject" style="display: inline-block; padding: 2px 6px; font-size: 0.7rem; line-height: 1; text-decoration: none;" onclick="return confirm('지점 이미지를 삭제하시겠습니까?');">이미지 삭제</a>
+                                                                <a href="${pageContext.request.contextPath}/bike/adminShopImageDeleteAction.do?shopId=${sh.shopId}" class="btn-sm btn-reject" style="display: inline-block; padding: 2px 6px; font-size: 0.7rem; line-height: 1; text-decoration: none;" onclick="return confirm('지점 이미지를 삭제하시겠습니까?');">이미지 삭제</a>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <form action="${pageContext.request.contextPath}/adminShopImageUploadAction.do" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 4px;">
+                                                                <form action="${pageContext.request.contextPath}/bike/adminShopImageUploadAction.do" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 4px;">
                                                                     <input type="hidden" name="shopId" value="${sh.shopId}">
                                                                     <input type="file" name="shopImage" accept="image/*" style="font-size: 0.7rem; width: 120px; color: #aaa;" required>
                                                                     <button type="submit" class="btn-sm btn-action-main" style="padding: 2px 6px; font-size: 0.7rem; background: #2563eb; width: fit-content; border: none; border-radius: 4px;">업로드</button>
@@ -488,7 +319,7 @@
                                                         <span class="sub-text" style="font-size:0.75rem;">${sh.address}</span>
                                                     </td>
                                                     <td>
-                                                        <a href="${pageContext.request.contextPath}/adminShopDeleteAction.do?shopId=${sh.shopId}" class="btn-sm btn-reject" onclick="return confirm('정말 삭제하시겠습니까? 관련 바이크들의 지점 정보가 초기화됩니다.');">삭제</a>
+                                                        <a href="${pageContext.request.contextPath}/bike/adminShopDeleteAction.do?shopId=${sh.shopId}" class="btn-sm btn-reject" onclick="return confirm('정말 삭제하시겠습니까? 관련 바이크들의 지점 정보가 초기화됩니다.');">삭제</a>
                                                     </td>
                                                 </tr>
                                             </c:forEach>
@@ -498,7 +329,7 @@
                             </div>
                             <div>
                                 <h5 style="margin-bottom:10px;">신규 지점 추가</h5>
-                                <form action="${pageContext.request.contextPath}/adminShopAddAction.do" method="post" enctype="multipart/form-data">
+                                <form action="${pageContext.request.contextPath}/bike/adminShopAddAction.do" method="post" enctype="multipart/form-data">
                                     <div class="form-group" style="margin-bottom:10px;">
                                         <label style="font-size:0.85rem; color:#aaa;">지점명</label>
                                         <input type="text" name="shopName" required placeholder="예: 대구 중앙점" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
@@ -563,7 +394,7 @@
                                                         <strong>₩<fmt:formatNumber value="${bk.dailyPrice}" pattern="#,###"/></strong> / 일
                                                     </td>
                                                     <td>
-                                                        <a href="${pageContext.request.contextPath}/adminBikeDeleteAction.do?bikeId=${bk.bikeId}" class="btn-sm btn-reject" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                                                        <a href="${pageContext.request.contextPath}/bike/adminBikeDeleteAction.do?bikeId=${bk.bikeId}" class="btn-sm btn-reject" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
                                                     </td>
                                                 </tr>
                                             </c:forEach>
@@ -573,7 +404,7 @@
                             </div>
                             <div>
                                 <h5 style="margin-bottom:10px;">신규 바이크 등록</h5>
-                                <form action="${pageContext.request.contextPath}/adminBikeAddAction.do" method="post">
+                                <form action="${pageContext.request.contextPath}/bike/adminBikeAddAction.do" method="post">
                                     <div style="display:flex; gap:10px; margin-bottom:10px;">
                                         <div style="flex:1;">
                                             <label style="font-size:0.85rem; color:#aaa;">브랜드</label>
@@ -673,7 +504,7 @@
                                                     </td>
                                                     <td>
                                                         <button class="btn-sm btn-approve" style="padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; border: none; cursor: pointer;" onclick="openEditGearModal(${opt.optionId}, '${opt.optionName}', ${opt.stockQuantity}, ${opt.dailyPrice}, '${opt.status}')">수정</button>
-                                                        <a href="${pageContext.request.contextPath}/adminOptionDeleteAction.do?optionId=${opt.optionId}" class="btn-sm btn-reject" style="padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;" onclick="return confirm('정말 이 장비를 삭제하시겠습니까?');">삭제</a>
+                                                        <a href="${pageContext.request.contextPath}/bike/adminOptionDeleteAction.do?optionId=${opt.optionId}" class="btn-sm btn-reject" style="padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;" onclick="return confirm('정말 이 장비를 삭제하시겠습니까?');">삭제</a>
                                                     </td>
                                                 </tr>
                                             </c:forEach>
@@ -684,7 +515,7 @@
                             <!-- 오른쪽: 신규 장비 추가 -->
                             <div>
                                 <h5 style="margin-bottom:10px; font-size: 1.05rem;">신규 대여장비 추가</h5>
-                                <form action="${pageContext.request.contextPath}/adminOptionAddAction.do" method="post" enctype="multipart/form-data">
+                                <form action="${pageContext.request.contextPath}/bike/adminOptionAddAction.do" method="post" enctype="multipart/form-data">
                                     <div class="form-group" style="margin-bottom:10px;">
                                         <label style="font-size:0.85rem; color:#aaa;">장비명</label>
                                         <input type="text" name="optionName" required placeholder="예: HJC 오픈페이스 헬멧" style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
@@ -740,7 +571,7 @@
                                             </div>
                                             <c:choose>
                                                 <c:when test="${inq.status eq 'PENDING'}">
-                                                    <form action="${pageContext.request.contextPath}/adminInquiryAnswer.do" method="post">
+                                                    <form action="${pageContext.request.contextPath}/board/adminInquiryAnswer.do" method="post">
                                                         <input type="hidden" name="inquiryId" value="${inq.inquiryId}">
                                                         <div class="form-group">
                                                             <label style="color:#aaa; font-size:0.9rem; display:block; margin-bottom:5px;">답변 내용 작성</label>
@@ -772,7 +603,7 @@
                         <h3 style="margin-bottom:15px; font-family:'Outfit';">쿠폰 발행 및 전송</h3>
                         <p class="sub-text" style="margin-bottom:20px;">특정 회원 또는 가입한 전체 회원에게 할인쿠폰을 직접 발송합니다.</p>
                         <div style="max-width:550px; background:#0d0d0d; border:1px solid #222; padding:25px; border-radius:8px;">
-                            <form action="${pageContext.request.contextPath}/adminCouponIssue.do" method="post">
+                            <form action="${pageContext.request.contextPath}/member/adminCouponIssue.do" method="post">
                                 <div class="form-group" style="margin-bottom:15px;">
                                     <label>발송 대상</label>
                                     <select name="targetUser" required style="width:100%; padding:12px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
@@ -859,7 +690,7 @@
                             <div>
                                 <h4 style="margin-bottom: 10px; color:#fff;">신규 패널티 부과</h4>
                                 <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px;">
-                                    <form action="${pageContext.request.contextPath}/adminAddPenaltyAction.do" method="post">
+                                    <form action="${pageContext.request.contextPath}/booking/adminAddPenaltyAction.do" method="post">
                                         <div class="form-group" style="margin-bottom: 12px;">
                                             <label style="font-size:0.85rem; color:#aaa;">대상 예약 선택</label>
                                             <select name="reservationId" id="penalty-res-selector" onchange="updatePenaltyUser()" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
@@ -1042,7 +873,7 @@
                             <div>
                                 <h4 style="margin-bottom: 10px; color:#fff;">신규 정비 등록</h4>
                                 <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px;">
-                                    <form action="${pageContext.request.contextPath}/adminMaintenanceAddAction.do" method="post">
+                                    <form action="${pageContext.request.contextPath}/bike/adminMaintenanceAddAction.do" method="post">
                                         <div class="form-group" style="margin-bottom: 12px;">
                                             <label style="font-size:0.85rem; color:#aaa;">바이크 모델 선택</label>
                                             <select name="bikeId" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
@@ -1162,7 +993,7 @@
                             <div>
                                 <h4 style="margin-bottom: 10px; color:#fff;">차량 반납 및 주유 검사</h4>
                                 <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px;">
-                                    <form action="${pageContext.request.contextPath}/adminFuelLogAddAction.do" method="post">
+                                    <form action="${pageContext.request.contextPath}/booking/adminFuelLogAddAction.do" method="post">
                                         <div class="form-group" style="margin-bottom: 12px;">
                                             <label style="font-size:0.85rem; color:#aaa;">대여 중인 예약 선택</label>
                                             <select name="reservationId" id="fuel-res-selector" onchange="calculateFuelPenalty()" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
@@ -1319,7 +1150,7 @@
                             <div>
                                 <h4 style="margin-bottom: 10px; color:#fff;">개별 알림 직접 발송</h4>
                                 <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px;">
-                                    <form action="${pageContext.request.contextPath}/adminNotificationAddAction.do" method="post">
+                                    <form action="${pageContext.request.contextPath}/booking/adminNotificationAddAction.do" method="post">
                                         <div class="form-group" style="margin-bottom: 12px;">
                                             <label style="font-size:0.85rem; color:#aaa;">대상 회원 선택</label>
                                             <select name="userId" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
@@ -1459,7 +1290,7 @@
                 <div id="tab-admin-blacklist" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222; margin-bottom: 25px;">
                         <h3 style="margin-bottom:15px; font-family:'Outfit';">악성 회원 블랙리스트 등록</h3>
-                        <form action="${pageContext.request.contextPath}/adminBlacklistAddAction.do" method="post" style="display:flex; flex-direction:column; gap:15px;">
+                        <form action="${pageContext.request.contextPath}/member/adminBlacklistAddAction.do" method="post" style="display:flex; flex-direction:column; gap:15px;">
                             <div style="display:flex; gap:15px;">
                                 <div style="flex:1;">
                                     <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">회원 선택</label>
@@ -1542,7 +1373,7 @@
                                                     </td>
                                                     <td>${bl.adminNickname}</td>
                                                     <td>
-                                                        <form action="${pageContext.request.contextPath}/adminBlacklistReleaseAction.do" method="post" onsubmit="return confirm('해당 회원의 차단 조치를 해제하시겠습니까?');" style="display:inline;">
+                                                        <form action="${pageContext.request.contextPath}/member/adminBlacklistReleaseAction.do" method="post" onsubmit="return confirm('해당 회원의 차단 조치를 해제하시겠습니까?');" style="display:inline;">
                                                             <input type="hidden" name="blacklistId" value="${bl.blacklistId}">
                                                             <input type="hidden" name="userId" value="${bl.userId}">
                                                             <button type="submit" class="btn" style="padding:5px 10px; font-size:0.8rem; background:#333; color:#fff; border:1px solid #555; cursor:pointer;">해제</button>
@@ -1652,7 +1483,7 @@
                                                         <span style="font-size: 0.8rem; color: #888; margin-left: 10px;">(예약번호: #${pen.reservationId} | 대상 바이크: ${pen.bikeName})</span>
                                                         <p style="margin-top: 4px; font-size: 0.85rem; color: #aaa;">사유: ${pen.reason}</p>
                                                     </div>
-                                                    <a href="${pageContext.request.contextPath}/payPenaltyAction.do?penaltyId=${pen.penaltyId}" class="btn" style="background: #E50914; color: #fff; padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; text-decoration: none; font-weight: bold;">즉시 납부하기</a>
+                                                    <a href="${pageContext.request.contextPath}/booking/payPenaltyAction.do?penaltyId=${pen.penaltyId}" class="btn" style="background: #E50914; color: #fff; padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; text-decoration: none; font-weight: bold;">즉시 납부하기</a>
                                                 </div>
                                             </c:if>
                                         </c:forEach>
@@ -1723,7 +1554,7 @@
                                                     </td>
                                                     <td>
                                                         <c:if test="${book.bookingStatus eq 'PENDING' or book.bookingStatus eq 'APPROVED'}">
-                                                            <a href="${pageContext.request.contextPath}/bookingCancelAction.do?bookingId=${book.bookingId}" class="btn-sm btn-reject" onclick="return confirm('정말로 예약을 취소하시겠습니까?');">대여취소</a>
+                                                            <a href="${pageContext.request.contextPath}/booking/bookingCancelAction.do?bookingId=${book.bookingId}" class="btn-sm btn-reject" onclick="return confirm('정말로 예약을 취소하시겠습니까?');">대여취소</a>
                                                         </c:if>
                                                         <c:if test="${book.bookingStatus eq 'APPROVED'}">
                                                             <!-- 리뷰 작성 버튼 제공 -->
@@ -1738,7 +1569,7 @@
                                         </c:when>
                                         <c:otherwise>
                                             <tr>
-                                                <td colspan="8" class="no-data">아직 대여 신청 내역이 없습니다. <a href="${pageContext.request.contextPath}/bikeList.do" style="color: var(--primary-color);">바이크 예약하러 가기 &rarr;</a></td>
+                                                <td colspan="8" class="no-data">아직 대여 신청 내역이 없습니다. <a href="${pageContext.request.contextPath}/bike/bikeList.do" style="color: var(--primary-color);">바이크 예약하러 가기 &rarr;</a></td>
                                             </tr>
                                         </c:otherwise>
                                     </c:choose>
@@ -1825,7 +1656,7 @@
                         <!-- 새 문의 작성 영역 (토글) -->
                         <div id="inquiry-form-box" style="display:none; background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px; margin-bottom:30px;">
                             <h4 style="margin-bottom:15px; color:var(--primary-color); font-family:'Outfit';">새로운 1:1 문의글 작성</h4>
-                            <form action="${pageContext.request.contextPath}/inquiryAction.do" method="post">
+                            <form action="${pageContext.request.contextPath}/board/inquiryAction.do" method="post">
                                 <div class="form-group" style="margin-bottom:12px;">
                                     <label style="font-size:0.85rem; color:#aaa;">문의 제목</label>
                                     <input type="text" name="title" required placeholder="문의 제목을 입력하세요." style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
@@ -1929,7 +1760,7 @@
                         <c:if test="${loginUser.licenseStatus ne 'APPROVED'}">
                             <h4 style="margin-bottom:10px; color:#fff;">면허 검증 신청하기</h4>
                             <div style="background:#0d0d0d; border:1px solid #222; padding:20px; border-radius:8px; margin-bottom:30px;">
-                                <form action="${pageContext.request.contextPath}/userLicenseSubmitAction.do" method="post" enctype="multipart/form-data">
+                                <form action="${pageContext.request.contextPath}/member/userLicenseSubmitAction.do" method="post" enctype="multipart/form-data">
                                     <div class="form-group" style="margin-bottom:12px;">
                                         <label style="font-size:0.85rem; color:#aaa;">면허증 종류</label>
                                         <select name="licenseType" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
@@ -2020,7 +1851,7 @@
                 <div id="tab-user-edit" class="tab-content">
                     <div class="panel-form" style="border:1px solid #222; max-width:550px;">
                         <h3 style="margin-bottom:15px; font-family:'Outfit';">회원 정보 수정</h3>
-                        <form action="${pageContext.request.contextPath}/memberUpdateAction.do" method="post" onsubmit="return validateUpdateForm()">
+                        <form action="${pageContext.request.contextPath}/member/memberUpdateAction.do" method="post" onsubmit="return validateUpdateForm()">
                             <div class="form-group" style="margin-bottom:15px;">
                                 <label>이메일 계정 (수정 불가)</label>
                                 <input type="email" value="${loginUser.email}" disabled style="width:100%; padding:10px; border-radius:6px; background:#1c1c1c; border:1px solid #333; color:#666;">
@@ -2088,7 +1919,7 @@
                                                     </td>
                                                     <td>
                                                         <c:if test="${pay.paymentStatus eq '결제완료'}">
-                                                            <form action="${pageContext.request.contextPath}/paymentCancelAction.do" method="post" onsubmit="return confirm('해당 결제를 정말 취소/환불하시겠습니까?');" style="display:inline;">
+                                                            <form action="${pageContext.request.contextPath}/booking/paymentCancelAction.do" method="post" onsubmit="return confirm('해당 결제를 정말 취소/환불하시겠습니까?');" style="display:inline;">
                                                                 <input type="hidden" name="paymentId" value="${pay.paymentId}"/>
                                                                 <input type="hidden" name="cancelType" value="FULL"/>
                                                                 <input type="hidden" name="cancelAmount" value="${pay.amount}"/>
@@ -2140,7 +1971,7 @@
                                                     <td><span style="font-size:0.8rem;"><fmt:formatDate value="${noti.createdAt}" pattern="yyyy-MM-dd HH:mm"/></span></td>
                                                     <td>
                                                         <c:if test="${noti.isReceived eq 'N'}">
-                                                            <form action="${pageContext.request.contextPath}/userNotificationReadAction.do" method="post" style="display:inline;">
+                                                            <form action="${pageContext.request.contextPath}/booking/userNotificationReadAction.do" method="post" style="display:inline;">
                                                                 <input type="hidden" name="notificationId" value="${noti.notificationId}"/>
                                                                 <button type="submit" class="btn-sm" style="padding: 4px 8px; border:none; border-radius: 4px; background: var(--primary-color); color: #fff; font-weight:bold; cursor:pointer;">읽음표시</button>
                                                             </form>
@@ -2400,7 +2231,7 @@
         <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">이용 후기 리뷰 작성</h2>
         <p style="color:#aaa; margin-bottom:20px;" id="review-bike-model-name"></p>
         
-        <form action="${pageContext.request.contextPath}/reviewAction.do" method="post">
+        <form action="${pageContext.request.contextPath}/board/reviewAction.do" method="post">
             <input type="hidden" name="bookingId" id="review-booking-id">
             <input type="hidden" name="reservationId" id="review-reservation-id"> <!-- bookingId와 동일하게 매핑 -->
             <input type="hidden" name="bikeId" id="review-bike-id">
@@ -2438,7 +2269,7 @@
         <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">결제 취소 및 환불 처리</h2>
         <p style="color:#aaa; margin-bottom:20px;">결제 건에 대해 부분 또는 전체 취소/환불 처리를 기록합니다.</p>
         
-        <form action="${pageContext.request.contextPath}/paymentCancelAction.do" method="post" onsubmit="return validateRefundForm()">
+        <form action="${pageContext.request.contextPath}/booking/paymentCancelAction.do" method="post" onsubmit="return validateRefundForm()">
             <input type="hidden" name="paymentId" id="refund-payment-id">
             
             <div class="form-group" style="margin-bottom:15px;">
@@ -2477,7 +2308,7 @@
         <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">사고 접수 및 대여 신고</h2>
         <p style="color:#aaa; margin-bottom:20px;">사고 발생 현황 및 피해 내용을 작성해 주세요.</p>
         
-        <form action="${pageContext.request.contextPath}/userAccidentReportAction.do" method="post" enctype="multipart/form-data">
+        <form action="${pageContext.request.contextPath}/booking/userAccidentReportAction.do" method="post" enctype="multipart/form-data">
             <div class="form-group" style="margin-bottom: 15px;">
                 <label style="display:block; margin-bottom:5px; color:#aaa; font-size:0.85rem;">사고 관련 예약 선택</label>
                 <select name="reservationId" required style="width:100%; padding:10px; border-radius:6px; background:#2a2a2a; border:1px solid #444; color:#fff;">
@@ -2520,7 +2351,7 @@
         <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family:'Outfit';">사고 처리 및 보험 등록</h2>
         <p style="color:#aaa; margin-bottom:20px;" id="admin-accident-info-text">사고 건에 대한 손해사정 정보 및 상태를 업데이트합니다.</p>
         
-        <form action="${pageContext.request.contextPath}/adminAccidentReportUpdateAction.do" method="post">
+        <form action="${pageContext.request.contextPath}/booking/adminAccidentReportUpdateAction.do" method="post">
             <input type="hidden" name="reportId" id="admin-accident-report-id">
             
             <div class="form-group" style="margin-bottom: 15px;">
@@ -2552,7 +2383,7 @@
     <div class="modal-content" style="background:#121212; border:1px solid #333; padding:30px; border-radius:10px; max-width:500px; width:90%; color:#fff; position:relative;">
         <span class="close-btn" onclick="closeEditGearModal()" style="position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #aaa;">&times;</span>
         <h3 style="margin-bottom:20px; font-family:'Outfit'; text-align:center;">대여장비 정보 수정</h3>
-        <form action="${pageContext.request.contextPath}/adminOptionUpdateAction.do" method="post" enctype="multipart/form-data">
+        <form action="${pageContext.request.contextPath}/bike/adminOptionUpdateAction.do" method="post" enctype="multipart/form-data">
             <input type="hidden" name="optionId" id="edit-gear-id">
             
             <div class="form-group" style="margin-bottom:15px;">
@@ -2589,269 +2420,4 @@
 </div>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />
-
-<script>
-    // 탭 동작
-    function openTab(evt, tabId) {
-        let i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].classList.remove("active");
-        }
-        tablinks = document.getElementsByClassName("tab-btn");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].classList.remove("active");
-        }
-        document.getElementById(tabId).classList.add("active");
-        evt.currentTarget.classList.add("active");
-    }
-
-    // 1:1 문의 아코디언 토글
-    function toggleAccordion(headerElement) {
-        const content = headerElement.nextElementSibling;
-        if (content.style.display === "block") {
-            content.style.display = "none";
-        } else {
-            content.style.display = "block";
-        }
-    }
-
-    // 새 1:1 문의 작성 상자 토글
-    function toggleInquiryForm() {
-        const box = document.getElementById("inquiry-form-box");
-        if (box.style.display === "none") {
-            box.style.display = "block";
-        } else {
-            box.style.display = "none";
-        }
-    }
-
-    // 리뷰 작성 모달 열기/닫기
-    function openReviewModal(bookingId, bikeId, bikeName) {
-        document.getElementById("review-booking-id").value = bookingId;
-        document.getElementById("review-reservation-id").value = bookingId; // reservationId는 bookingId와 매핑
-        document.getElementById("review-bike-id").value = bikeId;
-        document.getElementById("review-bike-model-name").innerText = "모델명: " + bikeName;
-        document.getElementById("review-modal").style.display = "flex";
-    }
-    
-    function closeReviewModal() {
-        document.getElementById("review-modal").style.display = "none";
-    }
-
-    // 탈퇴 확인
-    function confirmWithdrawal() {
-        if (confirm("정말로 탈퇴하시겠습니까?\n탈퇴 시 대여 내역을 포함한 모든 계정 정보가 즉시 삭제됩니다.")) {
-            location.href = "${pageContext.request.contextPath}/memberDeleteAction.do";
-        }
-    }
-
-    // 어드민 패널티 부과 시 대상자 정보 실시간 바인딩
-    function updatePenaltyUser() {
-        let sel = document.getElementById('penalty-res-selector');
-        if (!sel) return;
-        let opt = sel.options[sel.selectedIndex];
-        if (opt && opt.value !== "") {
-            let userId = opt.getAttribute('data-userid');
-            let userName = opt.getAttribute('data-username');
-            document.getElementById('penalty-user-id').value = userId;
-            document.getElementById('penalty-user-name').value = userName;
-        } else {
-            document.getElementById('penalty-user-id').value = "";
-            document.getElementById('penalty-user-name').value = "";
-        }
-    }
-
-    // 정보 수정 비밀번호 일치 검사
-    function validateUpdateForm() {
-        const pwd = document.getElementById('update-password').value;
-        const pwdConfirm = document.getElementById('update-password-confirm').value;
-        const err = document.getElementById('update-pwd-error');
-
-        if (pwd !== pwdConfirm) {
-            err.style.display = 'block';
-            document.getElementById('update-password-confirm').focus();
-            return false;
-        } else {
-            err.style.display = 'none';
-        }
-        return true;
-    }
-
-    // 면허 심사 승인
-    function approveLicense(auditId) {
-        if (confirm("해당 면허 검증 신청을 승인하시겠습니까?\n승인 시 사용자의 면허 상태가 '승인 완료'로 즉시 변경됩니다.")) {
-            location.href = "${pageContext.request.contextPath}/adminLicenseAuditAction.do?auditId=" + auditId + "&status=APPROVED";
-        }
-    }
-
-    // 면허 심사 반려
-    function rejectLicense(auditId) {
-        let reason = prompt("반려 사유를 입력해 주세요:", "첨부된 면허증 사진이 흐릿하여 식별할 수 없습니다.");
-        if (reason === null) return; // 취소 버튼
-        if (reason.trim() === "") {
-            alert("반려 사유는 필수 입력 사항입니다.");
-            return;
-        }
-        location.href = "${pageContext.request.contextPath}/adminLicenseAuditAction.do?auditId=" + auditId + "&status=REJECTED&rejectReason=" + encodeURIComponent(reason);
-    }
-
-    // 반납 주유 패널티 실시간 계산
-    function calculateFuelPenalty() {
-        let levelInput = document.getElementById("fuel-level-input");
-        let calcBox = document.getElementById("fuel-penalty-calc-box");
-        let display = document.getElementById("fuel-penalty-display");
-        
-        if (!levelInput || !calcBox || !display) return;
-        
-        let val = levelInput.value;
-        if (val === "" || isNaN(val)) {
-            calcBox.style.display = "none";
-            return;
-        }
-        
-        let fuelLevel = parseInt(val);
-        if (fuelLevel < 0 || fuelLevel > 100) {
-            calcBox.style.display = "none";
-            return;
-        }
-        
-        if (fuelLevel < 100) {
-            let penalty = (100 - fuelLevel) * 1000;
-            display.innerText = "₩" + penalty.toLocaleString();
-            calcBox.style.display = "block";
-        } else {
-            display.innerText = "₩0 (패널티 없음)";
-            calcBox.style.display = "block";
-        }
-    }
-
-    // 결제 취소 환불 모달 함수
-    let maxRefundable = 0;
-    function openRefundModal(paymentId, origAmount, prevRefund) {
-        document.getElementById("refund-payment-id").value = paymentId;
-        document.getElementById("refund-amount-orig-display").value = "₩" + origAmount.toLocaleString();
-        document.getElementById("refund-amount-prev-display").value = "₩" + prevRefund.toLocaleString();
-        
-        maxRefundable = origAmount - prevRefund;
-        document.getElementById("refund-cancel-amount").value = maxRefundable;
-        document.getElementById("refund-limit-text").innerText = "* 환불 가능 한도: ₩" + maxRefundable.toLocaleString();
-        
-        document.getElementById("refund-cancel-type").value = "FULL";
-        document.getElementById("refund-cancel-amount").readOnly = true;
-        
-        document.getElementById("refund-modal").style.display = "flex";
-    }
-    
-    function adjustRefundLimit() {
-        const type = document.getElementById("refund-cancel-type").value;
-        const amtInput = document.getElementById("refund-cancel-amount");
-        if (type === "FULL") {
-            amtInput.value = maxRefundable;
-            amtInput.readOnly = true;
-        } else {
-            amtInput.readOnly = false;
-            amtInput.value = "";
-            amtInput.focus();
-        }
-    }
-    
-    function closeRefundModal() {
-        document.getElementById("refund-modal").style.display = "none";
-    }
-    
-    function validateRefundForm() {
-        const amt = parseInt(document.getElementById("refund-cancel-amount").value);
-        if (isNaN(amt) || amt <= 0) {
-            alert("환불 취소 금액은 0보다 큰 숫자로 입력해야 합니다.");
-            return false;
-        }
-        if (amt > maxRefundable) {
-            alert("취소 환불 요청 금액(₩" + amt.toLocaleString() + ")이 남은 환불 한도(₩" + maxRefundable.toLocaleString() + ")를 초과했습니다.");
-            return false;
-        }
-        return confirm("정말로 취소/환불 처리를 완료하시겠습니까?");
-    }
-
-    // 사용자 사고 접수 모달 열기/닫기
-    function openAccidentReportModal() {
-        document.getElementById("user-accident-modal").style.display = "flex";
-    }
-    function closeAccidentReportModal() {
-        document.getElementById("user-accident-modal").style.display = "none";
-    }
-
-    // 관리자 사고 처리 모달 열기/닫기
-    function openAccidentModal(reportId, status, claimNum, faultRatio) {
-        document.getElementById("admin-accident-report-id").value = reportId;
-        document.getElementById("admin-accident-status").value = status;
-        document.getElementById("admin-accident-claim-num").value = (claimNum === 'null' || claimNum === 'undefined') ? '' : claimNum;
-        document.getElementById("admin-accident-fault-ratio").value = faultRatio || 0;
-        document.getElementById("admin-accident-info-text").innerText = "사고 건 #" + reportId + "번의 처리 정보 및 보험 심사 결과를 입력합니다.";
-        document.getElementById("admin-accident-modal").style.display = "flex";
-    }
-    function closeAccidentModal() {
-        document.getElementById("admin-accident-modal").style.display = "none";
-    }
-
-    // 블랙리스트 차단 기간 설정에 따른 만료일 표시 여부 토글
-    function toggleBanDate() {
-        let type = document.getElementById("ban-type-selector").value;
-        let dateGroup = document.getElementById("ban-date-group");
-        if (type === "기간차단") {
-            dateGroup.style.display = "block";
-            dateGroup.querySelector('input[type="date"]').required = true;
-        } else {
-            dateGroup.style.display = "none";
-            dateGroup.querySelector('input[type="date"]').required = false;
-            dateGroup.querySelector('input[type="date"]').value = "";
-        }
-    }
-
-    // 대여장비 수정 모달 열기/닫기 [NEW]
-    function openEditGearModal(optionId, optionName, stockQuantity, dailyPrice, status) {
-        document.getElementById("edit-gear-id").value = optionId;
-        document.getElementById("edit-gear-name").value = optionName;
-        document.getElementById("edit-gear-stock").value = stockQuantity;
-        document.getElementById("edit-gear-price").value = dailyPrice;
-        document.getElementById("edit-gear-status").value = status;
-        document.getElementById("admin-edit-gear-modal").style.display = "flex";
-    }
-    
-    function closeEditGearModal() {
-        document.getElementById("admin-edit-gear-modal").style.display = "none";
-    }
-
-    // 페이지 로드 시 URL 파라미터에 지정된 탭이 있으면 활성화 [NEW]
-    window.addEventListener('DOMContentLoaded', (event) => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const activeTab = urlParams.get('tab');
-        if (activeTab) {
-            // 모든 탭 비활성화
-            let i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].classList.remove("active");
-            }
-            tablinks = document.getElementsByClassName("tab-btn");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].classList.remove("active");
-            }
-            
-            // 지정된 탭 활성화
-            const targetContent = document.getElementById(activeTab);
-            if (targetContent) {
-                targetContent.classList.add("active");
-            }
-            
-            // 지정된 탭 버튼 활성화
-            const targetButton = Array.from(tablinks).find(btn => {
-                const onclickAttr = btn.getAttribute('onclick');
-                return onclickAttr && onclickAttr.includes("'" + activeTab + "'");
-            });
-            if (targetButton) {
-                targetButton.classList.add("active");
-            }
-        }
-    });
-</script>
+<script src="${pageContext.request.contextPath}/resources/js/mypage.js"></script>

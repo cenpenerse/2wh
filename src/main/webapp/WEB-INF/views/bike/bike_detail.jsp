@@ -3,6 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp" />
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/bike_detail.css">
 
 <c:if test="${not empty errorMessage}">
     <script>
@@ -50,7 +51,7 @@
                         </c:choose>
                     </c:when>
                     <c:otherwise>
-                        <button class="btn btn-action-main" onclick="alert('대여 서비스를 이용하시려면 로그인이 필요합니다.'); location.href='${pageContext.request.contextPath}/login.do';">로그인 후 예약</button>
+                        <button class="btn btn-action-main" onclick="alert('대여 서비스를 이용하시려면 로그인이 필요합니다.'); location.href='${pageContext.request.contextPath}/member/login.do';">로그인 후 예약</button>
                     </c:otherwise>
                 </c:choose>
             </div>
@@ -190,7 +191,7 @@
         <h2 style="color: var(--primary-color); margin-bottom: 10px; font-family: 'Outfit';">바이크 대여 예약 신청</h2>
         <p class="modal-intro" style="color: #bbb; margin-bottom: 20px;"><strong>${bike.brandName} - ${bike.bikeName}</strong> 예약을 진행합니다.</p>
         
-        <form id="booking-form" action="${pageContext.request.contextPath}/bookingAction.do" method="post" onsubmit="return validateBooking()">
+        <form id="booking-form" action="${pageContext.request.contextPath}/booking/bookingAction.do" method="post" onsubmit="return validateBooking()">
             <input type="hidden" name="bikeId" value="${bike.bikeId}">
             <input type="hidden" id="daily-price" value="${bike.dailyPrice}">
             <input type="hidden" id="start-date" name="start_date" required>

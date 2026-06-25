@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp" />
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/board.css">
 
 <div class="board-container max-width">
     <div class="board-header">
@@ -10,7 +11,7 @@
     </div>
 
     <div class="form-card-box">
-        <form action="${pageContext.request.contextPath}/boardWriteAction.do" method="post" enctype="multipart/form-data" class="board-write-form">
+        <form action="${pageContext.request.contextPath}/board/boardWriteAction.do" method="post" enctype="multipart/form-data" class="board-write-form">
             <input type="hidden" name="boardType" value="${boardType}">
             
             <div class="form-group">
@@ -35,7 +36,7 @@
             </div>
 
             <div class="form-actions-row" style="text-align: right; margin-top: 30px;">
-                <a href="${pageContext.request.contextPath}/boardList.do?boardType=${boardType}" class="btn btn-secondary-outline" style="margin-right: 10px;">취소</a>
+                <a href="${pageContext.request.contextPath}/board/boardList.do?boardType=${boardType}" class="btn btn-secondary-outline" style="margin-right: 10px;">취소</a>
                 <button type="submit" class="btn btn-action-main">등록하기</button>
             </div>
         </form>

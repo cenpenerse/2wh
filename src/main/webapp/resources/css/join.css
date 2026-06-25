@@ -1,0 +1,45 @@
+/* ==========================================================================
+   BAREN - 회원가입 페이지 (join.jsp) 전용 스타일 시트
+   ========================================================================== */
+
+/* 비밀번호 일치 에러 메시지 */
+#pwd-match-error {
+    color: #ff3838;
+    font-size: 0.8rem;
+    display: none;
+    margin-top: 5px;
+}
+
+/* 약관 모달 오버레이 및 창 스타일 */
+#terms-modal {
+    display: none;
+}
+
+#terms-modal .modal-content {
+    max-width: 600px;
+}
+
+#terms-title {
+    margin-bottom: 20px;
+}
+
+.terms-content-box {
+    max-height: 300px;
+    overflow-y: auto;
+    text-align: left;
+    background: #222;
+    color: #ddd;
+    padding: 15px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    font-size: 0.9rem;
+}
+
+.terms-btn-wrapper {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.terms-confirm-btn {
+    width: 100px;
+}

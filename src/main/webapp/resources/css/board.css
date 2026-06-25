@@ -1,0 +1,210 @@
+/* ==========================================================================
+   BAREN Premium Bike Rental - 게시판 전용 스타일 (board.css)
+   ========================================================================== */
+
+
+
+.board-table th {
+    background: var(--light-gray-bg) !important;
+}
+
+.title-cell a {
+    color: white;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.title-cell a:hover {
+    color: var(--primary-color);
+}
+
+.board-footer-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 35px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.pagination-bar {
+    display: flex;
+    gap: 8px;
+}
+
+.page-link {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--light-text-color);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.page-link:hover, .page-link.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.page-prev, .page-next {
+    width: auto;
+    padding: 0 12px;
+}
+
+/* Post Detail Card */
+.post-detail-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 40px;
+    border-radius: 16px;
+    margin-bottom: 40px;
+}
+
+.post-header-info {
+    margin-bottom: 25px;
+}
+
+.board-badge {
+    background: rgba(255, 107, 0, 0.1);
+    color: var(--primary-color);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+.post-header-info h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+.post-meta {
+    font-size: 13px;
+    color: var(--light-text-color);
+}
+
+.post-meta strong {
+    color: white;
+}
+
+.post-actions-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+}
+
+.btn-edit {
+    background: var(--warning-color);
+    color: white;
+    margin-right: 8px;
+}
+
+.btn-edit:hover {
+    background: #d97706;
+}
+
+/* Comment UI */
+.comment-section-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 40px;
+    border-radius: 16px;
+}
+
+.comment-section-card h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+.comment-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.comment-item {
+    background: var(--light-gray-bg);
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: white;
+    font-size: 14px;
+}
+
+.comment-date {
+    font-size: 12px;
+    color: var(--light-text-color);
+}
+
+.comment-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.comment-body p {
+    font-size: 14px;
+    color: #e5e7eb;
+}
+
+.comment-delete-btn {
+    color: var(--danger-color);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.comment-delete-btn:hover {
+    text-decoration: underline;
+}
+
+.no-comments {
+    color: var(--light-text-color);
+    text-align: center;
+    padding: 20px 0;
+}
+
+.comment-form {
+    margin-top: 25px;
+}
+
+.comment-input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.btn-comment-submit {
+    padding: 10px 20px;
+}
+
+/* Form Card (Write / Update Write) */
+.form-card-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 40px;
+    border-radius: 16px;
+}

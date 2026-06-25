@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <!-- Oracle JNDI DataSource Resource 설정 -->
+    <Resource name="jdbc/myoracle"
+              auth="Container"
+              type="javax.sql.DataSource"
+              driverClassName="oracle.jdbc.OracleDriver"
+              url="jdbc:oracle:thin:@localhost:1521:xe"
+              username="system"
+              password="oracle"
+              maxTotal="20"
+              maxIdle="10"
+              maxWaitMillis="-1"
+              validationQuery="SELECT 1 FROM dual"
+              testOnBorrow="true" />
+</Context>

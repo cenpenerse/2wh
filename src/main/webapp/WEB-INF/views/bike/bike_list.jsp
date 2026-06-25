@@ -3,6 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp" />
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/bike.css">
 
     <section class="content-section">
         <div class="board-container max-width" style="padding-top: 30px;">
@@ -58,7 +59,7 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="${pageContext.request.contextPath}/bikeSelect.do?shopId=${shop.shopId}" class="card-btn" style="text-align: center; border-radius: 0 0 12px 12px; background: linear-gradient(90deg, #e50914, #b20710); font-weight: 700; padding: 14px 0; color: #fff; display: block; text-decoration: none; transition: all 0.3s ease;">지점 선택 및 바이크 예약</a>
+                        <a href="${pageContext.request.contextPath}/bike/bikeSelect.do?shopId=${shop.shopId}" class="card-btn" style="text-align: center; border-radius: 0 0 12px 12px; background: linear-gradient(90deg, #e50914, #b20710); font-weight: 700; padding: 14px 0; color: #fff; display: block; text-decoration: none; transition: all 0.3s ease;">지점 선택 및 바이크 예약</a>
                     </div>
                 </c:forEach>
             </div>

@@ -3,11 +3,12 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <jsp:include page="/WEB-INF/views/common/header.jsp" />
+<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/bike.css">
 
     <section class="content-section">
         <div class="board-container max-width" style="padding-top: 30px;">
             <div class="board-header" style="margin-bottom: 45px; text-align: center; position: relative;">
-                <a href="${pageContext.request.contextPath}/bikeList.do" style="position: absolute; left: 0; top: 10px; color: #60a5fa; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 0.95rem;">
+                <a href="${pageContext.request.contextPath}/bike/bikeList.do" style="position: absolute; left: 0; top: 10px; color: #60a5fa; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 0.95rem;">
                     <span>←</span> 다른 지점 선택
                 </a>
                 <h2 style="font-family: 'Outfit', sans-serif; font-size: 2.3rem; font-weight: 800; color: #fff; margin-bottom: 12px; letter-spacing: -0.5px;">
@@ -19,7 +20,7 @@
             </div>
             
             <!-- 필터 검색 영역 -->
-            <form action="${pageContext.request.contextPath}/bikeSelect.do" method="get" class="filter-form">
+            <form action="${pageContext.request.contextPath}/bike/bikeSelect.do" method="get" class="filter-form">
                 <input type="hidden" name="shopId" value="${selectedShopId}">
                 <div class="filter-group-row">
                     <div class="filter-item">
@@ -78,7 +79,7 @@
                                         <span class="stars">★</span> <strong>${bike.ratingAvg}</strong> (${bike.reviewCount} 리뷰)
                                     </div>
                                 </div>
-                                <a href="${pageContext.request.contextPath}/bikeDetail.do?bikeId=${bike.bikeId}&shopId=${selectedShopId}" class="card-btn">상세 정보 및 예약</a>
+                                <a href="${pageContext.request.contextPath}/bike/bikeDetail.do?bikeId=${bike.bikeId}&shopId=${selectedShopId}" class="card-btn">상세 정보 및 예약</a>
                             </div>
                         </c:forEach>
                     </c:when>
@@ -86,7 +87,7 @@
                         <div class="no-results" style="grid-column: 1 / -1; padding: 60px 20px; text-align: center; background: rgba(30, 30, 48, 0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-top: 20px;">
                             <span class="no-results-icon" style="font-size: 4rem; display: block; margin-bottom: 15px;"></span>
                             <p style="color: #cbd5e1; font-size: 1.1rem; margin-bottom: 20px;">선택하신 조건에 해당하는 바이크가 존재하지 않습니다.</p>
-                            <a href="${pageContext.request.contextPath}/bikeSelect.do?shopId=${selectedShopId}" class="btn" style="background: #e50914; color: #fff; border-radius: 6px; padding: 10px 24px; font-weight: 600; text-decoration: none; transition: background 0.3s ease;" onmouseover="this.style.background='#b20710'" onmouseout="this.style.background='#e50914'">지점 전체 바이크 보기</a>
+                            <a href="${pageContext.request.contextPath}/bike/bikeSelect.do?shopId=${selectedShopId}" class="btn" style="background: #e50914; color: #fff; border-radius: 6px; padding: 10px 24px; font-weight: 600; text-decoration: none; transition: background 0.3s ease;" onmouseover="this.style.background='#b20710'" onmouseout="this.style.background='#e50914'">지점 전체 바이크 보기</a>
                         </div>
                     </c:otherwise>
                 </c:choose>
