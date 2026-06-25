@@ -61,4 +61,12 @@ public class Pagination {
     public int getEndPage() { return endPage; }
     public int getStartRow() { return startRow; }
     public int getEndRow() { return endRow; }
+    
+    public boolean isPrev() {
+        return startPage > 1;
+    }
+    
+    public boolean isNext() {
+        return endPage < totalPages;
+    }
 }

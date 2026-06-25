@@ -20,7 +20,7 @@
         <p>대구 도심부터 대구 근교까지, 가장 빠르고 스타일리시한 모빌리티 솔루션, 쉽고 빠르게 오토바이를 렌탈하세요.</p>
         
         <!-- 검색바 영역 -->
-        <form action="${pageContext.request.contextPath}/bikeSelect.do" method="get" class="hero-search-bar">
+        <form action="${pageContext.request.contextPath}/bike/bikeSelect.do" method="get" class="hero-search-bar">
             <!-- 대여 위치 -->
             <div class="search-col-loc">
                 <span class="search-icon-marker"></span>
@@ -126,7 +126,7 @@
                                 </span>
                             </div>
 
-                            <a href="${pageContext.request.contextPath}/bikeDetail.do?bikeId=${bike.bikeId}" class="card-action-btn">
+                            <a href="${pageContext.request.contextPath}/bike/bikeDetail.do?bikeId=${bike.bikeId}" class="card-action-btn">
                                 상세 정보 및 예약하기 </a>
                         </div>
                     </div>
@@ -170,7 +170,7 @@
         <h2>지금, 바람을 가르며 달릴 시간입니다</h2>
         <p>최고의 머신들과 함께하는 자유로운 투어링 라이프. Baren이 라이더의 첫 시동을 동행합니다.</p>
         <div>
-            <a href="${pageContext.request.contextPath}/bikeList.do" class="cta-btn">바이크 예약하러 가기 </a>
+            <a href="${pageContext.request.contextPath}/bike/bikeList.do" class="cta-btn">바이크 예약하러 가기 </a>
         </div>
     </div>
 </section>

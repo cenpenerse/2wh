@@ -11,7 +11,7 @@
     </div>
 
     <div class="form-card-box">
-        <form action="${pageContext.request.contextPath}/boardUpdateAction.do" method="post" enctype="multipart/form-data" class="board-write-form">
+        <form action="${pageContext.request.contextPath}/board/boardUpdateAction.do" method="post" enctype="multipart/form-data" class="board-write-form">
             <input type="hidden" name="postId" value="${post.postId}">
             
             <div class="form-group">
@@ -39,7 +39,7 @@
             </div>
 
             <div class="form-actions-row" style="text-align: right; margin-top: 30px;">
-                <a href="${pageContext.request.contextPath}/boardDetail.do?postId=${post.postId}" class="btn btn-secondary-outline" style="margin-right: 10px;">취소</a>
+                <a href="${pageContext.request.contextPath}/board/boardDetail.do?postId=${post.postId}" class="btn btn-secondary-outline" style="margin-right: 10px;">취소</a>
                 <button type="submit" class="btn btn-action-main">수정 완료</button>
             </div>
         </form>

@@ -18,27 +18,27 @@
             
             <ul class="menu">
                 <li><a href="${pageContext.request.contextPath}/index.do">Home</a></li>
-                <li><a href="${pageContext.request.contextPath}/bikeInfo.do">바이크 종류</a></li>
-                <li><a href="${pageContext.request.contextPath}/bikeList.do">대여/예약</a></li>
+                <li><a href="${pageContext.request.contextPath}/bike/bikeInfo.do">바이크 종류</a></li>
+                <li><a href="${pageContext.request.contextPath}/bike/bikeList.do">대여/예약</a></li>
                 <li class="dropdown">
-                    <a href="${pageContext.request.contextPath}/gearInfo.do">대여 장비</a>
+                    <a href="${pageContext.request.contextPath}/bike/gearInfo.do">대여 장비</a>
                     <ul class="dropdown-menu">
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#helmet">헬멧</a></li>
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#intercom">인터콤</a></li>
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#topbox">탑박스</a></li>
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#holder">거치대</a></li>
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#protector">보호대</a></li>
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#gloves">장갑</a></li>
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#jacket">상의</a></li>
-                        <li><a href="${pageContext.request.contextPath}/gearInfo.do#pants">하의</a></li>
+                        <li><a href="${pageContext.request.contextPath}/bike/gearInfo.do#helmet">헬멧</a></li>
+                        <li><a href="${pageContext.request.contextPath}/bike/gearInfo.do#intercom">인터콤</a></li>
+                        <li><a href="${pageContext.request.contextPath}/bike/gearInfo.do#topbox">탑박스</a></li>
+                        <li><a href="${pageContext.request.contextPath}/bike/gearInfo.do#holder">거치대</a></li>
+                        <li><a href="${pageContext.request.contextPath}/bike/gearInfo.do#protector">보호대</a></li>
+                        <li><a href="${pageContext.request.contextPath}/bike/gearInfo.do#gloves">장갑</a></li>
+                        <li><a href="${pageContext.request.contextPath}/bike/gearInfo.do#jacket">상의</a></li>
+                        <li><a href="${pageContext.request.contextPath}/bike/gearInfo.do#pants">하의</a></li>
                     </ul>
                 </li>
                 <li><a href="${pageContext.request.contextPath}/pricing.do">요금 안내</a></li>
                 <li class="dropdown">
-                    <a href="${pageContext.request.contextPath}/boardList.do?boardType=FREE">게시판</a>
+                    <a href="${pageContext.request.contextPath}/board/boardList.do?boardType=FREE">게시판</a>
                     <ul class="dropdown-menu">
-                        <li><a href="${pageContext.request.contextPath}/boardList.do?boardType=REVIEW">이용후기 게시판</a></li>
-                        <li><a href="${pageContext.request.contextPath}/boardList.do?boardType=FREE">자유게시판</a></li>
+                        <li><a href="${pageContext.request.contextPath}/board/boardList.do?boardType=REVIEW">이용후기 게시판</a></li>
+                        <li><a href="${pageContext.request.contextPath}/board/boardList.do?boardType=FREE">자유게시판</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
@@ -56,17 +56,17 @@
                     <c:when test="${not empty loginUser}">
                         <span class="user-welcome"><strong>${loginUser.nickname}</strong>님 환영합니다</span>
                         <c:if test="${loginUser.memberStatus eq 'ADMIN'}">
-                            | <a href="${pageContext.request.contextPath}/mypage.do" class="admin-link">관리자 모드</a>
+                            | <a href="${pageContext.request.contextPath}/member/mypage.do" class="admin-link">관리자 모드</a>
                         </c:if>
                         <c:if test="${loginUser.memberStatus ne 'ADMIN'}">
-                            | <a href="${pageContext.request.contextPath}/mypage.do">마이페이지</a>
+                            | <a href="${pageContext.request.contextPath}/member/mypage.do">마이페이지</a>
                         </c:if>
-                        | <a href="${pageContext.request.contextPath}/logout.do">로그아웃</a>
+                        | <a href="${pageContext.request.contextPath}/member/logout.do">로그아웃</a>
                     </c:when>
                     <c:otherwise>
                         <a href="javascript:openLoginModal();" class="login-link">로그인</a>
                         <div class="dropdown" style="display:inline-block;">
-                            <a href="${pageContext.request.contextPath}/join.do" class="signup-link-btn">회원가입</a>
+                            <a href="${pageContext.request.contextPath}/member/join.do" class="signup-link-btn">회원가입</a>
                         </div>
                     </c:otherwise>
                 </c:choose>

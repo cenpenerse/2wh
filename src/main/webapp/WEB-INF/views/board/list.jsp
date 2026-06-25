@@ -43,7 +43,7 @@
                             <tr>
                                 <td>${post.postId}</td>
                                 <td class="title-cell" style="text-align: left;">
-                                    <a href="${pageContext.request.contextPath}/boardDetail.do?postId=${post.postId}">
+                                    <a href="${pageContext.request.contextPath}/board/boardDetail.do?postId=${post.postId}">
                                         ${post.title}
                                     </a>
                                     <c:if test="${not empty post.filename}">
@@ -70,16 +70,16 @@
     <div class="board-footer-controls">
         <!-- 페이징 영역 -->
         <div class="pagination-bar">
-            <c:if test="${paging.startPage > paging.blockSize}">
-                <a href="${pageContext.request.contextPath}/boardList.do?boardType=${boardType}&page=${paging.startPage - 1}" class="page-link page-prev">&lt; 이전</a>
+            <c:if test="${paging.prev}">
+                <a href="${pageContext.request.contextPath}/board/boardList.do?boardType=${boardType}&page=${paging.startPage - 1}" class="page-link page-prev">&lt; 이전</a>
             </c:if>
             
             <c:forEach var="i" begin="${paging.startPage}" end="${paging.endPage}">
-                <a href="${pageContext.request.contextPath}/boardList.do?boardType=${boardType}&page=${i}" class="page-link ${paging.currentPage eq i ? 'active' : ''}">${i}</a>
+                <a href="${pageContext.request.contextPath}/board/boardList.do?boardType=${boardType}&page=${i}" class="page-link ${paging.currentPage eq i ? 'active' : ''}">${i}</a>
             </c:forEach>
             
-            <c:if test="${paging.endPage < paging.totalPages}">
-                <a href="${pageContext.request.contextPath}/boardList.do?boardType=${boardType}&page=${paging.endPage + 1}" class="page-link page-next">다음 &gt;</a>
+            <c:if test="${paging.next}">
+                <a href="${pageContext.request.contextPath}/board/boardList.do?boardType=${boardType}&page=${paging.endPage + 1}" class="page-link page-next">다음 &gt;</a>
             </c:if>
         </div>
 
@@ -88,14 +88,16 @@
             <c:choose>
                 <c:when test="${boardType eq 'NOTICE'}">
                     <!-- 공지사항은 관리자만 작성 가능 -->
-                    <c:if test="${loginUser.memberStatus eq 'ADMIN'}">
-                        <a href="${pageContext.request.contextPath}/boardWrite.do?boardType=${boardType}" class="btn">공지사항 작성</a>
+                    <c:if test="${boardType eq 'NOTICE' and loginUser.memberStatus eq 'ADMIN'}">
+                        <a href="${pageContext.request.contextPath}/board/boardWrite.do?boardType=${boardType}" class="btn">공지사항 작성</a>
                     </c:if>
                 </c:when>
                 <c:otherwise>
                     <!-- 일반 게시판은 회원 전체 작성 가능 -->
-                    <c:if test="${not empty loginUser}">
-                        <a href="${pageContext.request.contextPath}/boardWrite.do?boardType=${boardType}" class="btn">글쓰기</a>
+                    <c:if test="${boardType eq 'REVIEW' or boardType eq 'FREE'}">
+                        <c:if test="${not empty loginUser}">
+                            <a href="${pageContext.request.contextPath}/board/boardWrite.do?boardType=${boardType}" class="btn">글쓰기</a>
+                        </c:if>
                     </c:if>
                 </c:otherwise>
             </c:choose>

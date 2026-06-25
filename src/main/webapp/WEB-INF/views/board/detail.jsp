@@ -51,14 +51,14 @@
         <!-- 제어 버튼 (수정, 삭제, 목록) -->
         <div class="post-actions-row">
             <div class="left-actions">
-                <a href="${pageContext.request.contextPath}/boardList.do?boardType=${post.boardType}" class="btn btn-secondary-outline">목록으로</a>
+                <a href="${pageContext.request.contextPath}/board/boardList.do?boardType=${post.boardType}" class="btn btn-secondary-outline">목록으로</a>
             </div>
-            <div class="right-actions">
-                <c:if test="${not empty loginUser && (loginUser.memberId eq post.memberId || loginUser.memberStatus eq 'ADMIN')}">
-                    <a href="${pageContext.request.contextPath}/boardUpdate.do?postId=${post.postId}" class="btn btn-edit">수정</a>
-                    <a href="${pageContext.request.contextPath}/boardDeleteAction.do?postId=${post.postId}&boardType=${post.boardType}" class="btn btn-danger" onclick="return confirm('정말로 이 글을 삭제하시겠습니까?');">삭제</a>
-                </c:if>
-            </div>
+            <c:if test="${not empty loginUser and (loginUser.memberId eq post.memberId or loginUser.memberStatus eq 'ADMIN')}">
+                <div class="action-buttons-right">
+                    <a href="${pageContext.request.contextPath}/board/boardUpdate.do?postId=${post.postId}" class="btn btn-edit">수정</a>
+                    <a href="${pageContext.request.contextPath}/board/boardDeleteAction.do?postId=${post.postId}&boardType=${post.boardType}" class="btn btn-danger" onclick="return confirm('정말로 이 글을 삭제하시겠습니까?');">삭제</a>
+                </div>
+            </c:if>
         </div>
     </div>
 
@@ -79,7 +79,7 @@
                             <div class="comment-body">
                                 <p>${comment.content}</p>
                                 <c:if test="${not empty loginUser && (loginUser.memberId eq comment.memberId || loginUser.memberStatus eq 'ADMIN')}">
-                                    <a href="${pageContext.request.contextPath}/commentDeleteAction.do?commentId=${comment.commentId}&postId=${post.postId}" class="comment-delete-btn" onclick="return confirm('정말로 이 댓글을 삭제하시겠습니까?');">삭제</a>
+                                    <a href="${pageContext.request.contextPath}/board/commentDeleteAction.do?commentId=${comment.commentId}&postId=${post.postId}" class="comment-delete-btn" onclick="return confirm('정말로 이 댓글을 삭제하시겠습니까?');">삭제</a>
                                 </c:if>
                             </div>
                         </div>
@@ -96,7 +96,7 @@
         <!-- 댓글 작성 폼 -->
         <c:choose>
             <c:when test="${not empty loginUser}">
-                <form action="${pageContext.request.contextPath}/commentWriteAction.do" method="post" class="comment-form">
+                <form action="${pageContext.request.contextPath}/board/commentWriteAction.do" method="post" class="comment-form">
                     <input type="hidden" name="postId" value="${post.postId}">
                     <div class="comment-input-group">
                         <textarea name="content" rows="3" placeholder="댓글을 입력해 주세요. 타인을 배려하는 예의 바른 소통을 부탁드립니다." required></textarea>

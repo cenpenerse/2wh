@@ -13,7 +13,7 @@
                 <h2 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 800; color: #fff; margin-top: 10px; margin-bottom: 12px; letter-spacing: -0.5px;">바이크 라인업 안내</h2>
                 <p style="color: var(--light-text-color); font-size: 1.05rem;">바렌이 제공하는 최고 사양의 프리미엄 바이크 종류 및 상세 제원입니다.</p>
                 <div style="margin-top: 20px;">
-                    <a href="${pageContext.request.contextPath}/bikeList.do" class="btn" style="background: linear-gradient(135deg, var(--primary-color) 0%, #FF5E62 100%); border: none; padding: 10px 25px; font-weight: 600; text-transform: uppercase; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);">실시간 대여/예약 신청하러 가기 </a>
+                    <a href="${pageContext.request.contextPath}/bike/bikeList.do" class="btn" style="background: linear-gradient(135deg, var(--primary-color) 0%, #FF5E62 100%); border: none; padding: 10px 25px; font-weight: 600; text-transform: uppercase; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);">실시간 대여/예약 신청하러 가기 </a>
                 </div>
             </div>
 

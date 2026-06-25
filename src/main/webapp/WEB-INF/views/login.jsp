@@ -13,7 +13,7 @@
             <div class="alert alert-danger">${errorMessage}</div>
         </c:if>
 
-        <form action="${pageContext.request.contextPath}/loginAction.do" method="post" class="auth-form">
+        <form action="${pageContext.request.contextPath}/member/loginAction.do" method="post" class="auth-form">
             <div class="form-group">
                 <label for="email">이메일 주소</label>
                 <input type="email" id="email" name="email" placeholder="이메일을 입력하세요" required>
@@ -27,7 +27,7 @@
         
         <div class="auth-footer">
             <span>아직 Baren 계정이 없으신가요?</span>
-            <a href="${pageContext.request.contextPath}/join.do">회원가입하기</a>
+            <a href="${pageContext.request.contextPath}/member/join.do">회원가입하기</a>
         </div>
     </div>
 </div>

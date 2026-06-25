@@ -6,7 +6,7 @@
         <div class="modal-content">
             <span class="close-btn" onclick="closeLoginModal()">&times;</span>
             <h2>로그인</h2>
-            <form action="${pageContext.request.contextPath}/loginAction.do" method="post">
+            <form action="${pageContext.request.contextPath}/member/loginAction.do" method="post">
                 <div class="form-group">
                     <label for="login-email">이메일</label>
                     <input type="email" id="login-email" name="email" placeholder="이메일 주소를 입력하세요" required>
@@ -18,7 +18,7 @@
                 <button type="submit" class="btn">로그인</button>
                 <div class="signup-link" style="text-align: center; margin-top: 20px;">
                     아직 계정이 없으신가요?
-                    <a href="${pageContext.request.contextPath}/join.do" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">회원가입</a>
+                    <a href="${pageContext.request.contextPath}/member/join.do" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">회원가입</a>
                 </div>
             </form>
         </div>
@@ -39,10 +39,10 @@
             <div class="footer-col">
                 <h4>서비스</h4>
                 <ul>
-                    <li><a href="${pageContext.request.contextPath}/bikeInfo.do">바이크 종류</a></li>
-                    <li><a href="${pageContext.request.contextPath}/gearInfo.do">대여 장비</a></li>
-                    <li><a href="${pageContext.request.contextPath}/bikeList.do">대여/예약</a></li>
-                    <li><a href="${pageContext.request.contextPath}/boardList.do?boardType=FREE">게시판</a></li>
+                    <li><a href="${pageContext.request.contextPath}/bike/bikeInfo.do">바이크 종류</a></li>
+                    <li><a href="${pageContext.request.contextPath}/bike/gearInfo.do">대여 장비</a></li>
+                    <li><a href="${pageContext.request.contextPath}/bike/bikeList.do">대여/예약</a></li>
+                    <li><a href="${pageContext.request.contextPath}/board/boardList.do?boardType=FREE">게시판</a></li>
                     <li><a href="${pageContext.request.contextPath}/pricing.do">이용요금</a></li>
                 </ul>
             </div>
